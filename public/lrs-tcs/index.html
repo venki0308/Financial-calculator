@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -120,24 +123,24 @@
     </div>
 
     <h2>TCS rates from 1 April 2026</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="TCS rates from 1 April 2026"><table>
       <tr><th>Purpose</th><th>Threshold</th><th>Rate (from 1 Apr 2026)</th><th>Earlier</th></tr>
       <tr><td>Education funded by a loan from a financial institution</td><td>—</td><td>Nil</td><td>Nil</td></tr>
       <tr><td>Education / medical treatment (own funds, incl. travel for it)</td><td>₹10 lakh</td><td>2% above threshold</td><td>5% above</td></tr>
       <tr><td>Overseas tour package</td><td>None</td><td>2% on every rupee</td><td>5% up to ₹10 lakh, 20% above</td></tr>
       <tr><td>Investment, gift, maintenance, any other LRS purpose</td><td>₹10 lakh</td><td>20% above threshold</td><td>20% above</td></tr>
-    </table>
+    </table></div>
     <div class="formula">TCS = rate × max(0, this remittance − max(0, ₹10,00,000 − amount already remitted this FY))<br/>Tour packages: TCS = 2% × full amount</div>
     <p>Section 206C(1G) of the Income-tax Act 1961, now Section 394 of the Income-tax Act 2025. The ₹10 lakh threshold has applied since 1 April 2025 (raised from ₹7 lakh). The LRS ceiling itself stays at USD 250,000 per person per financial year.</p>
 
     <h2>Examples</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Examples"><table>
       <tr><th>Case</th><th>TCS</th></tr>
       <tr><td>₹15 lakh university fee paid from savings, nothing remitted earlier</td><td>2% of ₹5 lakh = ₹10,000</td></tr>
       <tr><td>₹8 lakh gift to a relative abroad after ₹6 lakh already sent this year</td><td>20% of ₹4 lakh = ₹80,000</td></tr>
       <tr><td>₹3 lakh Europe tour package</td><td>2% of ₹3 lakh = ₹6,000</td></tr>
       <tr><td>₹25 lakh fee funded by an education loan</td><td>Nil</td></tr>
-    </table>
+    </table></div>
 
     <div class="faq">
       <h2>Frequently asked questions</h2>

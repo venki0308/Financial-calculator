@@ -169,7 +169,9 @@ export default function LegalLayout({
             </header>
 
             {/* Content */}
-            <main style={{ flex: 1, maxWidth: '880px', margin: '0 auto', width: '100%', padding: '48px 24px 80px' }}>
+            {/* border-box: width 100% includes the padding (the app gets this from Tailwind's base styles; the
+                website's static legal pages do not load them, so at 360 px main was 408 px wide). */}
+            <main style={{ flex: 1, maxWidth: '880px', margin: '0 auto', width: '100%', padding: '48px 24px 80px', boxSizing: 'border-box', overflowWrap: 'break-word' }}>
                 <p style={{ color: '#C9A84C', fontSize: '11px', fontWeight: 600, letterSpacing: '1.2px', textTransform: 'uppercase', marginBottom: '10px' }}>
                     {updated}
                 </p>

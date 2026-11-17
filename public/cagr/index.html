@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -119,14 +122,14 @@
     <div class="formula">CAGR = (FV ÷ PV)<sup>1/years</sup> − 1<br/>PV = initial value &nbsp; FV = final value</div>
 
     <h2>CAGR examples</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="CAGR examples"><table>
       <tr><th>Investment</th><th>Grew to</th><th>Duration</th><th>CAGR</th></tr>
       <tr><td>₹1,00,000</td><td>₹1,50,000</td><td>3 years</td><td>14.47%</td></tr>
       <tr><td>₹1,00,000</td><td>₹2,00,000</td><td>5 years</td><td>14.87%</td></tr>
       <tr><td>₹1,00,000</td><td>₹2,50,000</td><td>5 years</td><td>20.11%</td></tr>
       <tr><td>₹1,00,000</td><td>₹2,00,000</td><td>10 years</td><td>7.18%</td></tr>
       <tr><td>₹1,00,000</td><td>₹3,00,000</td><td>10 years</td><td>11.61%</td></tr>
-    </table>
+    </table></div>
     <p>The two "doubled my money" rows show why CAGR matters: doubling in 5 years is 14.87% a year, but doubling in 10 years is only 7.18% — barely ahead of a fixed deposit.</p>
 
     <div class="faq">

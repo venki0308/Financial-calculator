@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -117,15 +120,15 @@
     <div class="formula">Monthly income = Deposit × 7.4% ÷ 12<br/>₹9,00,000 × 0.074 ÷ 12 = ₹5,550 per month</div>
 
     <h2>Post Office MIS income at 7.4%</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Post Office MIS income at 7.4%"><table>
       <tr><th>Deposit</th><th>Monthly income</th><th>Total interest (60 months)</th></tr>
       <tr><td>₹5,00,000</td><td>₹3,083</td><td>₹1,85,000</td></tr>
       <tr><td>₹9,00,000 (single max)</td><td>₹5,550</td><td>₹3,33,000</td></tr>
       <tr><td>₹15,00,000 (joint max)</td><td>₹9,250</td><td>₹5,55,000</td></tr>
-    </table>
+    </table></div>
 
     <h2>MIS rules at a glance (November 2026, Q3 FY 2026-27)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="MIS rules at a glance (November 2026, Q3 FY 2026-27)"><table>
       <tr><th>Feature</th><th>Detail</th></tr>
       <tr><td>Interest rate</td><td>7.4% p.a., paid monthly (unchanged 9 quarters)</td></tr>
       <tr><td>Deposit limit</td><td>₹9 lakh single account · ₹15 lakh joint account</td></tr>
@@ -133,7 +136,7 @@
       <tr><td>Premature closure</td><td>After 1 year with a small deduction (2% before 3 yrs, 1% after)</td></tr>
       <tr><td>Tax</td><td>Interest taxable; no 80C benefit</td></tr>
       <tr><td>Guarantee</td><td>Sovereign — Government of India small-savings scheme</td></tr>
-    </table>
+    </table></div>
 
     <div class="faq">
       <h2>Frequently asked questions</h2>

@@ -56,9 +56,6 @@ const CSS = `
  color:#556070;font-size:22px;line-height:1;cursor:pointer}
 .fx-banner .fx-done{margin:10px 0 0;font-size:14px;color:#047857;font-weight:700}
 .fx-banner :focus-visible{outline:3px solid #4F46E5;outline-offset:2px}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .fx-banner{background:#131C2E;color:#F1EEE6;border-color:#3A4864}
- :root:not([data-theme=light]) .fx-banner p{color:#CBD5E1}:root:not([data-theme=light]) .fx-banner .fx-more{color:#A5B4FC}
- :root:not([data-theme=light]) .fx-banner .fx-close{color:#9AA8BC}:root:not([data-theme=light]) .fx-banner .fx-done{color:#34D399}}
 [data-theme=dark] .fx-banner{background:#131C2E;color:#F1EEE6;border-color:#3A4864}[data-theme=dark] .fx-banner p{color:#CBD5E1}
 [data-theme=dark] .fx-banner .fx-more{color:#A5B4FC}[data-theme=dark] .fx-banner .fx-close{color:#9AA8BC}[data-theme=dark] .fx-banner .fx-done{color:#34D399}
 `;

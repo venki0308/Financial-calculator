@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -124,23 +127,23 @@
     <p>Example: on ₹30,000 basic+DA, the simplified monthly EPF credit is <strong>₹4,701</strong> (₹3,600 + ₹1,101), while ₹2,083 goes to EPS.</p>
 
     <h2>Approximate EPF corpus at 8.25% (with 5% yearly increment)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Approximate EPF corpus at 8.25% (with 5% yearly increment)"><table>
       <tr><th>Basic + DA today</th><th>Age → Retirement</th><th>Approx. corpus</th></tr>
       <tr><td>₹15,000</td><td>33 → 58 (25 yrs)</td><td>₹36,31,324</td></tr>
       <tr><td>₹30,000</td><td>30 → 58 (28 yrs)</td><td>₹99,73,110</td></tr>
       <tr><td>₹50,000</td><td>28 → 58 (30 yrs)</td><td>₹2,04,10,240</td></tr>
-    </table>
+    </table></div>
     <p>Without any salary increment, ₹30,000 basic over 28 years still builds about ₹61,50,690 — the increment is what pushes the corpus near ₹1 crore.</p>
 
     <h2>EPF rules at a glance (November 2026)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="EPF rules at a glance (November 2026)"><table>
       <tr><th>Feature</th><th>Detail</th></tr>
       <tr><td>Interest rate</td><td>8.25% for FY 2025-26 (3rd year unchanged); FY 2026-27 rate not yet declared</td></tr><tr><td>Wage ceiling</td><td>₹25,000/month from 17 Sep 2026 (was ₹15,000) — ~51 lakh more employees covered</td></tr>
       <tr><td>Employee share</td><td>12% of basic + DA</td></tr>
       <tr><td>Employer share</td><td>12% — 3.67% to EPF + 8.33% to EPS (EPS capped at the ₹25,000 ceiling w.e.f. 17 Sep 2026 = ₹2,083/mo)</td></tr>
       <tr><td>EPF Scheme 2026</td><td>In force 29 Jun 2026 — withdrawals simplified to 3 categories, auto-settlement up to ₹5 lakh, ~3-day claims</td></tr>
       <tr><td>Tax</td><td>80C on your 12% (old regime); withdrawal tax-free after 5 years' service</td></tr>
-    </table>
+    </table></div>
 
     <div class="faq">
       <h2>Frequently asked questions</h2>

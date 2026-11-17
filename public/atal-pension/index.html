@@ -72,6 +72,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -111,16 +114,16 @@
     <div class="formula">Pension slabs: ₹1,000 · ₹2,000 · ₹3,000 · ₹4,000 · ₹5,000 per month from age 60<br/>Contribution depends only on joining age and chosen slab</div>
 
     <h2>Monthly contribution by joining age (verified examples)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Monthly contribution by joining age (verified examples)"><table>
       <tr><th>Joining age</th><th>For ₹1,000/month pension</th><th>For ₹5,000/month pension</th></tr>
       <tr><td>18 years</td><td>₹42 / month</td><td>₹210 / month</td></tr>
       <tr><td>30 years</td><td>₹116 / month</td><td>₹577 / month</td></tr>
       <tr><td>40 years</td><td>₹291 / month</td><td>₹1,454 / month</td></tr>
-    </table>
+    </table></div>
     <p>The earlier you join, the cheaper the same guaranteed pension — at 18 the ₹5,000 slab costs about a seventh of what it costs at 40. Contributions for the ₹2,000–₹4,000 slabs fall between these amounts per the official PFRDA chart.</p>
 
     <h2>APY rules at a glance (November 2026)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="APY rules at a glance (November 2026)"><table>
       <tr><th>Feature</th><th>Detail</th></tr>
       <tr><td>Guaranteed pension</td><td>₹1,000 – ₹5,000 per month from age 60, for life</td></tr>
       <tr><td>Entry age</td><td>18 – 40 years</td></tr>
@@ -128,7 +131,7 @@
       <tr><td>Family cover</td><td>Same pension to spouse; corpus returned to nominee</td></tr>
       <tr><td>Scheme validity</td><td>Extended to FY 2030-31 (Cabinet approval, January 2026)</td></tr>
       <tr><td>Administered by</td><td>PFRDA, through banks and post offices</td></tr>
-    </table>
+    </table></div>
 
     <div class="faq">
       <h2>Frequently asked questions</h2>

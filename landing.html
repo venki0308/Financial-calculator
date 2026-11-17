@@ -3,14 +3,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#FBFAF6">
     <script>
-      /* Before first paint: the saved theme, else the device setting (default light),
-         and iPhone/iPad (the Play note then says there is no iPhone app yet). */
+      /* Before first paint: light unless the visitor chose dark on this site (never the
+         device setting), and iPhone/iPad (the Play note then says there is no iPhone app yet). */
       (function () {
         var d = document.documentElement, t = null;
-        try { t = localStorage.getItem('fincalix_site_theme'); } catch (e) {}
-        if (t !== 'light' && t !== 'dark') t = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        try { t = localStorage.getItem('fincalix_web_theme'); } catch (e) {}
+        if (t !== 'dark') t = 'light';
         d.setAttribute('data-theme', t);
+        d.style.colorScheme = t;
+        if (t === 'dark') document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0B1120');
         if (/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) d.classList.add('ua-ios');
       })();
     </script>

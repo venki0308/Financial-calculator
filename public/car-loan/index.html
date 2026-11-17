@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -119,29 +122,29 @@
     <div class="formula">EMI = P × r × (1 + r)<sup>n</sup> ÷ ((1 + r)<sup>n</sup> − 1)<br/>P = loan amount &nbsp; r = annual rate ÷ 12 ÷ 100 &nbsp; n = months</div>
 
     <h2>Example: ₹8 lakh car loan at 9.25% — tenure comparison</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Example: ₹8 lakh car loan at 9.25% — tenure comparison"><table>
       <tr><th>Tenure</th><th>Monthly EMI</th><th>Total interest</th><th>Total payment</th></tr>
       <tr><td>3 years</td><td>₹25,533</td><td>₹1,19,187</td><td>₹9,19,187</td></tr>
       <tr><td>5 years</td><td>₹16,704</td><td>₹2,02,235</td><td>₹10,02,235</td></tr>
       <tr><td>7 years</td><td>₹12,973</td><td>₹2,89,731</td><td>₹10,89,731</td></tr>
-    </table>
+    </table></div>
 
     <h2>₹8 lakh over 5 years at different rates</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="₹8 lakh over 5 years at different rates"><table>
       <tr><th>Interest rate</th><th>Monthly EMI</th><th>Total interest</th></tr>
       <tr><td>8.50% (best new-car rate)</td><td>₹16,413</td><td>₹1,84,794</td></tr>
       <tr><td>9.25%</td><td>₹16,704</td><td>₹2,02,235</td></tr>
       <tr><td>10.50%</td><td>₹17,195</td><td>₹2,31,707</td></tr>
       <tr><td>12.50% (typical used-car rate)</td><td>₹17,998</td><td>₹2,79,901</td></tr>
-    </table>
+    </table></div>
 
     <h2>Car loan rates in India (November 2026)</h2>
     <p>With the RBI repo rate raised 25 bps to <strong>5.50%</strong> in the October 2026 MPC meeting (lenders are resetting floating rates ~0.25% higher):</p>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Car loan rates in India (November 2026)"><table>
       <tr><th>Loan type</th><th>Typical rate range</th></tr>
       <tr><td>New car loan</td><td>8.5% – 10.5% (SBI 8.55–9.50%)</td></tr>
       <tr><td>Used car loan</td><td>+2% – 4% over new-car rates</td></tr>
-    </table>
+    </table></div>
     <p>Your CIBIL score, the car model and your relationship with the bank all move the final rate within these bands. A 750+ score typically gets the advertised floor rate.</p>
 
     <div class="faq">

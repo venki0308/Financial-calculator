@@ -15,6 +15,7 @@ import { headTags, jsonForScript, pageHead } from './head';
 import type { IslandProps } from './islands';
 import { WEB_LEGAL_PAGES } from './legal-pages';
 import DataSafety from '../pages/DataSafety';
+import { setWebsiteTheme } from '../theme/useAppColors';
 import { EXPORT_PAGE, IN_THE_APP, ORIGIN } from './seoRoutes';
 import { buildCategoryPages, buildSchemePages, firstSentence } from './site-data';
 import { schemes } from '../data/schemes';
@@ -47,7 +48,8 @@ function legalHead(name: string, h1: string, font: string): string {
         `<meta name="description" content="${esc(desc)}">`,
         `<link rel="canonical" href="${ORIGIN}/${name}">`,
         `<meta name="robots" content="index, follow">`,
-        `<meta name="theme-color" content="#0F172A">`,
+        // theme-color (light; dark only when the visitor picked dark) is set by the template's head script.
+        `<meta name="color-scheme" content="light dark">`,
         `<link rel="icon" type="image/png" href="/brand/fincalix-icon-512.png">`,
         `<link rel="apple-touch-icon" href="/brand/fincalix-icon-512.png">`,
         `<meta property="og:type" content="website">`,
@@ -62,6 +64,7 @@ function legalHead(name: string, h1: string, font: string): string {
 
 export async function renderLegal() {
     if (!i18n.isInitialized) await new Promise<void>((ok) => i18n.on('initialized', () => ok()));
+    setWebsiteTheme(false); // the website is light unless the visitor picks dark (legal-client.tsx)
     const pages: Array<{ name: string; template: 'legal' | 'datasafety'; html: string; head: string; h1: string }> = [];
     const poppins = '<link rel="stylesheet" data-fc-poppins="true" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">';
     for (const [name, Page] of Object.entries(WEB_LEGAL_PAGES)) {

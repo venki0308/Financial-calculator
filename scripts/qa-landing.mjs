@@ -263,7 +263,8 @@ async function main() {
                 const errors = [], hits = [], analyticsReqs = [], appRequests = [];
                 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text().slice(0, 160)); });
                 page.on('pageerror', (e) => errors.push(e.message));
-                page.on('requestfailed', (r) => { if (new URL(r.url()).origin === base) errors.push(`failed ${r.url()}`); });
+                // net::ERR_ABORTED = the browser cancelled it (e.g. the favicon when the test moves on), not a failure.
+                page.on('requestfailed', (r) => { if (new URL(r.url()).origin === base && !/ERR_ABORTED/.test(r.failure()?.errorText || '')) errors.push(`failed ${r.url()} ${r.failure()?.errorText || ''}`); });
                 page.on('response', (r) => { if (new URL(r.url()).origin === base && r.status() >= 400) errors.push(`${r.status()} ${r.url()}`); });
                 page.on('request', (r) => {
                     const u = new URL(r.url());
@@ -367,7 +368,30 @@ async function main() {
                 check('no element outside the viewport at any width from 360 to 1920 px (header, hero phones, CTAs)', problems.length === 0, problems.slice(0, 3).join(' | '));
                 await ctx.close();
             }
-            // 5e. Layout shift; theme follows the device; toggle; keyboard; ?q=
+            {
+                // Every page in the sitemap (plus /data-safety, /in-the-app, /export-my-data and the 404) on a 360 px
+                // phone: the page never scrolls sideways. A wide guide table scrolls inside its own container.
+                const smXml = (await get(prod.base, '/sitemap.xml')).body;
+                const smPaths = [...smXml.matchAll(/<loc>https:\/\/fincalix\.com([^<]*)<\/loc>/g)].map((m) => m[1] || '/');
+                const { ctx, page } = await profile(prod.base, { viewport: { width: 360, height: 760 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 }, { fincalix_analytics_consent: 'denied' });
+                const wide = [];
+                let tablesInScroll = 0, tablesTotal = 0;
+                for (const p of [...smPaths, '/data-safety', '/in-the-app', '/export-my-data', '/no-such-page']) {
+                    await page.goto(prod.base + p, { waitUntil: 'load' });
+                    await page.waitForTimeout(150);
+                    const r = await page.evaluate(() => {
+                        const cw = document.documentElement.clientWidth;
+                        const tables = [...document.querySelectorAll('table')];
+                        const first = [...document.querySelectorAll('body *')].find((e) => !e.closest('.table-scroll') && e.getBoundingClientRect().right > cw + 0.5);
+                        return { sw: document.documentElement.scrollWidth, cw, tables: tables.length, wrapped: tables.filter((t) => t.parentElement?.classList.contains('table-scroll') && getComputedStyle(t.parentElement).overflowX === 'auto').length, first: first ? `${first.tagName.toLowerCase()} →${Math.round(first.getBoundingClientRect().right)}` : '' };
+                    });
+                    tablesTotal += r.tables; tablesInScroll += r.wrapped;
+                    if (r.sw > r.cw) wide.push(`${p} ${r.sw}/${r.cw} ${r.first}`);
+                }
+                check(`360 px phone: none of the ${smPaths.length} sitemap pages (+4 others) scrolls sideways; every guide table (${tablesTotal}) has its own scroll container`, wide.length === 0 && smPaths.length > 70 && tablesTotal > 0 && tablesInScroll === tablesTotal, wide.slice(0, 4).join(' | ') || `${tablesInScroll}/${tablesTotal} tables wrapped`);
+                await ctx.close();
+            }
+            // 5e. Layout shift; light theme on first visit (device in dark mode), no flash; toggle; dev-mode app theme; keyboard; ?q=
             for (const [label, opts] of [['desktop', {}], ['phone', { viewport: { width: 412, height: 915 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2.625 }]]) {
                 const { ctx, page } = await profile(prod.base, opts, { fincalix_analytics_consent: 'denied' });
                 await page.goto(prod.base + '/', { waitUntil: 'load' });
@@ -375,19 +399,88 @@ async function main() {
                 check(`${label}: layout shift < 0.05`, shift < 0.05, shift.toFixed(4));
                 await ctx.close();
             }
-            for (const scheme of ['light', 'dark']) {
-                const { ctx, page } = await profile(prod.base, { viewport: { width: 360, height: 760 }, colorScheme: scheme, isMobile: true, hasTouch: true }, { fincalix_analytics_consent: 'denied' });
-                await page.goto(prod.base + '/', { waitUntil: 'load' });
-                const r = await page.evaluate(() => ({ theme: document.documentElement.dataset.theme, sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth }));
-                check(`360 px, device ${scheme}: theme follows the device, no horizontal scroll`, r.theme === scheme && r.sw <= r.cw, JSON.stringify(r));
+            // Website theme: light on every first visit whatever the device setting; the visitor's
+            // choice (fincalix_web_theme) applies on later visits; no frame of the other theme.
+            const lum = (hex) => { const n = parseInt(hex.replace('#', ''), 16); return (0.2126 * (n >> 16) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255; };
+            const look = (page) => page.evaluate(() => {
+                let e = document.elementFromPoint(20, Math.min(400, innerHeight - 20)), bg = null;
+                while (e && bg === null) { const m = getComputedStyle(e).backgroundColor.match(/[\d.]+/g); if (m && (m.length < 4 || +m[3] > 0.5)) bg = (0.2126 * m[0] + 0.7152 * m[1] + 0.0722 * m[2]) / 255; e = e.parentElement; }
+                const metas = [...document.querySelectorAll('meta[name="theme-color"]')];
+                return { bg: bg ?? (getComputedStyle(document.documentElement).colorScheme === 'dark' ? 0 : 1), metas: metas.length, color: metas[0]?.content || '', media: metas.some((m) => m.media), visible: getComputedStyle(document.documentElement).visibility, osDark: matchMedia('(prefers-color-scheme: dark)').matches, sw: document.documentElement.scrollWidth, cw: document.documentElement.clientWidth };
+            });
+            // Every painted frame of a navigation (Chrome trace screenshots), top-left corner brightness.
+            // Trace screenshots cover the whole browser, so this runs in its own browser with one page.
+            const frames = async (fb, page, url) => {
+                await fb.startTracing(page, { screenshots: true });
+                await page.goto(url, { waitUntil: 'load' });
+                await page.waitForTimeout(800);
+                const trace = JSON.parse((await fb.stopTracing()).toString('utf8'));
+                const shots = (trace.traceEvents || trace).filter((e) => e.name === 'Screenshot' && e.args?.snapshot).map((e) => e.args.snapshot);
+                const dec = await fb.newPage();
+                const out = await dec.evaluate(async (list) => {
+                    const r = [];
+                    for (const b of list) {
+                        const img = new Image(); img.src = 'data:image/jpeg;base64,' + b; await img.decode();
+                        const c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+                        const x = c.getContext('2d'); x.drawImage(img, 0, 0);
+                        const d = x.getImageData(0, 0, 8, 8).data; let s = 0;
+                        for (let i = 0; i < d.length; i += 4) s += 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+                        r.push(s / (d.length / 4) / 255);
+                    }
+                    return r;
+                }, shots);
+                await dec.close();
+                return out;
+            };
+            const THEME_PAGES = ['/', '/calculators', '/calculators/loans', '/schemes', '/schemes/c-mudra', '/sip', '/privacy-policy', '/data-safety', '/in-the-app', '/no-such-page', '/export-my-data'];
+            for (const [label, opts] of [['desktop', {}], ['360 px phone', { viewport: { width: 360, height: 760 }, isMobile: true, hasTouch: true }]]) {
+                const { ctx, page } = await profile(prod.base, { ...opts, colorScheme: 'dark' }, { fincalix_analytics_consent: 'denied' });
+                const bad = [];
+                for (const p of THEME_PAGES) {
+                    await page.goto(prod.base + p, { waitUntil: 'load' });
+                    await page.waitForTimeout(150);
+                    const r = await look(page);
+                    if (!(r.osDark && r.bg > 0.8 && r.metas === 1 && !r.media && lum(r.color) > 0.8 && r.sw <= r.cw)) bad.push(`${p} ${JSON.stringify(r)}`);
+                }
+                check(`${label}, device in dark mode, first visit: all ${THEME_PAGES.length} website pages are light, one light theme-color, no horizontal scroll`, bad.length === 0, bad.slice(0, 2).join(' | '));
                 await ctx.close();
             }
+            const fb = await chromium.launch({ channel: 'chrome' });
+            try {
+                const ctx = await fb.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: 'dark' });
+                await ctx.addInitScript(() => { try { localStorage.setItem('fincalix_analytics_consent', 'denied'); localStorage.setItem('fincalix_analytics_test_traffic', '1'); } catch { /* */ } });
+                const page = await ctx.newPage();
+                const flash = {};
+                // Start from a white page: Chrome paints about:blank dark when the device is in dark mode,
+                // and that frame is captured as tracing starts. Any dark frame then comes from the site.
+                for (const p of ['/', '/calculators/loans', '/privacy-policy', '/data-safety', '/sip']) { await page.setContent('<body style="margin:0;background:#fff"></body>'); const f = await frames(fb, page, prod.base + p); flash[p] = f.length ? `${f.length} frames, min ${Math.min(...f).toFixed(2)}` : 'no frames'; }
+                check('device in dark mode, first visit: every painted frame is light (no dark flash) on /, a category page, legal, data-safety and a guide', Object.values(flash).every((v) => /min (0\.9|1\.0|0\.8[1-9])/.test(v)), JSON.stringify(flash));
+                await ctx.close();
+                const dctx = await fb.newContext({ viewport: { width: 1280, height: 900 }, colorScheme: 'dark' });
+                await dctx.addInitScript(() => { try { localStorage.setItem('fincalix_analytics_consent', 'denied'); localStorage.setItem('fincalix_analytics_test_traffic', '1'); localStorage.setItem('fincalix_web_theme', 'dark'); } catch { /* */ } });
+                const dpage = await dctx.newPage();
+                const nf = {};
+                for (const p of ['/privacy-policy', '/calculators', '/data-safety']) { await dpage.goto(prod.base + '/', { waitUntil: 'load' }); const f = await frames(fb, dpage, prod.base + p); nf[p] = f.length ? `${f.length} frames, max ${Math.max(...f).toFixed(2)}` : 'no frames'; }
+                check('with the dark choice: every painted frame is dark (no light flash), legal and data-safety included', Object.values(nf).every((v) => /max 0\.[01]/.test(v)), JSON.stringify(nf));
+                await dctx.close();
+            } finally {
+                await fb.close();
+            }
             {
-                const { ctx, page } = await profile(prod.base, {}, { fincalix_analytics_consent: 'denied' });
+                const { ctx, page } = await profile(prod.base, { colorScheme: 'dark' }, { fincalix_analytics_consent: 'denied' });
                 await page.goto(prod.base + '/', { waitUntil: 'networkidle' });
                 await page.getByRole('button', { name: 'Dark theme' }).click();
+                const now = await look(page);
+                const keys = await page.evaluate(() => ({ web: localStorage.getItem('fincalix_web_theme'), old: localStorage.getItem('fincalix_site_theme'), app: localStorage.getItem('settings-storage') }));
                 await page.reload({ waitUntil: 'load' });
-                check('theme toggle switches to dark and is remembered', (await page.evaluate(() => document.documentElement.dataset.theme)) === 'dark');
+                const after = await look(page);
+                check('theme toggle: dark at once (browser bar too), saved as fincalix_web_theme only, still dark after reload',
+                    now.bg < 0.2 && lum(now.color) < 0.2 && keys.web === 'dark' && keys.old === null && keys.app === null && (await page.evaluate(() => document.documentElement.dataset.theme)) === 'dark' && after.bg < 0.2 && lum(after.color) < 0.2,
+                    JSON.stringify({ now, keys, after }));
+                const dark = {};
+                for (const p of ['/calculators/loans', '/schemes/c-mudra', '/privacy-policy', '/data-safety', '/export-my-data']) { await page.goto(prod.base + p, { waitUntil: 'load' }); await page.waitForTimeout(300); const r = await look(page); dark[p] = r.bg < 0.2 && lum(r.color) < 0.2 && r.visible === 'visible'; }
+                check('the dark choice applies on later visits to the other website pages (category, scheme, legal, data-safety, export)', Object.values(dark).every(Boolean), JSON.stringify(dark));
+                await page.goto(prod.base + '/', { waitUntil: 'networkidle' });
                 await page.keyboard.press('Tab');
                 const first = await page.evaluate(() => ({ text: document.activeElement?.textContent, outline: getComputedStyle(document.activeElement).outlineStyle }));
                 check('keyboard: first Tab reaches "Skip to content" with a visible focus ring', first.text === 'Skip to content' && first.outline !== 'none', JSON.stringify(first));
@@ -396,6 +489,25 @@ async function main() {
                 const names = await page.locator('#tools .tool-name').allInnerTexts();
                 check('/?q=ppf filters the tool grid (SearchAction target works)', names.length > 0 && names.length < 10 && names.some((n) => /PPF/.test(n)), names.join(', '));
                 await ctx.close();
+            }
+            {
+                // Dev mode (?dev=true) is the app: its own theme (settings-storage, dark by default), never the website's.
+                const app = {};
+                for (const [scheme, web] of [['light', 'light'], ['dark', 'light'], ['light', 'dark']]) {
+                    const { ctx, page } = await profile(dev.base, { colorScheme: scheme }, { fincalix_analytics_consent: 'denied', fincalix_disclaimer_accepted_v4: 'true', fincalix_web_theme: web });
+                    await page.goto(dev.base + '/', { waitUntil: 'networkidle' });
+                    await page.waitForFunction(() => !!document.querySelector('#root > *'));
+                    await page.waitForTimeout(500);
+                    app[`device ${scheme}, site ${web}`] = await page.evaluate(() => document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+                    await ctx.close();
+                }
+                const { ctx, page } = await profile(dev.base, { colorScheme: 'dark' }, { fincalix_analytics_consent: 'denied', fincalix_disclaimer_accepted_v4: 'true', fincalix_web_theme: 'dark', 'settings-storage': JSON.stringify({ state: { darkMode: false }, version: 0 }) });
+                await page.goto(dev.base + '/', { waitUntil: 'networkidle' });
+                await page.waitForTimeout(500);
+                app['app set to light, site dark'] = await page.evaluate(() => document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+                await ctx.close();
+                check('dev mode: the app keeps its own theme (dark by default, its saved setting otherwise), whatever the website theme or device',
+                    Object.entries(app).every(([k, v]) => v === (k.startsWith('app set to light') ? 'light' : 'dark')), JSON.stringify(app));
             }
             // 5g. Export banner + /export-my-data (a browser that used the old web app)
             {
@@ -501,7 +613,8 @@ async function main() {
         {
             const port = 4327;
             const killServer = await serveDist({ port, asHost: PROD });
-            const oldSw = execFileSync('git', ['show', 'main:public/sw.js'], { encoding: 'utf8' });
+            // b0aff35 = the last release that served the web app publicly (before the kill switch).
+            const oldSw = execFileSync('git', ['show', 'b0aff35:public/sw.js'], { encoding: 'utf8' });
             killServer.overrides['/sw.js'] = oldSw;   // the service worker the published web app installed
             const origin = `http://fincalix.test:${port}`;
             const kb = await chromium.launch({ channel: 'chrome', args: ['--host-resolver-rules=MAP fincalix.test 127.0.0.1', `--unsafely-treat-insecure-origin-as-secure=${origin}`] });

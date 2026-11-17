@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -122,7 +125,7 @@
     <div class="formula">Exemption = min( HRA received,<br/>&nbsp;&nbsp;50% (metro) or 40% (non-metro) × (basic + DA),<br/>&nbsp;&nbsp;rent paid − 10% × (basic + DA) ), floor 0</div>
 
     <h2>Worked example (metro)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Worked example (metro)"><table>
       <tr><th>Component</th><th>Amount / month</th></tr>
       <tr><td>Basic + DA</td><td>₹50,000</td></tr>
       <tr><td>HRA received</td><td>₹20,000</td></tr>
@@ -131,7 +134,7 @@
       <tr><td>Rule 2: 50% of basic+DA (metro)</td><td>₹25,000</td></tr>
       <tr><td>Rule 3: rent − 10% of basic+DA</td><td>₹18,000 − ₹5,000 = ₹13,000</td></tr>
       <tr><td><strong>Exempt HRA (least of the three)</strong></td><td><strong>₹13,000 (₹1,56,000 / year)</strong></td></tr>
-    </table>
+    </table></div>
 
     <h2>Metro vs non-metro — when it matters</h2>
     <p>The metro flag only changes Rule 2 (50% vs 40% of basic+DA), so it matters when rent is high. Example: basic+DA ₹50,000, HRA ₹30,000, rent ₹30,000 — in a metro the exemption is <strong>₹25,000/month</strong> (least of ₹30,000, ₹25,000, ₹25,000), but non-metro it drops to <strong>₹20,000/month</strong> (40% rule binds). In the ₹18,000-rent example above, Rule 3 binds in both cases, so metro status makes no difference.</p>

@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -119,23 +122,23 @@
     <div class="formula">EMI = P × r × (1 + r)<sup>n</sup> ÷ ((1 + r)<sup>n</sup> − 1)<br/>P = loan amount &nbsp; r = annual rate ÷ 12 ÷ 100 &nbsp; n = months</div>
 
     <h2>Example: ₹5 lakh personal loan at 12% — tenure comparison</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Example: ₹5 lakh personal loan at 12% — tenure comparison"><table>
       <tr><th>Tenure</th><th>Monthly EMI</th><th>Total interest</th><th>Total payment</th></tr>
       <tr><td>2 years</td><td>₹23,537</td><td>₹64,882</td><td>₹5,64,882</td></tr>
       <tr><td>3 years</td><td>₹16,607</td><td>₹97,858</td><td>₹5,97,858</td></tr>
       <tr><td>4 years</td><td>₹13,167</td><td>₹1,32,012</td><td>₹6,32,012</td></tr>
       <tr><td>5 years</td><td>₹11,122</td><td>₹1,67,333</td><td>₹6,67,333</td></tr>
-    </table>
+    </table></div>
 
     <h2>What your CIBIL score costs you — ₹5 lakh over 4 years</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="What your CIBIL score costs you — ₹5 lakh over 4 years"><table>
       <tr><th>Interest rate</th><th>Monthly EMI</th><th>Total interest</th></tr>
       <tr><td>10% (CIBIL 750+)</td><td>₹12,681</td><td>₹1,08,702</td></tr>
       <tr><td>12%</td><td>₹13,167</td><td>₹1,32,012</td></tr>
       <tr><td>16%</td><td>₹14,170</td><td>₹1,80,167</td></tr>
       <tr><td>20%</td><td>₹15,215</td><td>₹2,30,329</td></tr>
       <tr><td>24% (weak credit profile)</td><td>₹16,301</td><td>₹2,82,444</td></tr>
-    </table>
+    </table></div>
     <p>The spread is dramatic: between 10% and 24%, total interest on the same loan rises from ₹1,08,702 to ₹2,82,444. Improving your score before applying is often worth more than negotiating with the lender.</p>
 
     <div class="faq">

@@ -79,9 +79,8 @@ export function headTags(d: LandingData): string {
         `<link rel="canonical" href="${ORIGIN}/">`,
         `<meta name="robots" content="index, follow, max-image-preview:large">`,
         `<meta name="application-name" content="FinCalix">`,
+        // theme-color (light; dark only when the visitor picks it) is set by the template's head script.
         `<meta name="color-scheme" content="light dark">`,
-        `<meta name="theme-color" content="#FBFAF6" media="(prefers-color-scheme: light)">`,
-        `<meta name="theme-color" content="#0B1120" media="(prefers-color-scheme: dark)">`,
         `<meta name="google-play-app" content="app-id=com.fincalix.app">`,
         `<link rel="icon" type="image/png" href="/brand/fincalix-icon-512.png">`,
         `<link rel="apple-touch-icon" href="/brand/fincalix-icon-512.png">`,
@@ -126,9 +125,8 @@ export function pageHead(p: PageHeadInput): string {
         `<meta name="description" content="${esc(p.description)}">`,
         `<link rel="canonical" href="${url}">`,
         `<meta name="robots" content="${p.index ? 'index, follow' : 'noindex, follow'}">`,
+        // theme-color (light; dark only when the visitor picks it) is set by the template's head script.
         `<meta name="color-scheme" content="light dark">`,
-        `<meta name="theme-color" content="#FBFAF6" media="(prefers-color-scheme: light)">`,
-        `<meta name="theme-color" content="#0B1120" media="(prefers-color-scheme: dark)">`,
         `<link rel="icon" type="image/png" href="/brand/fincalix-icon-512.png">`,
         `<link rel="apple-touch-icon" href="/brand/fincalix-icon-512.png">`,
         `<link rel="preload" href="${frauncesUrl}" as="font" type="font/woff2" crossorigin>`,

@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -115,7 +118,7 @@
     <div class="formula">Taxable = max(0, Salary − 75,000)<br/>Tax = Σ slab amounts · 0 if Taxable ≤ 12,00,000<br/>Marginal relief: Tax = min(Tax, Taxable − 12,00,000) · Final = Tax × 1.04</div>
 
     <h2>New regime slabs — FY 2026-27 (AY 2027-28), unchanged by Budget 2026</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="New regime slabs — FY 2026-27 (AY 2027-28), unchanged by Budget 2026"><table>
       <tr><th>Taxable income</th><th>Rate</th></tr>
       <tr><td>Up to ₹4,00,000</td><td>Nil</td></tr>
       <tr><td>₹4,00,001 – ₹8,00,000</td><td>5%</td></tr>
@@ -124,28 +127,28 @@
       <tr><td>₹16,00,001 – ₹20,00,000</td><td>20%</td></tr>
       <tr><td>₹20,00,001 – ₹24,00,000</td><td>25%</td></tr>
       <tr><td>Above ₹24,00,000</td><td>30%</td></tr>
-    </table>
+    </table></div>
     <p>87A rebate → zero tax up to ₹12,00,000 taxable (₹12.75L salary). Standard deduction ₹75,000. Cess 4%; surcharge from ₹50 lakh.</p>
 
     <h2>Old regime slabs (for comparison)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Old regime slabs (for comparison)"><table>
       <tr><th>Taxable income</th><th>Rate</th></tr>
       <tr><td>Up to ₹2,50,000</td><td>Nil</td></tr>
       <tr><td>₹2,50,001 – ₹5,00,000</td><td>5%</td></tr>
       <tr><td>₹5,00,001 – ₹10,00,000</td><td>20%</td></tr>
       <tr><td>Above ₹10,00,000</td><td>30%</td></tr>
-    </table>
+    </table></div>
     <p>Old regime keeps deductions (80C, 80D, HRA…), a ₹50,000 standard deduction and the 87A rebate only up to ₹5 lakh taxable income. Cess 4%.</p>
 
     <h2>Example tax on salary — new regime, FY 2026-27</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Example tax on salary — new regime, FY 2026-27"><table>
       <tr><th>Gross salary</th><th>Taxable income</th><th>Tax incl. 4% cess</th><th>Effective rate</th></tr>
       <tr><td>₹12,75,000</td><td>₹12,00,000</td><td>₹0 (87A rebate)</td><td>0%</td></tr>
       <tr><td>₹13,00,000</td><td>₹12,25,000</td><td>₹26,000 (marginal relief)</td><td>2.0%</td></tr>
       <tr><td>₹16,00,000</td><td>₹15,25,000</td><td>₹1,13,100</td><td>7.1%</td></tr>
       <tr><td>₹20,00,000</td><td>₹19,25,000</td><td>₹1,92,400</td><td>9.6%</td></tr>
       <tr><td>₹30,00,000</td><td>₹29,25,000</td><td>₹4,75,800</td><td>15.9%</td></tr>
-    </table>
+    </table></div>
 
     <h2>Income Tax Act 2025 — what changes from 1 April 2026</h2>
     <p>The Income Tax Act 2025 replaced the 1961 Act on 1 April 2026. It introduces a single "tax year" in place of previous year/assessment year and renumbers sections (80C → Section 123, etc.) — <strong>rates, deduction amounts and rebates are identical</strong>. Budget 2026 made no changes to the slabs for FY 2026-27.</p>

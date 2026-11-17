@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -131,23 +134,23 @@
     </div>
 
     <h2>FY 2026-27 capital gains rates at a glance</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="FY 2026-27 capital gains rates at a glance"><table>
       <tr><th>Asset</th><th>Long-term after</th><th>LTCG rate</th><th>STCG rate</th></tr>
       <tr><td>Listed shares, equity MF (STT paid)</td><td>12 months</td><td>12.5% above ₹1.25 lakh/yr (Sec 112A → 198)</td><td>20% (Sec 111A → 196)</td></tr>
       <tr><td>Land / building</td><td>24 months</td><td>12.5% no indexation; pre-23 Jul 2024 purchases may use 20% with indexation if lower</td><td>Slab rate</td></tr>
       <tr><td>Gold, unlisted shares, other</td><td>24 months</td><td>12.5% without indexation</td><td>Slab rate</td></tr>
       <tr><td>Debt MF bought on/after 1 Apr 2023</td><td>Never (specified MF)</td><td colspan="2">Slab rate on the full gain, any holding period</td></tr>
-    </table>
+    </table></div>
     <p>A 4% health and education cess is added to the tax. Surcharge applies above ₹50 lakh of total income and is not modelled here. The Section 87A rebate does not apply to gains taxed at these special rates.</p>
 
     <h2>Cost Inflation Index (CII)</h2>
     <div class="formula">Indexed cost = purchase price × CII of sale year ÷ CII of purchase year<br/>FY 2026-27 CII = 384 (CBDT Notification 85/2026)</div>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Cost Inflation Index (CII)"><table>
       <tr><th>FY</th><th>CII</th><th>FY</th><th>CII</th><th>FY</th><th>CII</th></tr>
       <tr><td>2018-19</td><td>280</td><td>2021-22</td><td>317</td><td>2024-25</td><td>363</td></tr>
       <tr><td>2019-20</td><td>289</td><td>2022-23</td><td>331</td><td>2025-26</td><td>376</td></tr>
       <tr><td>2020-21</td><td>301</td><td>2023-24</td><td>348</td><td><strong>2026-27</strong></td><td><strong>384</strong></td></tr>
-    </table>
+    </table></div>
 
     <h2>Worked example — property bought in FY 2010-11</h2>
     <p>Bought for ₹30 lakh (CII 167), sold in FY 2026-27 for ₹1.2 crore. Indexed cost = ₹30,00,000 × 384 ÷ 167 = <strong>₹68,98,204</strong>. Indexed gain ₹51,01,796 × 20% = ₹10,20,359. The flat route is ₹90,00,000 × 12.5% = ₹11,25,000. The lower figure applies, so tax is ₹10,20,359 plus 4% cess = <strong>₹10,61,174</strong>.</p>

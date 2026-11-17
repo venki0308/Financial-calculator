@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -119,14 +122,14 @@
     <div class="formula">balance = balance × (1 + r ÷ 12 ÷ 100) − W, repeated monthly<br/>r = annual return % &nbsp; W = monthly withdrawal</div>
 
     <h2>₹50 lakh corpus at 8% — how long it lasts</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="₹50 lakh corpus at 8% — how long it lasts"><table>
       <tr><th>Monthly withdrawal</th><th>Corpus lasts</th></tr>
       <tr><td>₹25,000</td><td>50+ years (never depletes)</td></tr>
       <tr><td>₹30,000</td><td>50+ years (never depletes)</td></tr>
       <tr><td>₹35,000</td><td>38 years 3 months</td></tr>
       <tr><td>₹40,000</td><td>22 years 6 months</td></tr>
       <tr><td>₹50,000</td><td>13 years 10 months</td></tr>
-    </table>
+    </table></div>
     <p>The break-even is the corpus's monthly growth: ₹50,00,000 × 8% ÷ 12 ≈ <strong>₹33,333</strong>. Withdraw less than that and the balance keeps growing; withdraw more and you start consuming principal — and depletion accelerates.</p>
 
     <div class="faq">

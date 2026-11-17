@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -117,23 +120,23 @@
     <div class="formula">Gratuity = (15 ÷ 26) × last drawn (Basic + DA) × completed years<br/>(15 ÷ 26) × 50,000 × 10 = ₹2,88,462</div>
 
     <h2>Example gratuity amounts</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Example gratuity amounts"><table>
       <tr><th>Last drawn basic + DA</th><th>Years of service</th><th>Gratuity</th></tr>
       <tr><td>₹30,000</td><td>7</td><td>₹1,21,154</td></tr>
       <tr><td>₹50,000</td><td>10</td><td>₹2,88,462</td></tr>
       <tr><td>₹75,000</td><td>15</td><td>₹6,49,038</td></tr>
       <tr><td>₹1,00,000</td><td>20</td><td>₹11,53,846</td></tr>
-    </table>
+    </table></div>
 
     <h2>Gratuity rules at a glance (November 2026)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Gratuity rules at a glance (November 2026)"><table>
       <tr><th>Feature</th><th>Detail</th></tr>
       <tr><td>Formula</td><td>(15/26) × last drawn basic+DA × completed years (≥6 months rounds up)</td></tr>
       <tr><td>Eligibility</td><td>5 years' continuous service (4 years 240 days per court rulings); waived on death/disablement</td></tr>
       <tr><td>Tax exemption</td><td>Up to ₹20 lakh lifetime for private sector; fully exempt for government employees</td></tr>
       <tr><td>Salary base</td><td>Basic + DA only — excludes HRA and other allowances</td></tr>
       <tr><td>Payment deadline</td><td>Employer must pay within 30 days of it becoming due</td></tr>
-    </table>
+    </table></div>
 
     <div class="faq">
       <h2>Frequently asked questions</h2>

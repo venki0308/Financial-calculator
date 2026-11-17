@@ -13,13 +13,16 @@ export function initExportPage(root: HTMLElement): void {
     const onWww = location.hostname.startsWith('www.');
     document.querySelectorAll<HTMLElement>('[data-origin]').forEach((el) => { el.hidden = (el.dataset.origin === 'www') !== onWww; });
 
+    // Name the site only on fincalix.com / www.fincalix.com; never print another host
+    // (a deployment preview's address carries the hosting account's name).
+    const site = /^(www\.)?fincalix\.com$/.test(location.hostname) ? ` on ${location.hostname}` : '';
     const found = dataSummary();
     if (!found.length) {
-        status.textContent = `No FinCalix data was found in this browser on ${location.hostname}.`;
+        status.textContent = `No FinCalix data was found in this browser${site}.`;
         button.disabled = true;
         return;
     }
-    status.textContent = `This browser holds FinCalix data on ${location.hostname}:`;
+    status.textContent = `This browser holds FinCalix data${site}:`;
     list.innerHTML = '';
     for (const x of found) {
         const li = document.createElement('li');

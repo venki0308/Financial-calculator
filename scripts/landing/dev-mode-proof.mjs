@@ -69,7 +69,8 @@ export async function runDevModeProof({ base, shotsDir, extraHeaders = {}, check
         check('dev mode: /calculator/sip opens the app\'s SIP calculator (deep link), noindex', pathNow() === '/calculator/sip' && /SIP/i.test(h1) && r2?.headers()['x-robots-tag'] === 'noindex', h1);
         await page.reload({ waitUntil: 'networkidle' });
         await page.waitForTimeout(1200);
-        check('dev mode: refresh on /calculator/sip stays on the SIP calculator', pathNow() === '/calculator/sip' && /SIP/i.test(await heading()));
+        const afterReload = { path: pathNow(), h1: await heading(), app: await isApp() };
+        check('dev mode: refresh on /calculator/sip stays on the SIP calculator', afterReload.path === '/calculator/sip' && /SIP/i.test(afterReload.h1), JSON.stringify(afterReload));
         await shot('4-refresh-on-calculator-sip');
 
         // 4. Back button inside the app

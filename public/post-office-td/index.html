@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -122,24 +125,24 @@
     <div class="formula">Maturity = P × (1 + r ÷ 400)^(4 × t)<br/>₹1,00,000 at 7.5% for 5 years = 1,00,000 × (1.01875)²⁰ = ₹1,44,995</div>
 
     <h2>Maturity of ₹1,00,000 by tenure (Q3 FY 2026-27 rates)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Maturity of ₹1,00,000 by tenure (Q3 FY 2026-27 rates)"><table>
       <tr><th>Tenure</th><th>Rate</th><th>Maturity value</th><th>Interest earned</th></tr>
       <tr><td>1 year</td><td>6.9%</td><td>₹1,07,081</td><td>₹7,081</td></tr>
       <tr><td>2 years</td><td>7.0%</td><td>₹1,14,888</td><td>₹14,888</td></tr>
       <tr><td>3 years</td><td>7.1%</td><td>₹1,23,508</td><td>₹23,508</td></tr>
       <tr><td>5 years</td><td>7.5%</td><td>₹1,44,995</td><td>₹44,995</td></tr>
-    </table>
+    </table></div>
     <p>A larger example: ₹5,00,000 in the 5-year TD at 7.5% grows to ₹7,24,974.</p>
 
     <h2>Post Office TD rules at a glance (November 2026)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Post Office TD rules at a glance (November 2026)"><table>
       <tr><th>Feature</th><th>Detail</th></tr>
       <tr><td>Rates</td><td>1 yr 6.9% · 2 yr 7.0% · 3 yr 7.1% · 5 yr 7.5% (unchanged 9 quarters)</td></tr>
       <tr><td>Compounding</td><td>Quarterly; interest payable annually</td></tr>
       <tr><td>Investment</td><td>Minimum ₹1,000; no upper limit</td></tr>
       <tr><td>Tax</td><td>Only the 5-year TD qualifies for 80C (old regime); interest taxable</td></tr>
       <tr><td>Guarantee</td><td>Sovereign — Government of India small-savings scheme</td></tr>
-    </table>
+    </table></div>
 
     <div class="faq">
       <h2>Frequently asked questions</h2>

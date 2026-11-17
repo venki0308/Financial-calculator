@@ -410,6 +410,8 @@ div.tool .tool-guide { color: var(--muted); }
 .prose-sec { margin-top: 28px; max-width: 46em; }
 .prose-sec h2 { font-size: 26px; margin-bottom: 10px; }
 .prose-sec ul, .prose-sec ol { padding-left: 22px; display: grid; gap: 8px; color: var(--ink-2); }
+/* Grid items cannot shrink below their longest word: let runs like "SC/ST/OBC/Women/…" wrap on phones. */
+.prose-sec li { overflow-wrap: anywhere; }
 .guide-link { margin-top: 24px; }
 .next-links { display: grid; gap: 6px; margin-top: 8px; }
 .export-box { margin-top: 8px; padding: 22px; border: 1px solid var(--rule); border-radius: 18px; background: var(--surface); max-width: 46em; }

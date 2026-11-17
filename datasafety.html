@@ -1,8 +1,21 @@
 <!doctype html>
-<html lang="en-IN" class="dark">
+<html lang="en-IN" class="light" data-theme="light" style="color-scheme:light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#F8FAFC">
+    <script>
+      /* Light unless the visitor chose dark on this site (never the device setting). */
+      (function () {
+        var d = document.documentElement, t = null;
+        try { t = localStorage.getItem('fincalix_web_theme'); } catch (e) {}
+        if (t !== 'dark') return;
+        d.className = 'dark';
+        d.setAttribute('data-theme', 'dark');
+        d.style.colorScheme = 'dark';
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0F172A');
+      })();
+    </script>
     <!--legal-head-->
   </head>
   <body>

@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 
-export const SITE_THEME_KEY = 'fincalix_site_theme';
+/** The website's own theme choice; the app keeps its theme in settings-storage. */
+export const SITE_THEME_KEY = 'fincalix_web_theme';
 
 type Theme = 'light' | 'dark';
 
-/** Light (paper) by default; follows the device until the visitor picks a theme here. */
+/** Browser-bar colour per theme (the page background). */
+const THEME_COLOR: Record<Theme, string> = { light: '#FBFAF6', dark: '#0B1120' };
+
+/** Light (paper) for every first visit, whatever the device setting; dark only once the visitor picks it here. */
 export function HeaderControls() {
     // Pre-rendered HTML shows the default; the real theme is read after hydration.
     const [theme, setTheme] = useState<Theme>('light');
@@ -16,6 +20,8 @@ export function HeaderControls() {
     const toggleTheme = () => {
         const next: Theme = theme === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
+        document.documentElement.style.colorScheme = next;
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEME_COLOR[next]);
         try { localStorage.setItem(SITE_THEME_KEY, next); } catch { /* ignore */ }
         setTheme(next);
     };

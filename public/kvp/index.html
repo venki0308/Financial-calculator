@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -119,15 +122,15 @@
     <div class="formula">Value ≈ P × (1.075)^(months ÷ 12)<br/>At 115 months: P × 1.075^9.583 ≈ 2 × P (doubling per scheme table)</div>
 
     <h2>Value of ₹1,00,000 in KVP at 7.5%</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Value of ₹1,00,000 in KVP at 7.5%"><table>
       <tr><th>Holding period</th><th>Approximate value</th></tr>
       <tr><td>12 months (1 year)</td><td>₹1,07,500</td></tr>
       <tr><td>60 months (5 years)</td><td>₹1,43,563</td></tr>
       <tr><td>115 months (maturity)</td><td>₹2,00,000 (doubled per scheme; formula ≈ ₹1,99,985)</td></tr>
-    </table>
+    </table></div>
 
     <h2>KVP rules at a glance (November 2026, Q3 FY 2026-27)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="KVP rules at a glance (November 2026, Q3 FY 2026-27)"><table>
       <tr><th>Feature</th><th>Detail</th></tr>
       <tr><td>Interest rate</td><td>7.5% p.a., compounded annually (unchanged 9 quarters)</td></tr>
       <tr><td>Maturity</td><td>115 months — investment doubles</td></tr>
@@ -135,7 +138,7 @@
       <tr><td>Lock-in</td><td>Encashable after 2 years 6 months at notified values</td></tr>
       <tr><td>Tax</td><td>No 80C benefit; interest taxable at slab rate</td></tr>
       <tr><td>Guarantee</td><td>Sovereign — Government of India small-savings scheme</td></tr>
-    </table>
+    </table></div>
 
     <div class="faq">
       <h2>Frequently asked questions</h2>

@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -117,15 +120,15 @@
     <div class="formula">Years 1–15: Balance = (Balance + Deposit) × 1.082<br/>Years 16–21: Balance = Balance × 1.082 (no new deposits)</div>
 
     <h2>SSY maturity value at 8.2% (deposits for 15 years, maturity at 21)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="SSY maturity value at 8.2% (deposits for 15 years, maturity at 21)"><table>
       <tr><th>Yearly deposit</th><th>Total invested (15 yrs)</th><th>Maturity value (21 yrs)</th><th>Tax-free interest</th></tr>
       <tr><td>₹50,000</td><td>₹7,50,000</td><td>₹23,94,040</td><td>₹16,44,040</td></tr>
       <tr><td>₹1,00,000</td><td>₹15,00,000</td><td>₹47,88,079</td><td>₹32,88,079</td></tr>
       <tr><td>₹1,50,000</td><td>₹22,50,000</td><td>₹71,82,119</td><td>₹49,32,119</td></tr>
-    </table>
+    </table></div>
 
     <h2>SSY rules at a glance (November 2026, Q3 FY 2026-27)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="SSY rules at a glance (November 2026, Q3 FY 2026-27)"><table>
       <tr><th>Feature</th><th>Detail</th></tr>
       <tr><td>Interest rate</td><td>8.2% p.a., compounded annually (unchanged 9 quarters)</td></tr>
       <tr><td>Eligibility</td><td>Girl child below 10 years; opened by parent/guardian</td></tr>
@@ -133,7 +136,7 @@
       <tr><td>Deposit period</td><td>First 15 years; account matures 21 years from opening</td></tr>
       <tr><td>Tax status</td><td>EEE — 80C deduction (old regime), tax-free interest &amp; maturity</td></tr>
       <tr><td>Withdrawal</td><td>Up to 50% for higher education after age 18; closure on marriage after 18</td></tr>
-    </table>
+    </table></div>
 
     <div class="faq">
       <h2>Frequently asked questions</h2>

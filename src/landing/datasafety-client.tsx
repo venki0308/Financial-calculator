@@ -8,10 +8,13 @@ import { createRoot } from 'react-dom/client';
 import { initExportBanner } from './exportBanner';
 import { BrowserRouter } from 'react-router-dom';
 import DataSafety from '../pages/DataSafety';
-import { useSettingsStore } from '../store/useSettingsStore';
+import { SITE_THEME_KEY } from './HeaderControls';
+import { setWebsiteTheme } from '../theme/useAppColors';
 
-// Same theme switch the app applies on start (App.tsx): the saved setting, dark by default.
-const dark = useSettingsStore.getState().darkMode;
+// The website's theme (light unless the visitor picked dark on fincalix.com), not the app setting.
+let dark = false;
+try { dark = localStorage.getItem(SITE_THEME_KEY) === 'dark'; } catch { /* light */ }
+setWebsiteTheme(dark);
 document.documentElement.classList.toggle('dark', dark);
 document.documentElement.classList.toggle('light', !dark);
 

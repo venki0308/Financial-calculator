@@ -58,6 +58,8 @@ The public home page (and the 5 legal pages) is a separate Vite build (`vite.lan
 - Screenshots: `tools/marketing/capture.mjs` → `node scripts/landing/build-images.mjs` (committed WebP). OG image and header icon: `node scripts/landing/build-og.mjs`. Fonts: `node scripts/landing/fetch-fonts.mjs`.
 - Analytics: same service and rules as the app; the website sends only `page_view` ("Website") and `play_badge_click` with `placement`.
 - iPhone: the head script adds `ua-ios`; CTAs then show "Android only for now — there's no iPhone app yet." under the Play badge. The QR code (static SVG, `qrcode` at build time, referrer `qr`) shows only at ≥1024 px with a mouse.
+- Theme: every website page (landing, generated, guide, legal, data-safety) is light on a first visit, whatever the device's dark-mode setting; never pick it with `prefers-color-scheme`. The header toggle saves `fincalix_web_theme` (separate from the app's `settings-storage`), applied before first paint by the inline `<head>` script in `landing.html`/`site.html`/`legal.html`/`datasafety.html` (also the theme-color). The legal pages reuse the app's screens through `setWebsiteTheme()` in `useAppColors.ts`, which the app never calls; the guide pages have only a light design.
+- Phones: no website page may scroll sideways at 360 px (qa-landing checks every sitemap page). A table on a guide page (`public/<guide>/index.html`) goes inside `<div class="table-scroll" role="region" tabindex="0" aria-label="…">` so only the table scrolls.
 - `public/sw.js` runs only inside the Android app; on any web host it is a kill switch (deletes caches, unregisters).
 - Initial JS budget 120 KB gzipped (prerender.mjs fails the build above it).
 

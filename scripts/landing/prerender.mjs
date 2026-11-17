@@ -118,9 +118,11 @@ for (const dir of ssr.STATIC_PAGES) {
     let s = fs.readFileSync(f, 'utf8');
     if (!s.includes(bannerJs)) {
         s = s.replace('</body>', `  <script type="module" src="/${bannerJs}"></script>\n</body>`);
-        fs.writeFileSync(f, s);
         injected++;
     }
+    // The guides have only a light design: a light browser bar (their --bg), whatever the device setting.
+    if (!s.includes('name="theme-color"')) s = s.replace(/(<meta name="viewport"[^>]*>)/, '$1\n  <meta name="theme-color" content="#F8FAF9" />');
+    fs.writeFileSync(f, s);
 }
 console.log(`prerender: export banner added to ${injected} static pages`);
 for (const t of ['legal.html', 'datasafety.html', 'site.html', 'site-manifest.json']) fs.rmSync(path.join(DIST, t), { force: true });

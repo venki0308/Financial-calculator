@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -119,22 +122,22 @@
     <div class="formula">FV = P × (1 + r)<sup>t</sup><br/>P = investment &nbsp; r = annual return ÷ 100 &nbsp; t = years</div>
 
     <h2>₹1 lakh at 12% — growth over time</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="₹1 lakh at 12% — growth over time"><table>
       <tr><th>Duration</th><th>Future value at 12%</th><th>Gain</th></tr>
       <tr><td>5 years</td><td>₹1,76,234</td><td>₹76,234</td></tr>
       <tr><td>10 years</td><td>₹3,10,585</td><td>₹2,10,585</td></tr>
       <tr><td>15 years</td><td>₹5,47,357</td><td>₹4,47,357</td></tr>
       <tr><td>20 years</td><td>₹9,64,629</td><td>₹8,64,629</td></tr>
-    </table>
+    </table></div>
 
     <h2>₹1 lakh over 10 years — return sensitivity</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="₹1 lakh over 10 years — return sensitivity"><table>
       <tr><th>Annual return</th><th>Future value</th></tr>
       <tr><td>8%</td><td>₹2,15,892</td></tr>
       <tr><td>10%</td><td>₹2,59,374</td></tr>
       <tr><td>12%</td><td>₹3,10,585</td></tr>
       <tr><td>15%</td><td>₹4,04,556</td></tr>
-    </table>
+    </table></div>
     <p>A few percentage points compound into a huge difference: over 10 years the gap between 8% and 15% on the same ₹1 lakh is nearly ₹1.9 lakh.</p>
 
     <div class="faq">

@@ -76,6 +76,9 @@
     h2 { font-size:22px; margin:34px 0 10px; letter-spacing:-0.01em; }
     p { margin:10px 0; }
     table { width:100%; border-collapse:collapse; margin:14px 0; font-size:15px; background:var(--card); }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; margin:14px 0; }
+    .table-scroll > table { margin:0; }
+    .table-scroll:focus-visible { outline:3px solid var(--brand-dark); outline-offset:2px; }
     th, td { text-align:left; padding:9px 12px; border:1px solid var(--line); }
     th { background:#F0F6F3; font-size:13px; }
     .formula { background:#0F1F18; color:#A7F3D0; padding:14px 16px; border-radius:10px; font-family:ui-monospace, Menlo, Consolas, monospace; font-size:15px; overflow-x:auto; }
@@ -119,32 +122,32 @@
     <div class="formula">EMI = P × r × (1 + r)<sup>n</sup> ÷ ((1 + r)<sup>n</sup> − 1)<br/>P = loan amount &nbsp; r = annual rate ÷ 12 ÷ 100 &nbsp; n = months</div>
 
     <h2>Example: ₹40 lakh home loan at November 2026 rates (20 years)</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="Example: ₹40 lakh home loan at November 2026 rates (20 years)"><table>
       <tr><th>Interest rate</th><th>Monthly EMI</th><th>Total interest paid</th></tr>
       <tr><td>7.50% (SBI floor, w.e.f. 15 Oct 2026)</td><td>₹32,224</td><td>₹37,33,695</td></tr>
       <tr><td>7.90%</td><td>₹33,209</td><td>₹39,70,182</td></tr>
       <tr><td>8.25%</td><td>₹34,083</td><td>₹41,79,830</td></tr>
       <tr><td>8.70%</td><td>₹35,221</td><td>₹44,53,020</td></tr>
-    </table>
+    </table></div>
 
     <h2>How tenure changes your EMI — ₹40 lakh at 7.9%</h2>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="How tenure changes your EMI — ₹40 lakh at 7.9%"><table>
       <tr><th>Tenure</th><th>Monthly EMI</th><th>Total interest paid</th></tr>
       <tr><td>10 years</td><td>₹48,320</td><td>₹17,98,392</td></tr>
       <tr><td>15 years</td><td>₹37,996</td><td>₹28,39,194</td></tr>
       <tr><td>20 years</td><td>₹33,209</td><td>₹39,70,182</td></tr>
       <tr><td>25 years</td><td>₹30,608</td><td>₹51,82,442</td></tr>
       <tr><td>30 years</td><td>₹29,072</td><td>₹64,65,998</td></tr>
-    </table>
+    </table></div>
 
     <h2>PMAY-U 2.0 interest subsidy (ISS)</h2>
     <p>First-time urban homebuyers can claim a <strong>4% interest subsidy on the first ₹8 lakh</strong> of an eligible home loan under PMAY-U 2.0, worth up to <strong>₹1.8 lakh</strong> credited against the loan.</p>
-    <table>
+    <div class="table-scroll" role="region" tabindex="0" aria-label="PMAY-U 2.0 interest subsidy (ISS)"><table>
       <tr><th>Category</th><th>Annual household income</th></tr>
       <tr><td>EWS</td><td>Up to ₹3 lakh</td></tr>
       <tr><td>LIG</td><td>Up to ₹6 lakh</td></tr>
       <tr><td>MIG</td><td>Up to ₹9 lakh</td></tr>
-    </table>
+    </table></div>
 
     <h2>Home loan tax benefits (old regime)</h2>
     <p>Under the old tax regime, a self-occupied house gives you up to <strong>₹2 lakh a year</strong> on interest under <strong>Section 24(b)</strong> and up to <strong>₹1.5 lakh</strong> on principal repayment under <strong>Section 80C</strong>. Neither deduction is available in the new regime, so compare both regimes before filing.</p>

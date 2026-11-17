@@ -53,11 +53,35 @@ await page.evaluate(() => document.fonts.ready);
 fs.mkdirSync(R('src/landing/public/og'), { recursive: true });
 await page.screenshot({ path: R('src/landing/public/og/fincalix-og.png') });
 
+// Header logo: the app icon's cube fills only half of its 512 px frame (white and grey margin),
+// so at 34 px it was ~17 px wide and unclear. Crop to the cube, centre it on a white tile with a
+// small margin, and export at 4x (136 px) so it stays sharp on 3x phone screens.
 const webp = await page.evaluate(async (src) => {
     const img = new Image(); img.src = src; await img.decode();
-    const c = document.createElement('canvas'); c.width = 96; c.height = 96;
-    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, 96, 96);
-    return c.toDataURL('image/webp', 0.9);
+    const W = img.width, H = img.height;
+    const s = document.createElement('canvas'); s.width = W; s.height = H;
+    const sg = s.getContext('2d'); sg.drawImage(img, 0, 0);
+    const d = sg.getImageData(0, 0, W, H).data;
+    let x0 = W, y0 = H, x1 = 0, y1 = 0;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = (y * W + x) * 4, r = d[i], g = d[i + 1], b = d[i + 2];
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        if (max < 200 || max - min > 40) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    }
+    const side = Math.max(x1 - x0, y1 - y0), cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    const OUT = 136, inner = OUT * 0.86;
+    const c = document.createElement('canvas'); c.width = OUT; c.height = OUT;
+    const g = c.getContext('2d'); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, OUT, OUT);
+    g.imageSmoothingQuality = 'high';
+    g.drawImage(img, cx - side / 2, cy - side / 2, side, side, (OUT - inner) / 2, (OUT - inner) / 2, inner, inner);
+    // The source has a pale grey square behind the cube: make that background plain white.
+    const px = g.getImageData(0, 0, OUT, OUT);
+    for (let i = 0; i < px.data.length; i += 4) {
+        const r = px.data[i], gg = px.data[i + 1], b = px.data[i + 2];
+        if (Math.min(r, gg, b) > 222 && Math.max(r, gg, b) - Math.min(r, gg, b) < 12) px.data[i] = px.data[i + 1] = px.data[i + 2] = 255;
+    }
+    g.putImageData(px, 0, 0);
+    return c.toDataURL('image/webp', 0.92);
 }, icon);
 fs.mkdirSync(R('src/landing/assets'), { recursive: true });
 fs.writeFileSync(R('src/landing/assets/fincalix-icon-96.webp'), Buffer.from(webp.split(',')[1], 'base64'));
