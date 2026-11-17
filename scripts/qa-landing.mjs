@@ -169,8 +169,8 @@ async function main() {
         const lockBad = [];
         const lockWant = {
             ...rt.ROUTE_TARGETS,
-            '/app/': '/in-the-app', '/my-loans/abc': '/calculators/loans', '/business-tracker/b1': '/calculators/expense-goals',
-            '/expenses/credit-cards': '/calculators/credit-cards', '/expenses/credit-cards/add': '/calculators/credit-cards', '/profile/edit': '/in-the-app',
+            '/app/': '/in-the-app', '/my-loans/abc': '/loan-foreclosure', '/business-tracker/b1': '/business-tracker',
+            '/expenses/credit-cards': '/credit-card-tracker', '/expenses/credit-cards/add': '/credit-card-tracker', '/profile/edit': '/in-the-app',
             '/scheme/c-ssy': '/sukanya-samriddhi', '/schemes/c-ssy': '/sukanya-samriddhi', '/scheme/c-mudra': '/schemes/c-mudra', '/scheme/c-apy': '/atal-pension', '/scheme/no-such-scheme': '/schemes',
             '/app.html': '/', [`/assets/${appJs}`]: '/',
         };

@@ -64,6 +64,17 @@ export const APP_CANONICAL: Readonly<Record<string, string>> = {
     '/scheme/c-scss': '/scss',
     '/calculator/education-loan': '/education-loan',
     '/scheme/c-nps': '/nps',
+    '/calculator/credit-card-payoff': '/credit-card-payoff',
+    '/calculator/overdraft': '/overdraft-interest',
+    '/calculator/simple-interest': '/simple-interest',
+    '/calculator/compound-interest': '/compound-interest',
+    '/my-loans': '/loan-foreclosure',
+    '/expenses/credit-cards': '/credit-card-tracker',
+    '/cibil-profile': '/cibil-score',
+    '/calculator/break-even': '/break-even',
+    '/calculator/property': '/property-appreciation',
+    '/calculator/insurance': '/term-insurance-cover',
+    '/financial-advisor': '/financial-planning',
 };
 
 /**
@@ -90,6 +101,10 @@ export const FEATURE_PAGES: readonly string[] = [
     'emi', 'home-loan', 'car-loan', 'personal-loan', 'two-wheeler-loan', 'education-loan',
     // Retirement group
     'epf', 'nps', 'gratuity', 'atal-pension',
+    // Credit and interest group
+    'credit-card-payoff', 'credit-card-tracker', 'loan-foreclosure', 'cibil-score', 'overdraft-interest', 'simple-interest', 'compound-interest',
+    // Planning group
+    'expense-tracker', 'business-tracker', 'term-insurance-cover', 'property-appreciation', 'break-even', 'financial-planning',
 ];
 
 /** Old URLs whose content moved into a feature page (308 to the page). */
@@ -188,9 +203,9 @@ export function publicTarget(pathname: string, exact: Readonly<Record<string, st
         if (APP_CANONICAL[`/scheme/${id}`]) return APP_CANONICAL[`/scheme/${id}`];
         return schemeIds.includes(id) ? `/schemes/${id}` : '/schemes';
     }
-    if (/^\/my-loans\/[^/]+$/.test(path)) return categoryPath('loans');
-    if (/^\/business-tracker\/[^/]+$/.test(path)) return categoryPath('goals');
-    if (/^\/expenses\/credit-cards(\/[^/]+)?$/.test(path)) return categoryPath('cards');
+    if (/^\/my-loans\/[^/]+$/.test(path)) return '/loan-foreclosure';
+    if (/^\/business-tracker\/[^/]+$/.test(path)) return '/business-tracker';
+    if (/^\/expenses\/credit-cards(\/[^/]+)?$/.test(path)) return '/credit-card-tracker';
     if (/^\/profile\/[^/]+$/.test(path)) return IN_THE_APP;
     if (path === '/app.html' || path.startsWith('/assets/')) return '/';
     return null;
@@ -202,9 +217,8 @@ export const ROUTE_OVERRIDES: Readonly<Record<string, string>> = {
     '/expenses/accounts': '/expense-tracker',
     '/expenses/recurring': '/expense-tracker',
     '/budget-tracker': '/expense-tracker',
-    '/cibil-profile': '/calculators/credit-cards',
 };
 /** App screens with no public content: they go to the noindex /in-the-app page. */
 export const IN_APP_SCREENS: readonly string[] = ['/app', '/profile', '/settings', '/dev/validator'];
 /** App routes that are also website pages with the same address. */
-export const SHARED_PAGES: readonly string[] = ['/calculators', '/schemes', '/goal-planner', '/two-wheeler-loan'];
+export const SHARED_PAGES: readonly string[] = ['/calculators', '/schemes', '/goal-planner', '/two-wheeler-loan', '/cibil-score', '/business-tracker'];
