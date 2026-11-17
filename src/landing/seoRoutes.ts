@@ -58,6 +58,9 @@ export const APP_CANONICAL: Readonly<Record<string, string>> = {
     '/gold-loan': '/gold-loan-calculator',
     '/notifications': '/income-tax-due-dates',
     '/scheme/c-ssy': '/sukanya-samriddhi',
+    // Full programme: every app route to its own page.
+    '/calculator/stp': '/stp',
+    '/calculator/prag': '/portfolio-rebalancing',
 };
 
 /**
@@ -76,6 +79,8 @@ export const FEATURE_PAGES: readonly string[] = [
     'sip-for-1-crore',
     'step-up-sip',
     'sukanya-samriddhi',
+    // Investments group (full programme)
+    'sip', 'lumpsum', 'swp', 'stp', 'cagr', 'portfolio-rebalancing', 'elss', 'goal-planner',
 ];
 
 /** Old URLs whose content moved into a feature page (308 to the page). */
@@ -98,6 +103,8 @@ export const PUBLIC_DIRS: readonly string[] = ['site', 'og', 'brand', 'icons', '
 export function isAppPath(pathname: string): boolean {
     const p = pathname.replace(/^\/+/, '').replace(/\/+$/, '');
     if (p === '' || p === 'index.html') return false;
+    // Same address as an app route: the public sees the page, the dev cookie sees the app.
+    if (SHARED_PAGES.includes(`/${p}`)) return true;
     const first = p.split('/')[0];
     const pageOrIndex = (list: readonly string[]) => list.includes(first) && (p === first || p === `${first}/index.html`);
     if (pageOrIndex(STATIC_PAGES) || pageOrIndex(FEATURE_PAGES) || pageOrIndex(LEGAL_PAGES)) return false;
@@ -191,4 +198,4 @@ export const ROUTE_OVERRIDES: Readonly<Record<string, string>> = {
 /** App screens with no public content: they go to the noindex /in-the-app page. */
 export const IN_APP_SCREENS: readonly string[] = ['/app', '/profile', '/settings', '/dev/validator'];
 /** App routes that are also website pages with the same address. */
-export const SHARED_PAGES: readonly string[] = ['/calculators', '/schemes'];
+export const SHARED_PAGES: readonly string[] = ['/calculators', '/schemes', '/goal-planner'];

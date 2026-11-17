@@ -4,5 +4,12 @@ import type { ComponentType } from 'react';
 /** One lazily loaded chunk per calculator in features/calcs/c (the 9 batch-1 calculators live in calcs/all.tsx). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const CALC_LOADERS: Readonly<Record<string, () => Promise<{ default: ComponentType<any> }>>> = {
-
+    'cagr': () => import('./calcs/c/cagr'),
+    'elss': () => import('./calcs/c/elss'),
+    'goal-planner': () => import('./calcs/c/goal-planner'),
+    'lumpsum': () => import('./calcs/c/lumpsum'),
+    'portfolio-rebalancing': () => import('./calcs/c/portfolio-rebalancing'),
+    'sip': () => import('./calcs/c/sip'),
+    'stp': () => import('./calcs/c/stp'),
+    'swp': () => import('./calcs/c/swp'),
 };
