@@ -29,9 +29,14 @@ const waiting = list('src/landing/features/pages', '.tsx').filter((p) => !regist
 if (waiting.length) console.log(`gen-feature-index: not registered yet (skipped): ${waiting.join(', ')}`);
 // A scheme content file counts once it is complete (default export with a verified date); a writer's
 // one-line stub is skipped instead of breaking the build.
+const { transformSync } = await import('esbuild');
 const schemes = list('src/landing/schemes/content', '.ts').filter((s) => {
     const t = fs.readFileSync(rel('src/landing/schemes/content', `${s}.ts`), 'utf8');
-    return /export default/.test(t) && /verified:\s*'\d{4}-\d{2}-\d{2}'/.test(t);
+    if (!(/export default/.test(t) && /verified:\s*'\d{4}-\d{2}-\d{2}'/.test(t))) return false;
+    try { transformSync(t, { loader: 'ts' }); return true; } catch (e) {
+        console.log(`gen-feature-index: skipped schemes/content/${s}.ts (does not parse: ${String(e.message).split('\n')[1] || e.message})`);
+        return false;
+    }
 });
 
 const out = {

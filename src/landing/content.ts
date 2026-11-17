@@ -170,7 +170,7 @@ export const CATEGORY_INTROS: Readonly<Record<string, { title: string; intro: st
     retire: {
         title: 'Retirement and government savings calculators',
         intro: 'Plan long-term savings with government-backed schemes. Work out the maturity value of PPF, EPF, NPS, Sukanya Samriddhi, NSC and Kisan Vikas Patra, the monthly income from Post Office MIS, Post Office Time Deposit returns, the quarterly interest from the Senior Citizens Savings Scheme and the Atal Pension Yojana pension.',
-        more: 'Small-savings rates are set by the Government every quarter and the pages use the rates notified for the current quarter, with the notification linked. A deposit keeps the rate it was opened at for some schemes (Time Deposit, NSC, KVP, MIS, SCSS) and moves with each quarter for others (PPF, Sukanya Samriddhi).',
+        more: 'Small-savings rates are set by the Government every quarter, and every page uses the rates notified for the current quarter with the notification linked and the rate history alongside. Each scheme page explains how its own rule works — a Post Office Time Deposit, for example, keeps the rate it was opened at, while the Sukanya Samriddhi rate applies to the whole balance.',
     },
     cards: {
         title: 'Credit card calculators',

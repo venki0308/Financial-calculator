@@ -61,6 +61,7 @@ export const APP_CANONICAL: Readonly<Record<string, string>> = {
     // Full programme: every app route to its own page.
     '/calculator/stp': '/stp',
     '/calculator/prag': '/portfolio-rebalancing',
+    '/scheme/c-scss': '/scss',
 };
 
 /**
@@ -81,11 +82,14 @@ export const FEATURE_PAGES: readonly string[] = [
     'sukanya-samriddhi',
     // Investments group (full programme)
     'sip', 'lumpsum', 'swp', 'stp', 'cagr', 'portfolio-rebalancing', 'elss', 'goal-planner',
+    // Deposits group
+    'fd', 'rd', 'ppf', 'nsc', 'kvp', 'post-office-mis', 'scss',
 ];
 
 /** Old URLs whose content moved into a feature page (308 to the page). */
 export const MERGED_PAGES: Readonly<Record<string, string>> = {
     '/schemes/c-ssy': '/sukanya-samriddhi',
+    '/schemes/c-scss': '/scss',
 };
 
 /** The hand-written calculator pages (folder names under public/), not yet rebuilt as feature pages. */

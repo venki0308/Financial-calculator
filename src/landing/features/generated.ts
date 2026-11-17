@@ -2,15 +2,22 @@
 import * as p_cagr from './pages/cagr';
 import * as p_credit_card_interest from './pages/credit-card-interest';
 import * as p_elss from './pages/elss';
+import * as p_fd from './pages/fd';
 import * as p_goal_planner from './pages/goal-planner';
 import * as p_gold_loan_calculator from './pages/gold-loan-calculator';
 import * as p_home_loan_prepayment from './pages/home-loan-prepayment';
 import * as p_income_tax from './pages/income-tax';
 import * as p_income_tax_due_dates from './pages/income-tax-due-dates';
+import * as p_kvp from './pages/kvp';
 import * as p_lumpsum from './pages/lumpsum';
+import * as p_nsc from './pages/nsc';
 import * as p_old_vs_new_tax_regime from './pages/old-vs-new-tax-regime';
 import * as p_portfolio_rebalancing from './pages/portfolio-rebalancing';
+import * as p_post_office_mis from './pages/post-office-mis';
 import * as p_post_office_td from './pages/post-office-td';
+import * as p_ppf from './pages/ppf';
+import * as p_rd from './pages/rd';
+import * as p_scss from './pages/scss';
 import * as p_sip from './pages/sip';
 import * as p_sip_for_1_crore from './pages/sip-for-1-crore';
 import * as p_step_up_sip from './pages/step-up-sip';
@@ -19,25 +26,39 @@ import * as p_sukanya_samriddhi from './pages/sukanya-samriddhi';
 import * as p_swp from './pages/swp';
 import c_cagr from './calcs/c/cagr';
 import c_elss from './calcs/c/elss';
+import c_fd from './calcs/c/fd';
 import c_goal_planner from './calcs/c/goal-planner';
+import c_kvp from './calcs/c/kvp';
 import c_lumpsum from './calcs/c/lumpsum';
+import c_nsc from './calcs/c/nsc';
 import c_portfolio_rebalancing from './calcs/c/portfolio-rebalancing';
+import c_post_office_mis from './calcs/c/post-office-mis';
+import c_ppf from './calcs/c/ppf';
+import c_rd from './calcs/c/rd';
+import c_scss from './calcs/c/scss';
 import c_sip from './calcs/c/sip';
 import c_stp from './calcs/c/stp';
 import c_swp from './calcs/c/swp';
 import type { ComponentType } from 'react';
 
 /** Every module in features/pages (each exports one FeatureDef). */
-export const PAGE_MODULES: ReadonlyArray<Record<string, unknown>> = [p_cagr, p_credit_card_interest, p_elss, p_goal_planner, p_gold_loan_calculator, p_home_loan_prepayment, p_income_tax, p_income_tax_due_dates, p_lumpsum, p_old_vs_new_tax_regime, p_portfolio_rebalancing, p_post_office_td, p_sip, p_sip_for_1_crore, p_step_up_sip, p_stp, p_sukanya_samriddhi, p_swp];
+export const PAGE_MODULES: ReadonlyArray<Record<string, unknown>> = [p_cagr, p_credit_card_interest, p_elss, p_fd, p_goal_planner, p_gold_loan_calculator, p_home_loan_prepayment, p_income_tax, p_income_tax_due_dates, p_kvp, p_lumpsum, p_nsc, p_old_vs_new_tax_regime, p_portfolio_rebalancing, p_post_office_mis, p_post_office_td, p_ppf, p_rd, p_scss, p_sip, p_sip_for_1_crore, p_step_up_sip, p_stp, p_sukanya_samriddhi, p_swp];
 
 /** Calculators in features/calcs/c, by file name (= CalcKey). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const CALC_COMPONENTS: Readonly<Record<string, ComponentType<any>>> = {
     'cagr': c_cagr,
     'elss': c_elss,
+    'fd': c_fd,
     'goal-planner': c_goal_planner,
+    'kvp': c_kvp,
     'lumpsum': c_lumpsum,
+    'nsc': c_nsc,
     'portfolio-rebalancing': c_portfolio_rebalancing,
+    'post-office-mis': c_post_office_mis,
+    'ppf': c_ppf,
+    'rd': c_rd,
+    'scss': c_scss,
     'sip': c_sip,
     'stp': c_stp,
     'swp': c_swp,

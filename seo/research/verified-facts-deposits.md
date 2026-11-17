@@ -1,0 +1,62 @@
+# Facts verified for the deposit pages — 17 November 2026 (group `deposits`)
+
+Pages: /fd /rd /ppf /nsc /kvp /post-office-mis /scss. Every rule on those pages comes from this list.
+Rates for Oct–Dec 2026 are the app's `SMALL_SAVINGS` (DEA OM F.No.1/4/2019-NS dated 30.09.2026, already
+verified in `verified-facts-2026-11-17.md`; the DEA page lists "Revision of interest rates for Small Savings
+Schemes for Q3 2026-27, 30.09.2026").
+
+## Rates and rate history
+
+| Fact | Source and what it says |
+|---|---|
+| Oct–Dec 2026: PPF 7.1, NSC 7.7, KVP 7.5 (115 months), MIS 7.4, SCSS 8.2, RD 6.7, savings 4.0 | DEA small savings page http://www.dea.gov.in/budget-division/475 (OM 30.09.2026); NSI table https://www.nsiindia.gov.in/InternalPage.aspx?Id_Pk=132 (2025-26 all four quarters show these rates) |
+| PPF history: 8.6 (from 1 Dec 2011), 8.8 (2012-13), 8.7 (2013-14 to 2015-16), 8.1 (Apr–Sep 2016), 8.0 (Oct 2016–Mar 2017), 7.9 (Apr–Jun 2017), 7.8 (Jul–Dec 2017), 7.6 (Jan–Sep 2018), 8.0 (Oct 2018–Jun 2019), 7.9 (Jul 2019–Mar 2020), 7.1 (from 1 Apr 2020) | NSI rate table (Id_Pk=132). PPF Scheme 2019 para 7(1A) (G.S.R. 290(E), 5.5.2020): 7.1% from 1 April 2020 on deposits **and balances** |
+| NSC history: 8.4 (Dec 2011), 8.6 (2012-13), 8.5 (2013-14 to 2015-16), 8.1, 8.0, 7.9, 7.8, 7.6, 8.0, 7.9 (same quarters as PPF to Mar 2020), 6.8 (Apr 2020–Dec 2022), 7.0 (Jan–Mar 2023), 7.7 (from 1 Apr 2023) | NSI rate table |
+| KVP history (rate, months to double): 8.7 / 100 (2014-15, 2015-16); 7.8 / 110 (Apr–Sep 2016); 7.7 / 112 (Oct 2016–Mar 2017); 7.6 / 113 (Apr–Jun 2017); 7.5 / 115 (Jul–Dec 2017); 7.3 / 118 (Jan–Sep 2018); 7.7 / 112 (Oct 2018–Jun 2019); 7.6 / 113 (Jul 2019–Mar 2020); 6.9 / 124 (Apr 2020–Sep 2022); 7.0 / 123 (Oct–Dec 2022); 7.2 / 120 (Jan–Mar 2023); 7.5 / 115 (from Apr 2023) | NSI rate table |
+| SCSS history: 9.0 (Dec 2011), 9.3, 9.2, 9.2, 9.3 (to 2015-16), 8.6 (Apr–Sep 2016), 8.5, 8.4, 8.3 (Jul 2017–Sep 2018), 8.7 (Oct 2018–Jun 2019), 8.6 (Jul 2019–Mar 2020), 7.4 (Apr 2020–Sep 2022), 7.6 (Oct–Dec 2022), 8.0 (Jan–Mar 2023), 8.2 (from Apr 2023) | NSI rate table |
+| MIS history: 6.6 (Apr 2020–Sep 2022), 6.7 (Oct–Dec 2022), 7.1 (Jan–Mar 2023), 7.4 (from Apr 2023); RD 5.8 (Apr 2020–Mar 2023), 6.2 (Apr–Jun 2023), 6.5 (Jul–Sep 2023), 6.7 (from Oct 2023) | NSI rate table |
+
+## Scheme rules (official texts)
+
+| Fact | Source |
+|---|---|
+| **PPF** (PPF Scheme 2019, G.S.R. 915(E)): ₹500–₹1,50,000 a year in multiples of ₹50, lump sum or instalments (para 4–5); limit includes accounts for minors; no joint account (3(3)); interest on the lowest balance between the close of the 5th and month end, credited at year end (7); discontinued account revived with ₹50 fee + ₹500 per year missed (6); loan after one year from the end of the year of opening, before 5 years, up to 25% of the balance at the end of the 2nd year before the loan year, repay in 36 months, interest 1% (6% if not repaid in 36 months), one loan a year (8–9); withdrawal after 5 years from the end of the year of opening, once a year, up to 50% of the lower of the balance at the end of the 4th preceding year or the preceding year (10); matures after 15 full years from the end of the year of opening (11); extension in 5-year blocks with Form-4 within one year of maturity, withdrawals up to 60% of the block-start balance (12); premature closure after 5 years for life-threatening illness, higher education, change of residency, at 1% less interest (13) | http://www.nsiindia.gov.in/writereaddata/SchemeRules/PublicProvidentFundSchemeRule.pdf ; NSI PPF page https://www.nsiindia.gov.in/InternalPage.aspx?ID_PK=55 ("Interest earned … free from Income Tax") |
+| **NSC VIII** (NSC Scheme 2019, G.S.R. 919(E)): min ₹1,000, multiples of ₹100, no maximum, any number of accounts; single, Joint A/B up to 3 adults, minor 10+ (3–4); matures 5 years from deposit (5(1)); interest accrues at the end of each year and up to the end of year 4 is deemed reinvested (5(3)); table at 6.8%: ₹68.00, 72.62, 77.56, 82.84, 88.47 per ₹1,000 = yearly compounding; closure before maturity only on death, forfeiture by a pledgee, court order (7) | https://www.nsiindia.gov.in/InternalPage.aspx?Id_Pk=167 |
+| **KVP** (KVP Scheme 2019, G.S.R. 920(E)): min ₹1,000, multiples of ₹100, no maximum (4); deposit doubles on maturity; maturity period set by the rate at opening (5(2)); premature closure on death, pledge forfeiture, court order at POSA simple interest (6(1)–(2)); after 2½ years, table amounts apply (6(3)); NSI: "KVP can be encashed after 2 and half years"; transferable person to person and between post offices | https://www.nsiindia.gov.in/InternalPage.aspx?Id_Pk=170 ; NSI KVP page http://www.nsiindia.gov.in/InternalPage.aspx?Id_Pk=56 |
+| **MIS** (Monthly Income Account Scheme 2019, G.S.R. 917(E)): single adult, up to 3 adults jointly, minor 10+, guardian (3); joint holder's share = half or one-third (3(2)); min ₹1,000 in multiples of ₹1,000, one deposit per account (4(1)); interest paid on completion of each month, unclaimed interest earns nothing more, rounded to the rupee (5(2)–(4)); closure after 1 year: 2% deducted up to 3 years, 1% after 3 years (6); maturity 5 years (7). Limits raised to ₹9 lakh single / ₹15 lakh joint by G.S.R. 239(E) 31.03.2023 (para 4(2)) and G.S.R. 490(E) 03.07.2023 (para 4(3), all accounts together) | https://www.indiapost.gov.in/documents/offerings/schemesandservices/posb/MonthlyIncomeAccountScheme2019English.pdf ; https://www.indiapost.gov.in/documents/posb/SB7_23ECE_7732_SB.pdf |
+| **SCSS** (SCSS 2019, G.S.R. 916(E)): age 60+, or 55–60 retired (account within the set period of receiving retirement benefits, with employer certificate and proof of disbursal), defence retirees from 50 (3(1)); single or joint with spouse only, first holder's age counts (3(4)–(5)); min ₹1,000 in multiples of ₹1,000; for 55–60 retirees, deposit limited to retirement benefits (4(1)); interest paid quarterly on the first working day of April/July/October/January; unclaimed quarterly interest earns nothing (5(2), 5(4)); premature closure: before 1 year interest paid is recovered, 1–2 years 1.5% deducted, after 2 years 1% (6(1)); matures after 5 years (7(1)); Form-1 asks for photo, Aadhaar, PAN | https://www.indiapost.gov.in/documents/offerings/schemesandservices/posb/SeniorCitizensSavingsScheme2019English.pdf |
+| SCSS amendments: maximum ₹30 lakh (G.S.R. 240(E), 31.03.2023, India Post SB Order 6/2023); Fourth Amendment G.S.R. 829(E) 07.11.2023: 55–60 retirees must open **within three months** of receiving retirement benefits; spouse of a government employee who died in harness at 50+ may open; extension in blocks of 3 years (Form-4 within one year of maturity/each block end), extended account earns the rate on the maturity date; 1% deducted if closed within one year of an extension | https://www.indiapost.gov.in/documents/posb/SB6_2023ECE_7731_SB.pdf ; NSI SCSS page https://www.nsiindia.gov.in/InternalPage.aspx?Id_Pk=62 ; Gazette CG-DL-E-09112023-249981 (G.S.R. 829(E)) |
+| **RD** (NSRD Scheme 2019, G.S.R. 918(E)): 5 years, 60 monthly deposits, min ₹100 in multiples of ₹10 (4–5); deposit day: by the 15th if opened 1st–15th, else by month end (5(4)); up to 4 defaults: extend maturity; more than 4: discontinued, revive within 2 months, fee ₹1 per ₹100 per month (6); advance deposits rebate (7); premature closure after 3 years at POSA rate (8); maturity of ₹100 account ₹7,231.38 at the 2019 rate of 7.2% (9); continuation for up to 5 more years, table ₹9,013.82 … ₹17,563.19 (10); loan up to 50% of deposits after 1 year and 12 deposits, simple interest 2 points above the RD rate (14). India Post RD leaflet: "₹1500 for 60 months … Rs.107,049" | https://www.indiapost.gov.in/documents/offerings/schemesandservices/posb/NationalSavingsRecurringDepositScheme2019English.pdf ; India Post leaflet https://www.indiapost.gov.in/api/documents/file/103pg0i2m4g701grd3jv2e3da860fhn10sjr80fiob3ennq01gju3mn7q07234 |
+
+## Tax and bank deposits (Income-tax Act, 2025; Finance Act, 2026; DICGC)
+
+| Fact | Source |
+|---|---|
+| TDS on interest other than interest on securities paid by a bank, co-operative bank or a post office (notified scheme): threshold ₹1,00,000 for a senior citizen, ₹50,000 for others, rate "rates in force" (s.393(1) Table Sl. 5(ii)); nil-tax declaration in the prescribed form stops deduction (s.393(6)) | https://www.incometaxindia.gov.in/w/section-393-6 |
+| No-deduction declaration under s.393(6) covers interest in Sl. 5(i)–(iii) for resident individuals; the form is **Form No. 121** (Rule 211, Income-tax Rules 2026); below 60 also requires the year's income within the amount not chargeable to tax | https://www.incometaxindia.gov.in/w/section-393-6 ; https://www.incometaxindia.gov.in/documents/d/guest/fn-121 |
+| Rate in force: 10% on interest other than "Interest on securities" for a resident non-company (Finance Act 2026, First Schedule Part II, item 1(a)(i)) | https://egazette.gov.in/WriteReadData/2026/271439.pdf |
+| "Senior citizen" = resident aged 60 or more at any time in the tax year (s.2(100)) | Income-tax Act 2025 as amended https://www.incometaxindia.gov.in/documents/d/guest/income_tax_act_2025_as_amended_by_fa_act_2026-pdf |
+| Section 123 deduction (₹1.5 lakh, old regime only — s.202): Schedule XV items include PPF (e), savings certificates notified (i), bank term deposit of 5 years or more under a notified scheme (s), SCSS deposit (u), 5-year PO TD (v). Withdrawal from SCSS / 5-year TD before 5 years is taxed in that year (para 5) | https://www.incometaxindia.gov.in/w/schedule-xv-3 |
+| DICGC: each depositor insured up to ₹5,00,000 per bank (principal + interest, all branches together), limit since 4 Feb 2020, unchanged in 2025-26 | https://dicgc.org.in/FAQs ; https://www.dicgc.org.in/sites/default/files/2026-10/dicgc-annual-report-2025-26-english-version-compressed.pdf |
+
+## Checks of the app's formulas against the official figures
+
+- RD screen formula (RDCalculator.tsx → math-deposits.rdProjection): ₹100 at 7.2% → ₹7,231.38 (scheme: 7,231.38); 72–120 months → 9,013.82 / 10,928.10 / 12,983.98 / 15,191.92 / 17,563.19 (scheme table identical); ₹1,500 at 6.7% → ₹1,07,049 (India Post leaflet). **Matches.**
+- KVP screen formula at 7.5% → 115 months (NSI 115). At older rates it gives 125 (6.9%, official 124), 114 (7.6%, official 113), 111 (7.8%, official 110): the Government fixes the period, so the page shows NSI's months for history, never the formula's.
+- NSC screen (yearly compounding): at 6.8% gives ₹68.00, 72.62, 77.56, 82.84, 88.47 per ₹1,000 = scheme table 2. **Matches.**
+
+## Left out (not verified from an official source today)
+
+- Deduction for NSC interest "deemed reinvested" under s.123: Schedule XV item (i) covers subscriptions to notified certificates; the Act text does not mention the accrued interest. Not stated.
+- Whether KVP / MIS / NSC interest is taxable, TDS on KVP/NSC, deduction for senior citizens' interest (old 80TTB) under the 2025 Act. Not stated (pages say only what s.393 and Schedule XV say).
+- KVP encashment values after 2½ years for accounts opened since April 2023 (NSI page shows only the 2019–2020 tables). Not shown.
+- Senior-citizen extra rates on bank FDs (bank-specific, not a rule). Not stated.
+- MIS: no later amendment to the premature-closure paragraph was found; the 2019 text is shown.
+
+## App issues found (not changed)
+
+1. `investmentStatusEngine.calculateRdStatus` maturityValue compounds whole quarters: ₹100/month, 60 months, 6.7% → ₹7,176.14 vs scheme method ₹7,136.58 (₹1,500 → ₹1,07,642 vs India Post ₹1,07,049). The RD screen's own formula is right.
+2. `investmentStatusEngine.calculateKvpStatus` doublingMonths uses Math.ceil → 116 months at 7.5%; NSI says 115 (the KVP screen uses Math.round → 115).
+3. KVP screen premature-encashment rows compound at the full rate; the scheme pays fixed table amounts that are lower (NSI Table-2, 6.9%: ₹1,154 per ₹1,000 at 2½ years vs 1,000 × 1.069^2.5 ≈ ₹1,181).
+4. c-scss record (src/data/schemes.ts): eligibility omits the three-month window for 55–60 retirees and the cap at retirement benefits; "NRIs not eligible" not in the 2019 scheme text; documents omit PAN, photograph and the employer certificate/proof of retirement benefits.
+5. PPF live status: withdrawal shown as 50% of the year-4 balance; the rule is 50% of the lower of the balance at the end of the 4th preceding year or the preceding year.
