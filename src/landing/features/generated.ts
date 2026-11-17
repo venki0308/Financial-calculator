@@ -3,6 +3,7 @@ import * as p_atal_pension from './pages/atal-pension';
 import * as p_break_even from './pages/break-even';
 import * as p_business_tracker from './pages/business-tracker';
 import * as p_cagr from './pages/cagr';
+import * as p_capital_gains from './pages/capital-gains';
 import * as p_car_loan from './pages/car-loan';
 import * as p_cibil_score from './pages/cibil-score';
 import * as p_compound_interest from './pages/compound-interest';
@@ -19,12 +20,15 @@ import * as p_financial_planning from './pages/financial-planning';
 import * as p_goal_planner from './pages/goal-planner';
 import * as p_gold_loan_calculator from './pages/gold-loan-calculator';
 import * as p_gratuity from './pages/gratuity';
+import * as p_gst from './pages/gst';
 import * as p_home_loan from './pages/home-loan';
 import * as p_home_loan_prepayment from './pages/home-loan-prepayment';
+import * as p_hra from './pages/hra';
 import * as p_income_tax from './pages/income-tax';
 import * as p_income_tax_due_dates from './pages/income-tax-due-dates';
 import * as p_kvp from './pages/kvp';
 import * as p_loan_foreclosure from './pages/loan-foreclosure';
+import * as p_lrs_tcs from './pages/lrs-tcs';
 import * as p_lumpsum from './pages/lumpsum';
 import * as p_nps from './pages/nps';
 import * as p_nsc from './pages/nsc';
@@ -37,6 +41,7 @@ import * as p_post_office_td from './pages/post-office-td';
 import * as p_ppf from './pages/ppf';
 import * as p_property_appreciation from './pages/property-appreciation';
 import * as p_rd from './pages/rd';
+import * as p_salary_hike from './pages/salary-hike';
 import * as p_scss from './pages/scss';
 import * as p_simple_interest from './pages/simple-interest';
 import * as p_sip from './pages/sip';
@@ -45,12 +50,14 @@ import * as p_step_up_sip from './pages/step-up-sip';
 import * as p_stp from './pages/stp';
 import * as p_sukanya_samriddhi from './pages/sukanya-samriddhi';
 import * as p_swp from './pages/swp';
+import * as p_tax_refund from './pages/tax-refund';
 import * as p_term_insurance_cover from './pages/term-insurance-cover';
 import * as p_two_wheeler_loan from './pages/two-wheeler-loan';
 import c_atal_pension from './calcs/c/atal-pension';
 import c_break_even from './calcs/c/break-even';
 import c_business_tracker from './calcs/c/business-tracker';
 import c_cagr from './calcs/c/cagr';
+import c_capital_gains from './calcs/c/capital-gains';
 import c_car_loan from './calcs/c/car-loan';
 import c_cibil_score from './calcs/c/cibil-score';
 import c_compound_interest from './calcs/c/compound-interest';
@@ -65,9 +72,12 @@ import c_fd from './calcs/c/fd';
 import c_financial_planning from './calcs/c/financial-planning';
 import c_goal_planner from './calcs/c/goal-planner';
 import c_gratuity from './calcs/c/gratuity';
+import c_gst from './calcs/c/gst';
 import c_home_loan from './calcs/c/home-loan';
+import c_hra from './calcs/c/hra';
 import c_kvp from './calcs/c/kvp';
 import c_loan_foreclosure from './calcs/c/loan-foreclosure';
+import c_lrs_tcs from './calcs/c/lrs-tcs';
 import c_lumpsum from './calcs/c/lumpsum';
 import c_nps from './calcs/c/nps';
 import c_nsc from './calcs/c/nsc';
@@ -78,17 +88,19 @@ import c_post_office_mis from './calcs/c/post-office-mis';
 import c_ppf from './calcs/c/ppf';
 import c_property_appreciation from './calcs/c/property-appreciation';
 import c_rd from './calcs/c/rd';
+import c_salary_hike from './calcs/c/salary-hike';
 import c_scss from './calcs/c/scss';
 import c_simple_interest from './calcs/c/simple-interest';
 import c_sip from './calcs/c/sip';
 import c_stp from './calcs/c/stp';
 import c_swp from './calcs/c/swp';
+import c_tax_refund from './calcs/c/tax-refund';
 import c_term_insurance_cover from './calcs/c/term-insurance-cover';
 import c_two_wheeler_loan from './calcs/c/two-wheeler-loan';
 import type { ComponentType } from 'react';
 
 /** Every module in features/pages (each exports one FeatureDef). */
-export const PAGE_MODULES: ReadonlyArray<Record<string, unknown>> = [p_atal_pension, p_break_even, p_business_tracker, p_cagr, p_car_loan, p_cibil_score, p_compound_interest, p_credit_card_interest, p_credit_card_payoff, p_credit_card_tracker, p_education_loan, p_elss, p_emi, p_epf, p_expense_tracker, p_fd, p_financial_planning, p_goal_planner, p_gold_loan_calculator, p_gratuity, p_home_loan, p_home_loan_prepayment, p_income_tax, p_income_tax_due_dates, p_kvp, p_loan_foreclosure, p_lumpsum, p_nps, p_nsc, p_old_vs_new_tax_regime, p_overdraft_interest, p_personal_loan, p_portfolio_rebalancing, p_post_office_mis, p_post_office_td, p_ppf, p_property_appreciation, p_rd, p_scss, p_simple_interest, p_sip, p_sip_for_1_crore, p_step_up_sip, p_stp, p_sukanya_samriddhi, p_swp, p_term_insurance_cover, p_two_wheeler_loan];
+export const PAGE_MODULES: ReadonlyArray<Record<string, unknown>> = [p_atal_pension, p_break_even, p_business_tracker, p_cagr, p_capital_gains, p_car_loan, p_cibil_score, p_compound_interest, p_credit_card_interest, p_credit_card_payoff, p_credit_card_tracker, p_education_loan, p_elss, p_emi, p_epf, p_expense_tracker, p_fd, p_financial_planning, p_goal_planner, p_gold_loan_calculator, p_gratuity, p_gst, p_home_loan, p_home_loan_prepayment, p_hra, p_income_tax, p_income_tax_due_dates, p_kvp, p_loan_foreclosure, p_lrs_tcs, p_lumpsum, p_nps, p_nsc, p_old_vs_new_tax_regime, p_overdraft_interest, p_personal_loan, p_portfolio_rebalancing, p_post_office_mis, p_post_office_td, p_ppf, p_property_appreciation, p_rd, p_salary_hike, p_scss, p_simple_interest, p_sip, p_sip_for_1_crore, p_step_up_sip, p_stp, p_sukanya_samriddhi, p_swp, p_tax_refund, p_term_insurance_cover, p_two_wheeler_loan];
 
 /** Calculators in features/calcs/c, by file name (= CalcKey). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,6 +109,7 @@ export const CALC_COMPONENTS: Readonly<Record<string, ComponentType<any>>> = {
     'break-even': c_break_even,
     'business-tracker': c_business_tracker,
     'cagr': c_cagr,
+    'capital-gains': c_capital_gains,
     'car-loan': c_car_loan,
     'cibil-score': c_cibil_score,
     'compound-interest': c_compound_interest,
@@ -111,9 +124,12 @@ export const CALC_COMPONENTS: Readonly<Record<string, ComponentType<any>>> = {
     'financial-planning': c_financial_planning,
     'goal-planner': c_goal_planner,
     'gratuity': c_gratuity,
+    'gst': c_gst,
     'home-loan': c_home_loan,
+    'hra': c_hra,
     'kvp': c_kvp,
     'loan-foreclosure': c_loan_foreclosure,
+    'lrs-tcs': c_lrs_tcs,
     'lumpsum': c_lumpsum,
     'nps': c_nps,
     'nsc': c_nsc,
@@ -124,11 +140,13 @@ export const CALC_COMPONENTS: Readonly<Record<string, ComponentType<any>>> = {
     'ppf': c_ppf,
     'property-appreciation': c_property_appreciation,
     'rd': c_rd,
+    'salary-hike': c_salary_hike,
     'scss': c_scss,
     'simple-interest': c_simple_interest,
     'sip': c_sip,
     'stp': c_stp,
     'swp': c_swp,
+    'tax-refund': c_tax_refund,
     'term-insurance-cover': c_term_insurance_cover,
     'two-wheeler-loan': c_two_wheeler_loan,
 };

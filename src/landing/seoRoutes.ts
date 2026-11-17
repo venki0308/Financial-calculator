@@ -75,6 +75,8 @@ export const APP_CANONICAL: Readonly<Record<string, string>> = {
     '/calculator/property': '/property-appreciation',
     '/calculator/insurance': '/term-insurance-cover',
     '/financial-advisor': '/financial-planning',
+    '/calculator/salary-hike': '/salary-hike',
+    '/calculator/form16-tax': '/tax-refund',
 };
 
 /**
@@ -105,6 +107,8 @@ export const FEATURE_PAGES: readonly string[] = [
     'credit-card-payoff', 'credit-card-tracker', 'loan-foreclosure', 'cibil-score', 'overdraft-interest', 'simple-interest', 'compound-interest',
     // Planning group
     'expense-tracker', 'business-tracker', 'term-insurance-cover', 'property-appreciation', 'break-even', 'financial-planning',
+    // Tax group
+    'hra', 'capital-gains', 'lrs-tcs', 'gst', 'salary-hike', 'tax-refund',
 ];
 
 /** Old URLs whose content moved into a feature page (308 to the page). */
@@ -213,7 +217,6 @@ export function publicTarget(pathname: string, exact: Readonly<Record<string, st
 
 /** Approved targets that are not the tool's registry category (17 Nov 2026 table). */
 export const ROUTE_OVERRIDES: Readonly<Record<string, string>> = {
-    '/calculator/form16-tax': '/income-tax',
     '/expenses/accounts': '/expense-tracker',
     '/expenses/recurring': '/expense-tracker',
     '/budget-tracker': '/expense-tracker',

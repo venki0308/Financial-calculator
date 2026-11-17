@@ -71,6 +71,14 @@ changed in the app; each needs its own app release. Sources: `seo/research/verif
     Report" but that report has no per-insurer ratio; the life tab's 80C label should be s.123; a Smart Planner code
     comment calls the 40% EMI limit an "RBI guideline".
 25. **Dead code** — `HealthScoreService` and `InsightEngine` are used only by `expenses/DashboardTab.tsx`, which nothing imports.
+26. **Capital gains: cost of improvement not indexed** — `calculations.ts:computeCapitalGains` indexes the
+    purchase cost but not the improvement cost (Income-tax Act 2025 s.197(3)). Land bought Jun 2010 for ₹20 lakh,
+    ₹10 lakh improvement in FY 2015-16, sold 17 Nov 2026 for ₹1 crore: app ₹9,10,000, correct ₹8,08,992. (The
+    website's calculator fixes improvement at ₹0, so no wrong figure is published.)
+27. **Salary hike surcharge** — `SalaryHikeCalculator.tsx:estimateTaxOnIncome` applies no surcharge above ₹50 lakh:
+    ₹48 lakh + 10% → app extra tax ₹1,49,760, correct ₹2,68,476. (The website uses compareSalaryTax.)
+28. **GST screen** still offers 12% and 28% as standard slabs (rates in force since 22 Sep 2025: 5/18/40%, plus
+    special rates); en.json `hra.newRegimeDisabledBody` cites "Section 115BAC" (now s.202).
 18. **Scheme records** — differences found on official portals are listed in each website scheme file's
     `appIssues` (src/landing/schemes/content/*.ts), e.g. PMKVY age 15–59 (app 15–45), DDU-GKY placement 70%
     (app 75%), PM-SYM income-tax-payer exclusion missing, Tele MANAS second number 1-800-891-4416 missing.

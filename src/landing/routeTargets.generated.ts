@@ -5,8 +5,6 @@ export const ROUTE_TARGETS: Readonly<Record<string, string>> = {
     "/budget-tracker": "/expense-tracker",
     "/calculator/age": "/calculators/utilities",
     "/calculator/credit-card-compare": "/calculators/credit-cards",
-    "/calculator/form16-tax": "/income-tax",
-    "/calculator/salary-hike": "/calculators/tax-salary",
     "/calculator/scientific": "/calculators/utilities",
     "/compare": "/calculators/expense-goals",
     "/dev/validator": "/in-the-app",
