@@ -55,6 +55,22 @@ changed in the app; each needs its own app release. Sources: `seo/research/verif
     non-Government subscribers, PFRDA amendment 16 Dec 2025). /schemes/c-nps now redirects to /nps.
 17. **EPF screen assumption** — always sends 8.33% (capped) to EPS; someone who joined above the wage ceiling
     is not an EPS member. The website states the EPS-member assumption.
+19. **Overdraft over-limit penal interest** — `OverdraftCalculator.tsx` charges `excess × (rate + excessPenaltyRate)`.
+    RBI Responsible Business Conduct Directions para 351 bans penal interest (all loans from 30 Jun 2024); only a
+    separate, non-capitalised penal charge is allowed. ₹10 lakh limit, ₹11 lakh drawn, 10.5%, 30 days: app adds
+    ₹1,027 penalty interest. (The website caps drawings at the limit.)
+20. **Fixed-rate foreclosure charge** — a hard-coded, unsourced 3% (`loanStatusEngine.ts` default, `LoanDetail.tsx`,
+    `LiveLoanStatus.tsx`), labels still cite "RBI 2014".
+21. **Card "Interest-free period"** (`CreditCardAdd.tsx`) shows statement-to-due days only; RBI counts it from the
+    transaction date (card Directions para 5(16)).
+22. **`cibil.*` texts** — unsourced claims (35% weighting, "1 in 5 reports has errors") and an outdated Jan 2025 citation.
+23. **Smart Planner tax** — `AIFinancialAssistant.tsx:estimateAnnualTax` omits surcharge: gross ₹60L → app ₹14,11,800,
+    correct ₹15,52,980 (compareSalaryTax). Same up to ₹50L. (The website caps salary below the surcharge band.)
+24. **Insurance texts** — en.json `ins.life.recSubtitle` "Human Life Value method — IRDAI advisor standard" and an
+    "IRDAI advisor consensus" label (IRDAI sets no 15×/20× rule); `ins.advisor.csr*` bands say "Source: IRDAI Annual
+    Report" but that report has no per-insurer ratio; the life tab's 80C label should be s.123; a Smart Planner code
+    comment calls the 40% EMI limit an "RBI guideline".
+25. **Dead code** — `HealthScoreService` and `InsightEngine` are used only by `expenses/DashboardTab.tsx`, which nothing imports.
 18. **Scheme records** — differences found on official portals are listed in each website scheme file's
     `appIssues` (src/landing/schemes/content/*.ts), e.g. PMKVY age 15–59 (app 15–45), DDU-GKY placement 70%
     (app 75%), PM-SYM income-tax-payer exclusion missing, Tele MANAS second number 1-800-891-4416 missing.

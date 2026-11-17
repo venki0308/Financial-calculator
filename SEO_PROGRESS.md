@@ -23,51 +23,51 @@ Status values: `todo` → `written` (file exists) → `built` (in build, tsc ok)
 ## Feature pages (batch 1 = 10 done and live on 17 Nov 2026)
 | Group | Page | Replaces guide | Status | Notes |
 |---|---|---|---|---|
-| Loans hub | /emi (hub) | yes | todo | |
-| Loans hub | /home-loan | yes | todo | 24(b)/80C equivalents (s.22, s.123) + prepayment link |
-| Loans hub | /car-loan | yes | todo | on-road price, down payment, depreciation |
-| Loans hub | /personal-loan | yes | todo | credit score impact, processing fee, flat vs reducing |
-| Loans hub | /two-wheeler-loan | — | todo | |
-| Loans hub | /education-loan | — | todo | moratorium explained by example; no claim the app models it |
-| Credit | /credit-card-payoff | — | todo | |
-| Credit | /credit-card-tracker | — | todo | credit card manager feature |
-| Credit | /loan-foreclosure | — | todo | My Loans feature |
-| Credit | /cibil-score | — | todo | bands only unless a lender's official rate page |
-| Credit | /overdraft-interest | — | todo | |
-| Credit | /simple-interest | — | todo | |
-| Credit | /compound-interest | — | todo | |
-| Investments | /sip | yes | todo | |
-| Investments | /lumpsum | yes | todo | |
-| Investments | /swp | yes | todo | |
-| Investments | /stp | — | todo | |
-| Investments | /cagr | yes | todo | |
-| Investments | /portfolio-rebalancing | — | todo | asset rebalancer (PRAG) |
-| Investments | /elss | — | todo | no app ELSS tool: built from the app's SIP + tax functions |
-| Investments | /goal-planner | — | todo | child education focus |
-| Deposits | /fd | yes | todo | |
-| Deposits | /rd | yes | todo | |
-| Deposits | /ppf | yes | todo | |
-| Deposits | /nsc | yes | todo | |
-| Deposits | /kvp | yes | todo | |
-| Deposits | /post-office-mis | yes | todo | |
-| Deposits | /scss (+ merge /schemes/c-scss) | yes | todo | |
-| Deposits | /atal-pension | yes | todo | |
+| Loans hub | /emi (hub) | yes | built — own audit passes; Lighthouse at the end | |
+| Loans hub | /home-loan | yes | built — own audit passes; Lighthouse at the end | 24(b)/80C equivalents (s.22, s.123) + prepayment link |
+| Loans hub | /car-loan | yes | built — own audit passes; Lighthouse at the end | on-road price, down payment, depreciation |
+| Loans hub | /personal-loan | yes | built — own audit passes; Lighthouse at the end | credit score impact, processing fee, flat vs reducing |
+| Loans hub | /two-wheeler-loan | — | built — own audit passes; Lighthouse at the end | |
+| Loans hub | /education-loan | — | built — own audit passes; Lighthouse at the end | moratorium explained by example; no claim the app models it |
+| Credit | /credit-card-payoff | — | built — own audit passes; Lighthouse at the end | |
+| Credit | /credit-card-tracker | — | built — own audit passes; Lighthouse at the end | credit card manager feature |
+| Credit | /loan-foreclosure | — | built — own audit passes; Lighthouse at the end | My Loans feature |
+| Credit | /cibil-score | — | built — own audit passes; Lighthouse at the end | bands only unless a lender's official rate page |
+| Credit | /overdraft-interest | — | built — own audit passes; Lighthouse at the end | |
+| Credit | /simple-interest | — | built — own audit passes; Lighthouse at the end | |
+| Credit | /compound-interest | — | built — own audit passes; Lighthouse at the end | |
+| Investments | /sip | yes | built — own audit passes; Lighthouse at the end | |
+| Investments | /lumpsum | yes | built — own audit passes; Lighthouse at the end | |
+| Investments | /swp | yes | built — own audit passes; Lighthouse at the end | |
+| Investments | /stp | — | built — own audit passes; Lighthouse at the end | |
+| Investments | /cagr | yes | built — own audit passes; Lighthouse at the end | |
+| Investments | /portfolio-rebalancing | — | built — own audit passes; Lighthouse at the end | asset rebalancer (PRAG) |
+| Investments | /elss | — | built — own audit passes; Lighthouse at the end | no app ELSS tool: built from the app's SIP + tax functions |
+| Investments | /goal-planner | — | built — own audit passes; Lighthouse at the end | child education focus |
+| Deposits | /fd | yes | built — own audit passes; Lighthouse at the end | |
+| Deposits | /rd | yes | built — own audit passes; Lighthouse at the end | |
+| Deposits | /ppf | yes | built — own audit passes; Lighthouse at the end | |
+| Deposits | /nsc | yes | built — own audit passes; Lighthouse at the end | |
+| Deposits | /kvp | yes | built — own audit passes; Lighthouse at the end | |
+| Deposits | /post-office-mis | yes | built — own audit passes; Lighthouse at the end | |
+| Deposits | /scss (+ merge /schemes/c-scss) | yes | built — own audit passes; Lighthouse at the end | |
+| Deposits | /atal-pension | yes | built — own audit passes; Lighthouse at the end | |
 | Tax | /hra | yes | todo | §8 metro list |
 | Tax | /capital-gains | yes | todo | |
 | Tax | /lrs-tcs | yes | todo | §8 TCS |
 | Tax | /gst | yes | todo | §8 slabs |
 | Tax | /salary-hike | — | todo | |
 | Tax | /tax-refund | — | todo | Form 16 / TDS feature, s.437 interest |
-| Retirement | /epf | yes | todo | §8 EPF rate |
-| Retirement | /nps (+ merge /schemes/c-nps) | yes | todo | §8 annuity/lump sum |
-| Retirement | /gratuity | yes | todo | §8 Labour Codes |
-| Planning | /expense-tracker (+ 50/30/20 section) | yes | todo | budget tracker merged here |
-| Planning | /business-tracker | — | todo | |
-| Planning | /term-insurance-cover | — | todo | |
-| Planning | /health-insurance-claim-settlement-ratio | — | todo | IRDAI annual report figures only |
-| Planning | /property-appreciation | — | todo | |
-| Planning | /break-even | — | todo | |
-| Planning | /financial-planning | — | todo | app's Smart Planner; ships only if it stands on app maths |
+| Retirement | /epf | yes | built — own audit passes; Lighthouse at the end | §8 EPF rate |
+| Retirement | /nps (+ merge /schemes/c-nps) | yes | built — own audit passes; Lighthouse at the end | §8 annuity/lump sum |
+| Retirement | /gratuity | yes | built — own audit passes; Lighthouse at the end | §8 Labour Codes |
+| Planning | /expense-tracker (+ 50/30/20 section) | yes | built — own audit passes; Lighthouse at the end | budget tracker merged here |
+| Planning | /business-tracker | — | built — own audit passes; Lighthouse at the end | |
+| Planning | /term-insurance-cover | — | built — own audit passes; Lighthouse at the end | |
+| Planning | /health-insurance-claim-settlement-ratio | — | revising (IRDAI Annual Report figures only, owner decision) | IRDAI annual report figures only |
+| Planning | /property-appreciation | — | built — own audit passes; Lighthouse at the end | |
+| Planning | /break-even | — | built — own audit passes; Lighthouse at the end | |
+| Planning | /financial-planning | — | built — own audit passes; Lighthouse at the end | app's Smart Planner; ships only if it stands on app maths |
 | GEO | /how-we-calculate | — | todo | |
 | GEO | /updates | — | todo | |
 
