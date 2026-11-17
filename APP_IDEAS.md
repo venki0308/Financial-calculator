@@ -79,6 +79,12 @@ changed in the app; each needs its own app release. Sources: `seo/research/verif
     ₹48 lakh + 10% → app extra tax ₹1,49,760, correct ₹2,68,476. (The website uses compareSalaryTax.)
 28. **GST screen** still offers 12% and 28% as standard slabs (rates in force since 22 Sep 2025: 5/18/40%, plus
     special rates); en.json `hra.newRegimeDisabledBody` cites "Section 115BAC" (now s.202).
+29. **PM-DAKSH shown as active** — merged into PMKVY from 2024-25 (PIB, 22 Oct 2026). Set `isActive: false` on
+    `c-pmdaksh` in `src/data/schemes.ts` (the website already leaves it out via `src/landing/schemes/ended.ts`;
+    the edit to the shared data file was not made in the SEO run). Also update the app's official links:
+    c-mgnrega → vbgramg.dord.gov.in, c-vidyalakshmi → pmvidyalaxmi.co.in, c-pmegp → pmegp.msme.gov.in,
+    c-daynrlm → lokos.dord.gov.in; Startup India turnover limit ₹200 crore (s.140 of the 2025 Act, not 80-IAC);
+    NMMS 55% in Class VII; e-Shram has no upper age limit.
 18. **Scheme records** — differences found on official portals are listed in each website scheme file's
     `appIssues` (src/landing/schemes/content/*.ts), e.g. PMKVY age 15–59 (app 15–45), DDU-GKY placement 70%
     (app 75%), PM-SYM income-tax-payer exclusion missing, Tele MANAS second number 1-800-891-4416 missing.
