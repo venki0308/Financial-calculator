@@ -31,6 +31,16 @@ export interface Update { date: string; title: string; items: string[] }
 export const UPDATES: readonly Update[] = [
     {
         date: '2026-11-17',
+        title: 'A page for every calculator, and verified scheme pages',
+        items: [
+            '45 more calculator pages, each with a working calculator, worked examples, its own tables and the official sources: loans (with /emi as the starting point), credit cards, investments, deposits and small savings, tax and salary, retirement, and planning tools.',
+            '43 government scheme pages rewritten from the official portals, guidelines and PIB releases, each with amounts, eligibility, how to apply, documents and the date it was checked. Schemes we could not confirm as open (NAPS, PMFME, PM-KUSUM) are not indexed; PM-DAKSH, merged into PMKVY, now points to the PMKVY page.',
+            'Loan schedules: a small loan that the rounded-up EMI pays off before its last month no longer shows EMIs after the payoff (₹10,000 at 24% for 30 years: total interest ₹43,830). Also in the next Android update.',
+            'New pages explaining how we calculate and check every figure, and this list of updates.',
+        ],
+    },
+    {
+        date: '2026-11-17',
         title: 'Calculation fixes, shared by the app and the website',
         items: [
             'Post Office Time Deposit: interest is now paid out every year with no interest on interest, as the scheme rules say. ₹1 lakh for 5 years at 7.5% now shows ₹1,38,568 (it showed ₹1,44,995). Also in the next Android update.',
