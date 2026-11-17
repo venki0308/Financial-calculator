@@ -221,7 +221,7 @@ export default function CreditCardInterestCalculator() {
             projectionTitle: 'Payment Scenarios',
             projectionColumns: ['If you pay...', 'Interest Saved', 'Remaining Balance'],
             projectionRows: scenarios.map(s => [s.label, `INR ${s.saved.toLocaleString('en-IN')}`, `INR ${s.remaining.toLocaleString('en-IN')}`]),
-            notes: 'Interest calculated using Indian daily balance method. GST at 18% on finance charges as per RBI guidelines.',
+            notes: 'Interest calculated using Indian daily balance method. GST at 18% applies to finance charges and fees.',
             filename: `FinCalix_CC_Interest_${tag}`,
         };
         await exportToPDF(config);
@@ -342,7 +342,7 @@ export default function CreditCardInterestCalculator() {
                 <div className="flex items-center justify-between p-4 rounded-2xl bg-card border border-border">
                     <div>
                         <p className="text-sm font-bold text-foreground">{t('ccInterest.gstToggle', 'Include 18% GST on Interest')}</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">{t('ccInterest.gstNote', 'RBI mandates GST on finance charges')}</p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{t('ccInterest.gstNote', '18% GST applies to credit card finance charges and fees')}</p>
                     </div>
                     <button onClick={() => setIncludeGST(!includeGST)}
                         className={`w-12 h-7 rounded-full transition-all relative ${includeGST ? 'bg-brand-blue' : 'bg-muted-foreground/30'}`}>

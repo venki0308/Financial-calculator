@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatINR } from '../utils/calculations';
+import { calculatePOTD, formatINR } from '../utils/calculations';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, getEnglishT, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -58,35 +58,29 @@ export default function POTDCalculator() {
             tenureMonths: Number(years) * 12,
             startDate: potdStartDate,
             compoundingFreq: 4,
+            payout: 'yearly',
         });
     }, [potdStartDate, investment, rate, years]);
 
     const result = useMemo(() => {
         const yr = Number(years);
-        // Quarterly compounding, payable annually logic retained from original
-        const r = rate / 400;
-        const maturity = investment * Math.pow(1 + r, 4 * yr);
-        const totalInterest = maturity - investment;
-        const effectiveYield = (Math.pow(1 + r, 4) - 1) * 100;
+        // Scheme rule (NSTD Scheme 2019, paras 7(2), 7(7)): compounded quarterly within the year,
+        // paid out every year, no interest on interest — same function as fincalix.com/post-office-td.
+        const td = calculatePOTD(investment, rate, yr);
+        const maturity = td.maturity;
+        const totalInterest = td.totalInterest;
+        const effectiveYield = td.effectiveYield;
         const cagr = (Math.pow(maturity / investment, 1 / yr) - 1) * 100;
 
-        // Year-by-year table
-        const table: { year: number; openBal: number; interest: number; closeBal: number }[] = [];
-        let bal = investment;
-        for (let y = 1; y <= yr; y++) {
-            const close = bal * Math.pow(1 + r, 4);
-            const interest = close - bal;
-            table.push({ year: y, openBal: bal, interest, closeBal: close });
-            bal = close;
-        }
+        // Year-by-year table: the deposit stays the same; each year's interest is paid out.
+        const table: { year: number; openBal: number; interest: number; closeBal: number }[] =
+            td.table.map((row) => ({ year: row.year, openBal: investment, interest: row.interest, closeBal: investment }));
 
         // Comparison: All tenures for same amount
-        const comparison = Object.entries(TD_RATES).map(([y, rt]) => ({
-            tenure: y,
-            rate: rt,
-            maturity: investment * Math.pow(1 + rt / 400, 4 * Number(y)),
-            interest: investment * Math.pow(1 + rt / 400, 4 * Number(y)) - investment,
-        }));
+        const comparison = Object.entries(TD_RATES).map(([y, rt]) => {
+            const c = calculatePOTD(investment, rt, Number(y));
+            return { tenure: y, rate: rt, maturity: c.maturity, interest: c.totalInterest };
+        });
 
         const is5Year = years === '5';
         const eligible80C = is5Year ? Math.min(investment, 150000) : 0;

@@ -97,6 +97,9 @@ export interface FdStatusInput {
     tenureMonths: number;
     startDate: string;
     compoundingFreq: number; // 4=quarterly, 12=monthly, 1=yearly
+    /** 'yearly': interest compounds within each year and is paid out at its end, with no interest
+     *  on interest (Post Office Time Deposit). Default 'cumulative' (a bank FD that reinvests). */
+    payout?: 'cumulative' | 'yearly';
 }
 
 export interface FdStatus {
@@ -129,14 +132,28 @@ export function calculateFdStatus(input: FdStatusInput): FdStatus {
     const periodsElapsed = daysInvested / (365 / freq);
     const totalPeriods = totalDays / (365 / freq);
     const ratePerPeriod = input.annualRate / (100 * freq);
-    const valueToday = input.principal * Math.pow(1 + ratePerPeriod, periodsElapsed);
-    const maturityValue = input.principal * Math.pow(1 + ratePerPeriod, totalPeriods);
+    // Value of the deposit plus interest earned (paid out or not) after `days`, at `annualRate`.
+    const valueAfter = (days: number, annualRate: number, periods: number) => {
+        const rpp = annualRate / (100 * freq);
+        if (input.payout !== 'yearly') return input.principal * Math.pow(1 + rpp, periods);
+        // Yearly payout: each full year pays the same interest; the current year accrues within itself.
+        const years = input.tenureMonths / 12;
+        const fullYears = Math.min(Math.floor(days / 365), years);
+        const partialPeriods = Math.max(0, (days - fullYears * 365) / (365 / freq));
+        const yearly = input.principal * (Math.pow(1 + rpp, freq) - 1);
+        const v = input.principal + yearly * fullYears + input.principal * (Math.pow(1 + rpp, partialPeriods) - 1);
+        return Math.min(v, input.principal + yearly * years);
+    };
+    const valueToday = valueAfter(daysInvested, input.annualRate, periodsElapsed);
+    const maturityValue = input.payout === 'yearly'
+        ? input.principal * (1 + (Math.pow(1 + ratePerPeriod, freq) - 1) * (input.tenureMonths / 12))
+        : input.principal * Math.pow(1 + ratePerPeriod, totalPeriods);
     const interestEarnedToday = valueToday - input.principal;
     const stillToEarn = maturityValue - valueToday;
     const dailyEarning = daysInvested > 0 ? interestEarnedToday / daysInvested : 0;
     const penaltyRate = 1;
     const effectiveRate = Math.max(0, input.annualRate - penaltyRate);
-    const prematureValue = input.principal * Math.pow(1 + effectiveRate / (100 * freq), periodsElapsed);
+    const prematureValue = valueAfter(daysInvested, effectiveRate, periodsElapsed);
     const prematurePenalty = valueToday - prematureValue;
     const costOfBreaking = maturityValue - prematureValue;
     return {

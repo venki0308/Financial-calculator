@@ -210,7 +210,7 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
             return { label1: t('myLoans.metricInvested'), value1: formatINR(s.totalInvested), label2: t('myLoans.metricValue'), value2: formatINR(s.currentValue), label3: t('myLoans.metricGain'), value3: formatINR(s.wealthGained), progress: Math.min(100, s.monthsInvested), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M` };
         }
         if (matchType(type, 'fd', 'fd calculator', 'potd', 'post office td')) {
-            const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4 });
+            const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4, payout: matchType(type, 'potd', 'post office td') ? 'yearly' : 'cumulative' });
             return { label1: t('myLoans.metricDeposited'), value1: formatINR(d.principal), label2: t('myLoans.metricValue'), value2: formatINR(s.valueToday), label3: t('myLoans.metricInterest'), value3: formatINR(s.interestEarnedToday), progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}%` };
         }
         if (matchType(type, 'rd')) {

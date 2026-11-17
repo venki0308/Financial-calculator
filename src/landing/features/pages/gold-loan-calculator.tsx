@@ -5,7 +5,7 @@
  * Rules: RBI Lending Against Gold and Silver Collateral Directions, 2025; rate: IBJA 17 Nov 2026
  * (seo/research/verified-facts-2026-11-17.md).
  */
-import { calculateReducingEMI } from '../../../utils/calculations';
+import { calculateReducingEMI, goldLtvForLoan, goldValueForLoan } from '../../../utils/calculations';
 import { GOLD_PURITY, goldLoanEligibility, type GoldPurity } from '../math';
 import { amt, inr } from '../fmt';
 import { DataTable, Rules, Scenarios, Section } from '../ui';
@@ -23,6 +23,10 @@ const g100 = goldLoanEligibility(100, RATE24, '22K');
 const BULLET_RATE = 10;
 const bulletMax = Math.floor(g50.maxLoan / (1 + BULLET_RATE / 100));
 const emi12 = calculateReducingEMI(g50.maxLoan, BULLET_RATE, 12);
+/** Loans either side of the ₹2.5 lakh and ₹5 lakh limits, and the gold-value ranges that get exactly the limit. */
+const EDGE_LOANS = [249000, 250000, 251000, 499000, 500000, 501000];
+const P1_LOW = goldValueForLoan(250000), P1_HIGH = Math.floor(250000 / 0.8);
+const P2_LOW = goldValueForLoan(500000), P2_HIGH = Math.floor(500000 / 0.75);
 
 function Body() {
     const weights = [5, 10, 20, 30, 50, 75, 100, 200];
@@ -39,10 +43,21 @@ function Body() {
                     })}
                     note="Gold value = weight × 24K rate × purity (0.916 for 22K). The loan-to-value limit falls as the loan grows: 85% up to ₹2.5 lakh, 80% up to ₹5 lakh, 75% above — the same maths as the FinCalix app."
                 />
+            </Section>
+
+            <Section title="Near the ₹2.5 lakh and ₹5 lakh limits">
                 <p>
-                    Close to ₹2.5 lakh and ₹5 lakh the limits overlap: a loan of up to ₹2.5 lakh is allowed at 85% even when 80% of the
-                    gold’s value is less, so a lender may offer slightly more than this table shows near those amounts.
+                    The limit depends on the size of the loan itself. A loan of exactly ₹2.5 lakh is still allowed at 85%, so gold worth
+                    anywhere from {inr(P1_LOW)} to {inr(P1_HIGH)} gets ₹2,50,000 — 85% of it would cross ₹2.5 lakh, and 80% of it is less.
+                    The same happens at ₹5 lakh, for gold worth {inr(P2_LOW)} to {inr(P2_HIGH)}. Just past each limit you need noticeably
+                    more gold for a little more loan:
                 </p>
+                <DataTable
+                    caption="Smallest gold value on which RBI allows each loan"
+                    head={['Loan you need', 'Limit that applies', 'Gold value needed']}
+                    rows={EDGE_LOANS.map((l) => [inr(l), `${goldLtvForLoan(l)}%`, inr(goldValueForLoan(l))])}
+                    note="Same calculation as the FinCalix app’s gold loan calculator, in both directions (loan from gold, and gold needed for a loan)."
+                />
             </Section>
 
             <Section title="Loan per gram by purity">

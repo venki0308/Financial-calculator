@@ -30,7 +30,7 @@ import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import LiveLoanStatus from '../components/LiveLoanStatus';
 import SaveNameDialog from '../components/SaveNameDialog';
 import type { LoanProfile } from '../utils/loanStatusEngine';
-import { calculateReducingEMI, formatINR, formatINRShort } from '../utils/calculations';
+import { calculateReducingEMI, formatINR, formatINRShort, goldLoanMaxLoan, goldValueForLoan } from '../utils/calculations';
 import { exportToPDF, exportToExcel, getEnglishT, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
@@ -98,21 +98,11 @@ const MAX_INTEREST_RATE = 26;
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
- * Apply RBI 2026 tiered LTV iteratively. The LTV depends on the resulting
- * loan amount, so we test 85% first; if the loan exceeds the ₹2.5L tier, drop
- * to 80%; if still > ₹5L, drop to 75%.
+ * RBI tiered LTV (shared with the website: src/utils/calculations.ts goldLoanMaxLoan). The cap
+ * depends on the loan's own size, so near ₹2.5L / ₹5L a loan of exactly the limit stays allowed
+ * when 85% / 80% of the value would cross it. `ltv` is the cap that applies to the loan.
  */
-function computeTieredLTV(goldValue: number): { ltv: number; maxLoan: number } {
-    if (goldValue <= 0) return { ltv: 85, maxLoan: 0 };
-
-    const at85 = goldValue * 0.85;
-    if (at85 <= TIER_85_MAX) return { ltv: 85, maxLoan: Math.round(at85) };
-
-    const at80 = goldValue * 0.80;
-    if (at80 <= TIER_80_MAX) return { ltv: 80, maxLoan: Math.round(at80) };
-
-    return { ltv: 75, maxLoan: Math.round(goldValue * 0.75) };
-}
+const computeTieredLTV = goldLoanMaxLoan;
 
 interface BulletResult {
     monthlyInterest: number;
@@ -257,23 +247,9 @@ export default function GoldLoanCalculator() {
         if (mode === 'byWeight') {
             return Math.round(goldWeight * goldRate24K * purityFactor);
         }
-        // Mode B: reverse calculation needs the user's loan need.
-        // Find the smallest gold value that is SELF-CONSISTENT with
-        // computeTieredLTV: try tiers from highest LTV (smallest required
-        // gold) downward and accept the first candidate that, fed forward
-        // through computeTieredLTV, still yields maxLoan >= the requirement.
-        // The old single-guess approach (loan / 0.85 → tier → loan / tierLtv)
-        // could land in a lower tier when re-verified, leaving a shortfall
-        // of up to ~₹31k just above the ₹5L boundary.
-        for (const tierLtv of [85, 80, 75]) {
-            const candidateValue = Math.ceil(loanAmountNeeded / (tierLtv / 100));
-            if (computeTieredLTV(candidateValue).maxLoan >= loanAmountNeeded) {
-                return candidateValue;
-            }
-        }
-        // Unreachable: the 75% candidate always satisfies the check above
-        // (its forward LTV is >= 75%), kept as a safe fallback.
-        return Math.ceil(loanAmountNeeded / 0.75);
+        // Mode B: the smallest gold value on which RBI allows the loan the user needs
+        // (the cap of the loan's own tier; shared with the website).
+        return goldValueForLoan(loanAmountNeeded);
     }, [mode, goldWeight, goldRate24K, purityFactor, loanAmountNeeded]);
 
     /** RBI 2026 tier outcome */

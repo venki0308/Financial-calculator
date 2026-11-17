@@ -235,6 +235,68 @@ export function calculateFD(principal: number, annualRate: number, years: number
     return calculateCompoundInterest(principal, annualRate, years, compoundsPerYear);
 }
 
+// ─── Post Office Time Deposit ──────────────────────────────────────────────
+
+/**
+ * Post Office Time Deposit (National Savings Time Deposit Scheme, 2019): interest is compounded
+ * quarterly and paid out at the end of each year (para 7(2)); no interest is paid on interest left
+ * unwithdrawn (para 7(7)). So every year pays the same interest and the deposit comes back at
+ * maturity — the deposit does NOT compound across years. Used by the app screen and the website.
+ */
+export function calculatePOTD(principal: number, annualRate: number, years: number) {
+    const yearlyInterest = principal * (Math.pow(1 + annualRate / 400, 4) - 1);
+    const table: { year: number; interest: number; totalInterest: number }[] = [];
+    for (let y = 1; y <= years; y++) table.push({ year: y, interest: yearlyInterest, totalInterest: yearlyInterest * y });
+    const totalInterest = yearlyInterest * years;
+    return {
+        yearlyInterest,
+        totalInterest,
+        /** Deposit plus every year's interest (the interest is paid out yearly, the deposit at maturity). */
+        maturity: principal + totalInterest,
+        effectiveYield: (Math.pow(1 + annualRate / 400, 4) - 1) * 100,
+        table,
+    };
+}
+
+// ─── Gold loan loan-to-value (RBI) ─────────────────────────────────────────
+
+/**
+ * RBI (Lending Against Gold and Silver Collateral) Directions, 2025: the LTV cap depends on the
+ * size of the loan — 85% for a loan up to ₹2.5 lakh, 80% above that up to ₹5 lakh, 75% above ₹5 lakh.
+ */
+export const GOLD_LTV_TIERS = [
+    { upTo: 250000, ltv: 85 },
+    { upTo: 500000, ltv: 80 },
+    { upTo: Infinity, ltv: 75 },
+] as const;
+
+/** The RBI LTV cap that applies to a loan of this size. */
+export const goldLtvForLoan = (loan: number): number => (GOLD_LTV_TIERS.find((t) => loan <= t.upTo) ?? GOLD_LTV_TIERS[2]).ltv;
+
+/**
+ * Largest gold loan RBI allows on gold worth `goldValue`. A loan L is allowed when
+ * L ≤ goldValue × cap(L). Each tier allows up to min(goldValue × its LTV, its upper limit), and
+ * any loan at or below 75% of the value is always allowed, so the answer is the best of the three.
+ * Near the limits this keeps a loan of exactly ₹2.5 lakh (or ₹5 lakh) available when 85% (or 80%)
+ * of the value would cross the limit — e.g. gold worth ₹3,05,000 → ₹2,50,000, not 80% = ₹2,44,000.
+ * `ltv` is the cap that applies to the resulting loan.
+ */
+export function goldLoanMaxLoan(goldValue: number): { ltv: number; maxLoan: number } {
+    if (!(goldValue > 0)) return { ltv: 85, maxLoan: 0 };
+    const best = Math.max(...GOLD_LTV_TIERS.map((t) => Math.min((goldValue * t.ltv) / 100, t.upTo)));
+    // Whole rupees, rounded DOWN: rounding up could exceed the limit by a few paise.
+    const maxLoan = Math.floor(best + 1e-6);
+    return { ltv: goldLtvForLoan(maxLoan), maxLoan };
+}
+
+/** Smallest gold value (₹, whole rupees) on which RBI allows a loan of `loan`. */
+export function goldValueForLoan(loan: number): number {
+    if (!(loan > 0)) return 0;
+    let value = Math.ceil(loan / (goldLtvForLoan(loan) / 100));
+    while (goldLoanMaxLoan(value).maxLoan < loan) value++;   // rounding guard (at most a step or two)
+    return value;
+}
+
 // ─── Indian Number Formatting ──────────────────────────────────────────────
 
 /**

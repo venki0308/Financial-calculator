@@ -347,6 +347,69 @@ console.log('\n2V. Income tax New vs Old Regime (FY 2026-27) — independent mat
 }
 
 // ──────────────────────────────────────────────────────────────
+// 2W — Post Office Time Deposit (NSTD Scheme 2019, paras 7(2), 7(7))
+// Compounded quarterly within the year, paid out yearly, no interest on interest.
+// Expected figures are the ones fincalix.com/post-office-td shows for ₹1 lakh.
+// ──────────────────────────────────────────────────────────────
+const { buildSync: buildTs } = await import('esbuild');
+const loadTs = async (entry) => import('data:text/javascript;base64,' + Buffer.from(buildTs({ entryPoints: [entry], bundle: true, format: 'esm', platform: 'node', write: false, logLevel: 'error' }).outputFiles[0].text).toString('base64'));
+const calc = await loadTs('src/utils/calculations.ts');
+const status = await loadTs('src/utils/investmentStatusEngine.ts');
+console.log('\n2W. Post Office TD — yearly payout (app = website: calculatePOTD)');
+{
+  const indep = (P, r, y) => { const yearly = P * ((1 + r / 400) ** 4 - 1); return { yearly, total: yearly * y, maturity: P + yearly * y }; };
+  const page = { 1: [6.9, 7081, 7081, 107081], 2: [7.0, 7186, 14372, 114372], 3: [7.1, 7291, 21874, 121874], 5: [7.5, 7714, 38568, 138568] };
+  for (const [y, [rate, yearly, total, maturity]] of Object.entries(page)) {
+    const p = calc.calculatePOTD(100000, rate, Number(y)), i = indep(100000, rate, Number(y));
+    check(`₹1L ${y}-yr TD @ ${rate}% — interest every year (page ${yearly})`, yearly, p.yearlyInterest, 0.5);
+    check(`₹1L ${y}-yr TD @ ${rate}% — total interest (page ${total})`, total, p.totalInterest, 0.5);
+    check(`₹1L ${y}-yr TD @ ${rate}% — deposit + interest (page ${maturity})`, maturity, p.maturity, 0.5);
+    check(`₹1L ${y}-yr TD — calculatePOTD vs independent`, i.maturity, p.maturity, 0.001);
+    check(`₹1L ${y}-yr TD — every year pays the same interest`, 0, Math.max(...p.table.map((t) => Math.abs(t.interest - p.yearlyInterest))), 0);
+  }
+  check('5-yr TD is NOT compounded across years (old app showed ₹1,44,995)', 138568, calc.calculatePOTD(100000, 7.5, 5).maturity, 0.5);
+  // Live status of a tracked TD (screen, My Loans, Loan Detail): maturity value on the same rule.
+  const start = new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10);
+  const s = status.calculateFdStatus({ principal: 100000, annualRate: 7.5, tenureMonths: 60, startDate: start, compoundingFreq: 4, payout: 'yearly' });
+  check('Tracked 5-yr TD — maturity value (yearly payout)', 138568, s.maturityValue, 0.5);
+  check('Tracked 5-yr TD after 400 days — one year paid + 35 days accrued', 100000 + 7714.3 + 100000 * ((1 + 7.5 / 400) ** (35 / (365 / 4)) - 1), s.valueToday, 2);
+  const fd = status.calculateFdStatus({ principal: 100000, annualRate: 7.5, tenureMonths: 60, startDate: start, compoundingFreq: 4 });
+  check('Bank FD (no payout option) still compounds — unchanged', 100000 * (1 + 7.5 / 400) ** (fd.daysInvested / (365 / 4)), fd.valueToday, 0.01);
+}
+
+// ──────────────────────────────────────────────────────────────
+// 2X — Gold loan LTV (RBI Lending Against Gold and Silver Collateral Directions, 2025)
+// A loan L is allowed when L ≤ value × cap(L); cap = 85% up to ₹2.5L, 80% up to ₹5L, 75% above.
+// Independent: case analysis + a property check (L allowed, L + ₹1 not).
+// ──────────────────────────────────────────────────────────────
+console.log('\n2X. Gold loan LTV near ₹2.5L and ₹5L (app = website: goldLoanMaxLoan / goldValueForLoan)');
+{
+  const cap = (L) => (L <= 250000 ? 0.85 : L <= 500000 ? 0.8 : 0.75);
+  const allowed = (L, V) => L <= V * cap(L) + 1e-6;
+  const indepMax = (V) => (V * 0.75 > 500000 ? V * 0.75 : V * 0.8 > 250000 ? Math.min(V * 0.8, 500000) : Math.min(V * 0.85, 250000));
+  // Gold needed for each loan the owner named, and the loan on gold of those values.
+  for (const [L, need] of [[249000, 292942], [250000, 294118], [251000, 313750], [499000, 623750], [500000, 625000], [501000, 668000]]) {
+    check(`Gold value needed for a ₹${L.toLocaleString('en-IN')} loan`, need, calc.goldValueForLoan(L), 0);
+    check(`  …and that gold really allows ₹${L.toLocaleString('en-IN')}`, 1, calc.goldLoanMaxLoan(need).maxLoan >= L ? 1 : 0, 0);
+    check(`  …₹1 less gold does not`, 1, calc.goldLoanMaxLoan(need - 1).maxLoan < L ? 1 : 0, 0);
+  }
+  for (const [V, loan, ltv] of [[249000, 211650, 85], [250000, 212500, 85], [251000, 213350, 85], [499000, 399200, 80], [500000, 400000, 80], [501000, 400800, 80],
+                                [305000, 250000, 85], [312500, 250000, 85], [312501, 250000, 85], [312505, 250004, 80], [650000, 500000, 80], [666667, 500000, 80], [700000, 525000, 75]]) {
+    const g = calc.goldLoanMaxLoan(V);
+    check(`Gold worth ₹${V.toLocaleString('en-IN')} — max loan`, loan, g.maxLoan, 0);
+    check(`Gold worth ₹${V.toLocaleString('en-IN')} — limit that applies (${ltv}%)`, ltv, g.ltv, 0);
+  }
+  let worst = 0, bad = 0, n = 0;
+  for (let V = 1000; V <= 2000000; V += V < 200000 ? 997 : 113) {
+    const m = calc.goldLoanMaxLoan(V).maxLoan; n++;
+    worst = Math.max(worst, Math.abs(m - indepMax(V)));
+    if (!allowed(m - 0.5, V) || allowed(m + 1, V)) bad++;
+  }
+  check(`goldLoanMaxLoan vs independent case analysis over ${n} gold values (worst gap, whole rupees rounded down)`, 0, worst, 0.999);
+  check('every result is allowed and ₹1 more is not', 0, bad, 0);
+}
+
+// ──────────────────────────────────────────────────────────────
 // FINAL REPORT
 // ──────────────────────────────────────────────────────────────
 console.log('\n═══════════════════════════════════════════════════════════════');

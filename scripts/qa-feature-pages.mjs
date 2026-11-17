@@ -68,16 +68,17 @@ console.log('\n1. math.ts against independent formulas');
     }
     check(`poTd: ${n} cases within ₹1, equal payout every year (no interest on interest)`, worst <= 1, `worst ₹${worst}`);
 
-    // Gold: tier chosen by the loan amount it produces.
+    // Gold: the largest loan L with L ≤ value × cap(L) (cap 85% to ₹2.5L, 80% to ₹5L, 75% above), whole rupees down.
     const purity = { '24K': 1, '22K': 0.916, '20K': 0.833, '18K': 0.75 };
+    const indepMax = (v) => Math.floor((v * 0.75 > 500000 ? v * 0.75 : v * 0.8 > 250000 ? Math.min(v * 0.8, 500000) : Math.min(v * 0.85, 250000)) + 1e-6);
     const bad = [];
-    for (const g of [1, 5, 10, 21, 22, 23, 40, 45, 46, 50, 100, 500]) for (const p of Object.keys(purity)) {
+    for (const g of [1, 5, 10, 21, 22, 23, 24, 25, 40, 45, 46, 50, 54, 100, 500]) for (const p of Object.keys(purity)) {
         const v = Math.round(g * 13420 * purity[p]);
-        const ltv = v * 0.85 <= 250000 ? 85 : v * 0.8 <= 500000 ? 80 : 75;
         const e = math.goldLoanEligibility(g, 13420, p);
-        if (e.value !== v || e.ltv !== ltv || Math.abs(e.maxLoan - v * ltv / 100) > 0.5) bad.push(`${g} g ${p}`);
+        const ltv = e.maxLoan <= 250000 ? 85 : e.maxLoan <= 500000 ? 80 : 75;
+        if (e.value !== v || e.maxLoan !== indepMax(v) || e.ltv !== ltv) bad.push(`${g} g ${p}: ${e.maxLoan} vs ${indepMax(v)}`);
     }
-    check('goldLoanEligibility: value and 85/80/75% tier for 48 cases', bad.length === 0, bad.slice(0, 3).join(', '));
+    check('goldLoanEligibility: RBI limit by loan size, 60 cases incl. near ₹2.5L and ₹5L', bad.length === 0, bad.slice(0, 3).join(', '));
     check('GOLD_PURITY matches 24K 1, 22K 0.916, 20K 0.833, 18K 0.75', JSON.stringify(math.GOLD_PURITY) === JSON.stringify(purity));
 }
 
@@ -87,7 +88,9 @@ console.log('\n2. App screens still contain the formulas math.ts copies');
     const has = (file, ...frags) => { const s = fs.readFileSync(file, 'utf8').replace(/\s+/g, ' '); return frags.every((f) => s.includes(f)); };
     check('SIPCalculator.tsx: step-up loop and goal-SIP denominator', has('src/pages/SIPCalculator.tsx', 'balance = (balance + monthlyAmt) * (1 + r)', 'monthlyAmt *= (1 + suStepUp / 100)', '((Math.pow(1 + r, n) - 1) / r) * (1 + r)'));
     check('SSYCalculator.tsx: 15 deposit years, 21 to maturity', has('src/pages/SSYCalculator.tsx', '15', '21'));
-    check('GoldLoanCalculator.tsx: purity factors and 2.5L / 5L tiers', has('src/pages/GoldLoanCalculator.tsx', '0.916', '0.833', '0.75', '250000', '500000'));
+    check('GoldLoanCalculator.tsx: purity factors; limit and gold-needed from the shared goldLoanMaxLoan / goldValueForLoan', has('src/pages/GoldLoanCalculator.tsx', '0.916', '0.833', '0.75', 'const computeTieredLTV = goldLoanMaxLoan', 'goldValueForLoan(loanAmountNeeded)'));
+    check('POTDCalculator.tsx: shared calculatePOTD for the result and the tenure comparison; tracked TD paid yearly', has('src/pages/POTDCalculator.tsx', 'calculatePOTD(investment, rate, yr)', 'calculatePOTD(investment, rt, Number(y))', "payout: 'yearly'"));
+    check('My Loans and Loan Detail: a tracked Post Office TD uses the yearly payout', has('src/pages/MyLoans.tsx', "matchType(type, 'potd', 'post office td') ? 'yearly'") && has('src/pages/LoanDetail.tsx', "mt('potd', 'post office td') ? 'yearly'", 'const yearlyPayout = mt('));
 }
 
 // ── 3. derive.ts ─────────────────────────────────────────────────────────────────────────
@@ -147,7 +150,7 @@ console.log('\n4. Headline figures, computed independently, are on their pages (
     const r = 0.01, k = 180;
     const sip15 = Math.round(1e7 * r / ((1 + r) ** k - 1) / (1 + r));
     const ccInt = 50000 * 0.42 / 365 * 30;
-    const gold50 = Math.round(Math.round(50 * 13420 * 0.916) * 0.8);
+    const gold50 = Math.floor(Math.round(50 * 13420 * 0.916) * 0.8);
     const td = Math.round(100000 * ((1 + 7.5 / 400) ** 4 - 1));
     const want = [
         ['old-vs-new-tax-regime', inr(544000)],
@@ -160,6 +163,24 @@ console.log('\n4. Headline figures, computed independently, are on their pages (
         ['income-tax', '₹97,500'],
     ];
     for (const [slug, fig] of want) check(`/${slug} shows ${fig}`, page(slug).includes(fig));
+
+    // App = page: Post Office TD for 1, 2, 3 and 5 years (₹1 lakh at the current rates), from the app's calculatePOTD.
+    const calc = await load('src/utils/calculations.ts');
+    const rates = (await load('src/data/rateEnvironment.ts')).SMALL_SAVINGS.rates;
+    const tdRow = (y, r) => `<tr><th scope="row">${y} year${y === 1 ? "" : "s"}</th><td>${r}%</td>`;
+    const tdHtml = page('post-office-td');
+    for (const [y, r] of [[1, rates.td1y], [2, rates.td2y], [3, rates.td3y], [5, rates.td5y]]) {
+        const t = calc.calculatePOTD(100000, r, y);
+        const row = tdHtml.slice(tdHtml.indexOf(tdRow(y, r)), tdHtml.indexOf('</tr>', tdHtml.indexOf(tdRow(y, r))));
+        check(`/post-office-td ${y}-year row = app (${inr(t.yearlyInterest)} a year, ${inr(t.totalInterest)} interest, ${inr(t.maturity)})`,
+            tdHtml.includes(tdRow(y, r)) && [t.yearlyInterest, t.totalInterest, t.maturity].every((v) => row.includes(inr(v))));
+    }
+    // App = page: gold needed for loans either side of ₹2.5 lakh and ₹5 lakh, from the app's goldValueForLoan.
+    const gl = page('gold-loan-calculator');
+    for (const L of [249000, 250000, 251000, 499000, 500000, 501000]) {
+        const row = `<tr><th scope="row">${inr(L)}</th><td>${calc.goldLtvForLoan(L)}%</td><td>${inr(calc.goldValueForLoan(L))}</td></tr>`;
+        check(`/gold-loan-calculator: ${inr(L)} loan needs ${inr(calc.goldValueForLoan(L))} of gold (${calc.goldLtvForLoan(L)}%) = app`, gl.includes(row));
+    }
     for (const slug of seo.FEATURE_PAGES) {
         const h = page(slug);
         const ld = [...h.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => JSON.parse(m[1]));

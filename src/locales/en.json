@@ -7301,7 +7301,7 @@
     "days": "Days Since Payment",
     "daysHelper": "Number of days since your last payment",
     "gstToggle": "Include 18% GST on Interest",
-    "gstNote": "RBI mandates 18% GST on all credit card finance charges",
+    "gstNote": "18% GST applies to credit card finance charges and fees",
     "results": "Interest Calculation",
     "principal": "Principal Balance",
     "dailyInt": "Daily Interest",

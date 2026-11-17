@@ -462,8 +462,11 @@ export default function LoanDetail() {
             const tenureYears = Math.ceil((d.tenureMonths || 60) / 12);
             const cols = [tl('Year'), tl('Value'), tl('Interest Earned'), tl('Growth %')];
             const rows: Array<Array<string | number>> = [];
+            const yearlyPayout = mt('potd', 'post office td');   // Post Office TD: interest paid out yearly, no compounding across years
             for (let y = 1; y <= tenureYears; y++) {
-                const val = principal * Math.pow(1 + (rate / 100) / freq, freq * y);
+                const val = yearlyPayout
+                    ? principal * (1 + (Math.pow(1 + (rate / 100) / freq, freq) - 1) * y)
+                    : principal * Math.pow(1 + (rate / 100) / freq, freq * y);
                 rows.push([startYear + y - 1, formatINR(Math.round(val)), formatINR(Math.round(val - principal)), `${((val / principal - 1) * 100).toFixed(1)}%`]);
             }
             return { columns: cols, rows };
@@ -536,7 +539,7 @@ export default function LoanDetail() {
                 return { cards: [{ label: tl('Invested'), value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Gain'), value: formatINR(s.wealthGained), color: '#F59E0B' }], rows: [[tl('Months Invested'), String(s.monthsInvested)], [tl('Return %'), `${s.returnPercent.toFixed(2)}%`], [tl('Running Since'), `${s.sipRunningYears}Y ${s.sipRunningMonths}M`], [tl('Monthly SIP'), formatINR(d.monthlySip || d.monthlyAmount || 0)], [tl('Expected Return'), `${d.annualReturn || 12}% p.a.`]], progress: Math.min(100, s.monthsInvested * 0.8), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
             }
             if (mt('fd', 'fd calculator', 'potd', 'post office td')) {
-                const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4 });
+                const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4, payout: mt('potd', 'post office td') ? 'yearly' : 'cumulative' });
                 return { cards: [{ label: tl('Deposited'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.valueToday), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarnedToday), color: '#F59E0B' }], rows: [[tl('Days Invested'), String(s.daysInvested)], [tl('Daily Earning'), formatINR(s.dailyEarning)], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Maturity Value'), formatINR(s.maturityValue)], [tl('Days Remaining'), String(s.daysRemaining)], [tl('Interest Rate'), `${d.annualRate}% p.a.`], [tl('Premature Value'), formatINR(s.prematureValue)]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.valueToday), headlineLabel: tl('Value Today') };
             }
             if (mt('rd')) {
