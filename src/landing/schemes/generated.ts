@@ -2,6 +2,7 @@
 import s_c_abdm from './content/c-abdm';
 import s_c_abpmjay from './content/c-abpmjay';
 import s_c_bbbp from './content/c-bbbp';
+import s_c_cgtmse from './content/c-cgtmse';
 import s_c_daynrlm from './content/c-daynrlm';
 import s_c_ddugky from './content/c-ddugky';
 import s_c_digital_agri from './content/c-digital-agri';
@@ -10,6 +11,7 @@ import s_c_gig from './content/c-gig';
 import s_c_jjm from './content/c-jjm';
 import s_c_kcc from './content/c-kcc';
 import s_c_lakhpati from './content/c-lakhpati';
+import s_c_mcgs_msme from './content/c-mcgs-msme';
 import s_c_mgnrega from './content/c-mgnrega';
 import s_c_mudra from './content/c-mudra';
 import s_c_nmms from './content/c-nmms';
@@ -47,6 +49,7 @@ export const SCHEME_CONTENT: Readonly<Record<string, SchemeContent>> = {
     'c-abdm': s_c_abdm,
     'c-abpmjay': s_c_abpmjay,
     'c-bbbp': s_c_bbbp,
+    'c-cgtmse': s_c_cgtmse,
     'c-daynrlm': s_c_daynrlm,
     'c-ddugky': s_c_ddugky,
     'c-digital-agri': s_c_digital_agri,
@@ -55,6 +58,7 @@ export const SCHEME_CONTENT: Readonly<Record<string, SchemeContent>> = {
     'c-jjm': s_c_jjm,
     'c-kcc': s_c_kcc,
     'c-lakhpati': s_c_lakhpati,
+    'c-mcgs-msme': s_c_mcgs_msme,
     'c-mgnrega': s_c_mgnrega,
     'c-mudra': s_c_mudra,
     'c-nmms': s_c_nmms,

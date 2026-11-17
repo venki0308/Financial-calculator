@@ -174,9 +174,9 @@ const manifest = JSON.parse(fs.readFileSync(manifestFile, 'utf8'));
 const bannerJs = manifest['src/landing/banner-entry.ts']?.file;
 if (!bannerJs) fail('banner entry missing from the build manifest');
 let injected = 0;
-// Static guides and the feature pages that replaced them: old web-app users who arrive on /sip, /emi …
-// still get the one-time export banner.
-for (const dir of [...ssr.STATIC_PAGES, ...ssr.FEATURE_PAGES]) {
+// Static guides only: generated pages (feature, category, scheme pages) already start the banner from
+// site-runtime.ts, so injecting it there too would show it twice.
+for (const dir of ssr.STATIC_PAGES) {
     const f = path.join(DIST, dir, 'index.html');
     if (!fs.existsSync(f)) fail(`page ${dir} missing`);
     let s = fs.readFileSync(f, 'utf8');

@@ -163,6 +163,7 @@ export const nps: FeatureDef = {
         { href: '/old-vs-new-tax-regime', label: 'Old vs new tax regime', note: 'Where NPS deductions still count' },
         { href: '/swp', label: 'SWP calculator', note: 'Drawing an income from a lump sum' },
         { href: '/ppf', label: 'PPF calculator', note: 'A fixed-rate alternative for retirement' },
+        { href: '/schemes/c-nps-vatsalya', label: 'NPS Vatsalya', note: 'An NPS account for a child, from ₹250 a year' },
     ],
     disclaimer: { text: 'NPS figures are projections at an assumed return and annuity rate; NPS returns are market-linked and annuity rates are set by the insurer at purchase. Exit options depend on your sector and corpus on the date you exit. FinCalix is not affiliated with PFRDA, NPS Trust or any pension fund.' },
 };

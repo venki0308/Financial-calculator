@@ -79,7 +79,6 @@ export default {
         { href: '/schemes/c-pmkvy', label: 'PM Kaushal Vikas Yojana', note: 'Skill training for ages 15–59' },
         { href: '/schemes/c-lakhpati', label: 'Lakhpati Didi', note: 'Livelihoods for SHG women under the same mission' },
         { href: '/schemes/c-mgnrega', label: 'VB-G RAM G (ex-MGNREGA)', note: 'Wage employment guarantee for rural households' },
-        { href: '/schemes/c-pmdaksh', label: 'PM-DAKSH', note: 'Another free skill-training scheme' },
     ],
     appIssues: [
         'App says the minimum placement target is 75%; the DDU-GKY 2.0 rule is at least 70% of trainees in work for six months.',

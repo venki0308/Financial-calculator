@@ -125,7 +125,8 @@ async function main() {
         const node = (t) => ld?.['@graph']?.find((n) => n['@type'] === t);
         const org = node('Organization'), site = node('WebSite'), app = node('SoftwareApplication'), faq = node('FAQPage');
         check('structured data parses: Organization, WebSite, SoftwareApplication, FAQPage', !!(org && site && app && faq));
-        check('Organization: no address, logo is a real PNG', org && !('address' in org) && /\.png$/.test(org.logo?.url || ''));
+        // No street address is published: at most the country (owner: "Sri Moksha Software Developers, India").
+        check('Organization: no street address (country only), legal name, logo is a real PNG', org && (!('address' in org) || (Object.keys(org.address).every((k) => ['@type', 'addressCountry'].includes(k)) && org.address.addressCountry === 'IN')) && org.legalName === 'Sri Moksha Software Developers' && /\.png$/.test(org.logo?.url || ''));
         check('WebSite SearchAction uses the working ?q= search', site?.potentialAction?.target?.urlTemplate === 'https://fincalix.com/?q={search_term_string}');
         check('SoftwareApplication: Android, FinanceApplication, price 0, real screenshots', app?.operatingSystem === 'Android' && app?.applicationCategory === 'FinanceApplication' && app?.offers?.price === '0'
             && Array.isArray(app?.screenshot) && app.screenshot.length >= 2 && app.screenshot.every((u) => /\/site\/en-[a-z-]+-light-560-[\w-]+\.webp$/.test(u)));
@@ -248,7 +249,7 @@ async function main() {
         check('/config.json unchanged: CORS *, max-age=300', cfg.r.headers.get('access-control-allow-origin') === '*' && cfg.r.headers.get('cache-control') === 'public, max-age=300, must-revalidate');
         check('manifest start_url reverted to "/"', JSON.parse((await get(prod.base, '/manifest.json')).body).start_url === '/');
         const locs = [...(await sitemapXml(prod.base)).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-        const indexedPaths = ['/calculators', ...catPaths, '/schemes', ...schemePages.filter((s) => s.index).map((s) => s.path)];
+        const indexedPaths = ['/calculators', ...catPaths, '/schemes', ...seo.TRUST_PAGES, ...schemePages.filter((s) => s.index).map((s) => s.path)];
         const wantLocs = ['https://fincalix.com/', ...seo.STATIC_PAGES.map((s) => `https://fincalix.com/${s}`), ...seo.FEATURE_PAGES.map((s) => `https://fincalix.com/${s}`),...seo.LEGAL_PAGES.map((s) => `https://fincalix.com/${s}`), ...indexedPaths.map((p) => `https://fincalix.com${p}`)].sort();
         const lastmods = [...(await sitemapXml(prod.base)).matchAll(/<loc>https:\/\/fincalix\.com\/schemes\/([^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)];
         check(`sitemap = landing + ${seo.STATIC_PAGES.length} static + ${seo.FEATURE_PAGES.length} feature + ${seo.LEGAL_PAGES.length} legal + ${indexedPaths.length} new indexable pages (no noindex page, apex only)`, JSON.stringify([...locs].sort()) === JSON.stringify(wantLocs), `${locs.length} URLs, want ${wantLocs.length}`);

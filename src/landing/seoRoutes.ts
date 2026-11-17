@@ -78,7 +78,6 @@ export const APP_CANONICAL: Readonly<Record<string, string>> = {
     '/calculator/salary-hike': '/salary-hike',
     '/calculator/form16-tax': '/tax-refund',
     '/insurance-compare': '/health-insurance-claim-settlement-ratio',
-    '/scheme/c-pmdaksh': '/schemes/c-pmkvy',
 };
 
 /**

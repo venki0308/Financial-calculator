@@ -78,7 +78,6 @@ export default {
     ],
     related: [
         { href: '/schemes/c-ddugky', label: 'DDU-GKY', note: 'Placement-linked training for rural youth' },
-        { href: '/schemes/c-pmdaksh', label: 'PM-DAKSH', note: 'Vocational training for SC, ST, OBC and EBC youth' },
         { href: '/schemes/c-pmvbry', label: 'PM Viksit Bharat Rozgar Yojana', note: 'Incentive for your first EPFO-registered job' },
     ],
     appIssues: [
