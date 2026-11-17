@@ -104,11 +104,15 @@ function generateAmortization(principal: number, emi: number, monthlyRate: numbe
     for (let m = 1; m <= months; m++) {
         const openingBalance = balance;
         const interestPart = balance * monthlyRate;
-        // Last month adjustment: pay remaining balance
-        const isLast = m === months;
-        const principalPart = isLast ? balance : Math.min(emi - interestPart, balance);
-        const actualEmi = isLast ? principalPart + interestPart : emi;
-        balance = isLast ? 0 : balance - principalPart;
+        // The month that clears the balance pays only what is left (the last month, or earlier when
+        // the rounded-up EMI has paid the loan off ahead of time); after that nothing more is due.
+        // Rows stay one per month so callers can index by month, but they carry ₹0, so the totals
+        // are not overstated (small loans over long tenures used to keep "paying" full EMIs).
+        const cleared = balance <= 0;
+        const clears = !cleared && (m === months || emi - interestPart >= balance);
+        const principalPart = cleared ? 0 : clears ? balance : emi - interestPart;
+        const actualEmi = cleared ? 0 : clears ? principalPart + interestPart : emi;
+        balance = cleared || clears ? 0 : balance - principalPart;
 
         cumPrincipal += principalPart;
         cumInterest += interestPart;

@@ -5,12 +5,17 @@ import type { ComponentType } from 'react';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const CALC_LOADERS: Readonly<Record<string, () => Promise<{ default: ComponentType<any> }>>> = {
     'cagr': () => import('./calcs/c/cagr'),
+    'car-loan': () => import('./calcs/c/car-loan'),
+    'education-loan': () => import('./calcs/c/education-loan'),
     'elss': () => import('./calcs/c/elss'),
+    'emi': () => import('./calcs/c/emi'),
     'fd': () => import('./calcs/c/fd'),
     'goal-planner': () => import('./calcs/c/goal-planner'),
+    'home-loan': () => import('./calcs/c/home-loan'),
     'kvp': () => import('./calcs/c/kvp'),
     'lumpsum': () => import('./calcs/c/lumpsum'),
     'nsc': () => import('./calcs/c/nsc'),
+    'personal-loan': () => import('./calcs/c/personal-loan'),
     'portfolio-rebalancing': () => import('./calcs/c/portfolio-rebalancing'),
     'post-office-mis': () => import('./calcs/c/post-office-mis'),
     'ppf': () => import('./calcs/c/ppf'),
@@ -19,4 +24,5 @@ export const CALC_LOADERS: Readonly<Record<string, () => Promise<{ default: Comp
     'sip': () => import('./calcs/c/sip'),
     'stp': () => import('./calcs/c/stp'),
     'swp': () => import('./calcs/c/swp'),
+    'two-wheeler-loan': () => import('./calcs/c/two-wheeler-loan'),
 };

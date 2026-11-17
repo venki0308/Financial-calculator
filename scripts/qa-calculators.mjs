@@ -410,6 +410,27 @@ console.log('\n2X. Gold loan LTV near ₹2.5L and ₹5L (app = website: goldLoan
 }
 
 // ──────────────────────────────────────────────────────────────
+// 2Y — Amortization: a loan that the rounded-up EMI clears early stops paying (17 Nov 2026 fix).
+// Independent month-by-month simulation vs calculateReducingEMI's totals.
+// ──────────────────────────────────────────────────────────────
+console.log('\n2Y. Reducing-balance schedule: no payments after the balance is cleared');
+{
+  const sim = (P, rate, n) => {
+    const r = rate / 1200, e = Math.ceil((P * r * (1 + r) ** n) / ((1 + r) ** n - 1));
+    let bal = P, paid = 0, months = 0;
+    for (let m = 1; m <= n && bal > 1e-9; m++) { const i = bal * r; const pay = m === n || e - i >= bal ? bal + i : e; paid += pay; bal = bal + i - pay; months = m; }
+    return { interest: paid - P, months };
+  };
+  for (const [P, rate, n, note] of [[10000, 24, 360, 'clears early'], [50000, 16, 360, 'clears early'], [3000000, 8.5, 240, 'published /home-loan-prepayment figure'], [1000000, 9, 60, 'published /emi figure'], [500000, 12, 60, 'personal loan']]) {
+    const app = calc.calculateReducingEMI(P, rate, n), ind = sim(P, rate, n);
+    check(`₹${P.toLocaleString('en-IN')} at ${rate}% for ${n} months (${note}) — total interest`, ind.interest, app.totalInterest, 1);
+    check(`  …rows after payoff carry ₹0 (schedule still has ${n} rows)`, 0, app.schedule.slice(ind.months).reduce((t, r) => t + r.emi, 0) + Math.abs(app.schedule.length - n), 0);
+  }
+  check('₹10,000 at 24% for 30 years: interest ₹43,830 (was ₹62,159 before the fix)', 43830, calc.calculateReducingEMI(10000, 24, 360).totalInterest, 1);
+  check('₹30 lakh at 8.5% for 20 years: interest unchanged at ₹32,48,210', 3248210, calc.calculateReducingEMI(3000000, 8.5, 240).totalInterest, 0);
+}
+
+// ──────────────────────────────────────────────────────────────
 // FINAL REPORT
 // ──────────────────────────────────────────────────────────────
 console.log('\n═══════════════════════════════════════════════════════════════');

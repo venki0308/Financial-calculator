@@ -62,6 +62,7 @@ export const APP_CANONICAL: Readonly<Record<string, string>> = {
     '/calculator/stp': '/stp',
     '/calculator/prag': '/portfolio-rebalancing',
     '/scheme/c-scss': '/scss',
+    '/calculator/education-loan': '/education-loan',
 };
 
 /**
@@ -84,6 +85,8 @@ export const FEATURE_PAGES: readonly string[] = [
     'sip', 'lumpsum', 'swp', 'stp', 'cagr', 'portfolio-rebalancing', 'elss', 'goal-planner',
     // Deposits group
     'fd', 'rd', 'ppf', 'nsc', 'kvp', 'post-office-mis', 'scss',
+    // Loans group (/emi is the hub)
+    'emi', 'home-loan', 'car-loan', 'personal-loan', 'two-wheeler-loan', 'education-loan',
 ];
 
 /** Old URLs whose content moved into a feature page (308 to the page). */
@@ -191,8 +194,6 @@ export function publicTarget(pathname: string, exact: Readonly<Record<string, st
 
 /** Approved targets that are not the tool's registry category (17 Nov 2026 table). */
 export const ROUTE_OVERRIDES: Readonly<Record<string, string>> = {
-    '/calculator/education-loan': '/emi',
-    '/two-wheeler-loan': '/emi',
     '/calculator/form16-tax': '/income-tax',
     '/expenses/accounts': '/expense-tracker',
     '/expenses/recurring': '/expense-tracker',
@@ -202,4 +203,4 @@ export const ROUTE_OVERRIDES: Readonly<Record<string, string>> = {
 /** App screens with no public content: they go to the noindex /in-the-app page. */
 export const IN_APP_SCREENS: readonly string[] = ['/app', '/profile', '/settings', '/dev/validator'];
 /** App routes that are also website pages with the same address. */
-export const SHARED_PAGES: readonly string[] = ['/calculators', '/schemes', '/goal-planner'];
+export const SHARED_PAGES: readonly string[] = ['/calculators', '/schemes', '/goal-planner', '/two-wheeler-loan'];

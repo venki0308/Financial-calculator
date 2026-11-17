@@ -10,7 +10,6 @@ export const ROUTE_TARGETS: Readonly<Record<string, string>> = {
     "/calculator/compound-interest": "/calculators/investments",
     "/calculator/credit-card-compare": "/calculators/credit-cards",
     "/calculator/credit-card-payoff": "/calculators/credit-cards",
-    "/calculator/education-loan": "/emi",
     "/calculator/form16-tax": "/income-tax",
     "/calculator/insurance": "/calculators/expense-goals",
     "/calculator/overdraft": "/calculators/loans",
@@ -29,7 +28,6 @@ export const ROUTE_TARGETS: Readonly<Record<string, string>> = {
     "/my-loans": "/calculators/loans",
     "/profile": "/in-the-app",
     "/settings": "/in-the-app",
-    "/two-wheeler-loan": "/emi",
     "/world-clock": "/calculators/utilities"
 };
 

@@ -289,8 +289,12 @@ console.log('\n7. Structured data and internal links (every page in the sitemaps
 if (fs.existsSync('scripts/qa-features')) {
     for (const f of fs.readdirSync('scripts/qa-features').filter((x) => x.endsWith('.mjs')).sort()) {
         console.log(`\n6. ${f}`);
-        const mod = await import(new URL(`./qa-features/${f}`, import.meta.url));
-        await mod.default({ check, load, inr, page: (slug) => fs.readFileSync(`dist/${slug}/index.html`, 'utf8') });
+        // A page that is not built yet reads as empty (its checks fail, the run goes on).
+        const page = (slug) => (fs.existsSync(`dist/${slug}/index.html`) ? fs.readFileSync(`dist/${slug}/index.html`, 'utf8') : '');
+        try {
+            const mod = await import(new URL(`./qa-features/${f}`, import.meta.url));
+            await mod.default({ check, load, inr, page });
+        } catch (e) { check(`${f} ran without an error`, false, String(e.message || e).slice(0, 200)); }
     }
 }
 
