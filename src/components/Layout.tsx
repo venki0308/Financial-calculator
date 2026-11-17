@@ -3,7 +3,6 @@ import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { Home, Calculator, FileText, Wallet, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { useScrollToTop } from '../hooks/useScrollToTop';
 
 import { Capacitor } from '@capacitor/core';
 import { Download } from 'lucide-react';
@@ -11,7 +10,7 @@ import { Download } from 'lucide-react';
 export default function Layout() {
     const location = useLocation();
     const { t } = useTranslation();
-    useScrollToTop();
+    // Scroll to the top on navigation: AppContent (src/App.tsx), for every route.
 
     // Fix ghost caret cursor bug in Android WebView when navigating
     useEffect(() => {

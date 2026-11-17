@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { App as CapApp } from '@capacitor/app';
 import { useSettingsStore } from './store/useSettingsStore';
 import { usePageViewTracker } from './hooks/usePageViewTracker';
+import { useScrollToTop } from './hooks/useScrollToTop';
 import { useTrackCalculator } from './hooks/useTrackCalculator';
 import { AnalyticsService } from './services/analyticsService';
 import { setupErrorHandling } from './utils/errorHandler';
@@ -174,6 +175,8 @@ function AppContent() {
     const lastBackPress = useRef<number>(0);
     const [showBackToast, setShowBackToast] = useState(false);
 
+    // Every screen opens at its top, the ones outside Layout too (legal pages, Data & Privacy).
+    useScrollToTop();
     usePageViewTracker();
     // Global "recently used" tracker — runs on EVERY navigation. The hook
     // filters to only paths that exist in the canonical `allCalcs` list, so
