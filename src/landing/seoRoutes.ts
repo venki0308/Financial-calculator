@@ -63,6 +63,7 @@ export const APP_CANONICAL: Readonly<Record<string, string>> = {
     '/calculator/prag': '/portfolio-rebalancing',
     '/scheme/c-scss': '/scss',
     '/calculator/education-loan': '/education-loan',
+    '/scheme/c-nps': '/nps',
 };
 
 /**
@@ -87,12 +88,15 @@ export const FEATURE_PAGES: readonly string[] = [
     'fd', 'rd', 'ppf', 'nsc', 'kvp', 'post-office-mis', 'scss',
     // Loans group (/emi is the hub)
     'emi', 'home-loan', 'car-loan', 'personal-loan', 'two-wheeler-loan', 'education-loan',
+    // Retirement group
+    'epf', 'nps', 'gratuity', 'atal-pension',
 ];
 
 /** Old URLs whose content moved into a feature page (308 to the page). */
 export const MERGED_PAGES: Readonly<Record<string, string>> = {
     '/schemes/c-ssy': '/sukanya-samriddhi',
     '/schemes/c-scss': '/scss',
+    '/schemes/c-nps': '/nps',
 };
 
 /** The hand-written calculator pages (folder names under public/), not yet rebuilt as feature pages. */

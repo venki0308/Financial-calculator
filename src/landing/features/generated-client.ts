@@ -4,16 +4,20 @@ import type { ComponentType } from 'react';
 /** One lazily loaded chunk per calculator in features/calcs/c (the 9 batch-1 calculators live in calcs/all.tsx). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const CALC_LOADERS: Readonly<Record<string, () => Promise<{ default: ComponentType<any> }>>> = {
+    'atal-pension': () => import('./calcs/c/atal-pension'),
     'cagr': () => import('./calcs/c/cagr'),
     'car-loan': () => import('./calcs/c/car-loan'),
     'education-loan': () => import('./calcs/c/education-loan'),
     'elss': () => import('./calcs/c/elss'),
     'emi': () => import('./calcs/c/emi'),
+    'epf': () => import('./calcs/c/epf'),
     'fd': () => import('./calcs/c/fd'),
     'goal-planner': () => import('./calcs/c/goal-planner'),
+    'gratuity': () => import('./calcs/c/gratuity'),
     'home-loan': () => import('./calcs/c/home-loan'),
     'kvp': () => import('./calcs/c/kvp'),
     'lumpsum': () => import('./calcs/c/lumpsum'),
+    'nps': () => import('./calcs/c/nps'),
     'nsc': () => import('./calcs/c/nsc'),
     'personal-loan': () => import('./calcs/c/personal-loan'),
     'portfolio-rebalancing': () => import('./calcs/c/portfolio-rebalancing'),
