@@ -24,6 +24,7 @@ export const CALC_LOADERS: Readonly<Record<string, () => Promise<{ default: Comp
     'goal-planner': () => import('./calcs/c/goal-planner'),
     'gratuity': () => import('./calcs/c/gratuity'),
     'gst': () => import('./calcs/c/gst'),
+    'health-insurance-claim-settlement-ratio': () => import('./calcs/c/health-insurance-claim-settlement-ratio'),
     'home-loan': () => import('./calcs/c/home-loan'),
     'hra': () => import('./calcs/c/hra'),
     'kvp': () => import('./calcs/c/kvp'),

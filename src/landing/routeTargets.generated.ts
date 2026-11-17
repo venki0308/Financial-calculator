@@ -10,7 +10,6 @@ export const ROUTE_TARGETS: Readonly<Record<string, string>> = {
     "/dev/validator": "/in-the-app",
     "/expenses/accounts": "/expense-tracker",
     "/expenses/recurring": "/expense-tracker",
-    "/insurance-compare": "/calculators/expense-goals",
     "/profile": "/in-the-app",
     "/settings": "/in-the-app",
     "/world-clock": "/calculators/utilities"

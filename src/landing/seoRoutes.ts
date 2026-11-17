@@ -77,6 +77,7 @@ export const APP_CANONICAL: Readonly<Record<string, string>> = {
     '/financial-advisor': '/financial-planning',
     '/calculator/salary-hike': '/salary-hike',
     '/calculator/form16-tax': '/tax-refund',
+    '/insurance-compare': '/health-insurance-claim-settlement-ratio',
 };
 
 /**
@@ -109,6 +110,7 @@ export const FEATURE_PAGES: readonly string[] = [
     'expense-tracker', 'business-tracker', 'term-insurance-cover', 'property-appreciation', 'break-even', 'financial-planning',
     // Tax group
     'hra', 'capital-gains', 'lrs-tcs', 'gst', 'salary-hike', 'tax-refund',
+    'health-insurance-claim-settlement-ratio',
 ];
 
 /** Old URLs whose content moved into a feature page (308 to the page). */

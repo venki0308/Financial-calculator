@@ -21,6 +21,7 @@ import * as p_goal_planner from './pages/goal-planner';
 import * as p_gold_loan_calculator from './pages/gold-loan-calculator';
 import * as p_gratuity from './pages/gratuity';
 import * as p_gst from './pages/gst';
+import * as p_health_insurance_claim_settlement_ratio from './pages/health-insurance-claim-settlement-ratio';
 import * as p_home_loan from './pages/home-loan';
 import * as p_home_loan_prepayment from './pages/home-loan-prepayment';
 import * as p_hra from './pages/hra';
@@ -73,6 +74,7 @@ import c_financial_planning from './calcs/c/financial-planning';
 import c_goal_planner from './calcs/c/goal-planner';
 import c_gratuity from './calcs/c/gratuity';
 import c_gst from './calcs/c/gst';
+import c_health_insurance_claim_settlement_ratio from './calcs/c/health-insurance-claim-settlement-ratio';
 import c_home_loan from './calcs/c/home-loan';
 import c_hra from './calcs/c/hra';
 import c_kvp from './calcs/c/kvp';
@@ -100,7 +102,7 @@ import c_two_wheeler_loan from './calcs/c/two-wheeler-loan';
 import type { ComponentType } from 'react';
 
 /** Every module in features/pages (each exports one FeatureDef). */
-export const PAGE_MODULES: ReadonlyArray<Record<string, unknown>> = [p_atal_pension, p_break_even, p_business_tracker, p_cagr, p_capital_gains, p_car_loan, p_cibil_score, p_compound_interest, p_credit_card_interest, p_credit_card_payoff, p_credit_card_tracker, p_education_loan, p_elss, p_emi, p_epf, p_expense_tracker, p_fd, p_financial_planning, p_goal_planner, p_gold_loan_calculator, p_gratuity, p_gst, p_home_loan, p_home_loan_prepayment, p_hra, p_income_tax, p_income_tax_due_dates, p_kvp, p_loan_foreclosure, p_lrs_tcs, p_lumpsum, p_nps, p_nsc, p_old_vs_new_tax_regime, p_overdraft_interest, p_personal_loan, p_portfolio_rebalancing, p_post_office_mis, p_post_office_td, p_ppf, p_property_appreciation, p_rd, p_salary_hike, p_scss, p_simple_interest, p_sip, p_sip_for_1_crore, p_step_up_sip, p_stp, p_sukanya_samriddhi, p_swp, p_tax_refund, p_term_insurance_cover, p_two_wheeler_loan];
+export const PAGE_MODULES: ReadonlyArray<Record<string, unknown>> = [p_atal_pension, p_break_even, p_business_tracker, p_cagr, p_capital_gains, p_car_loan, p_cibil_score, p_compound_interest, p_credit_card_interest, p_credit_card_payoff, p_credit_card_tracker, p_education_loan, p_elss, p_emi, p_epf, p_expense_tracker, p_fd, p_financial_planning, p_goal_planner, p_gold_loan_calculator, p_gratuity, p_gst, p_health_insurance_claim_settlement_ratio, p_home_loan, p_home_loan_prepayment, p_hra, p_income_tax, p_income_tax_due_dates, p_kvp, p_loan_foreclosure, p_lrs_tcs, p_lumpsum, p_nps, p_nsc, p_old_vs_new_tax_regime, p_overdraft_interest, p_personal_loan, p_portfolio_rebalancing, p_post_office_mis, p_post_office_td, p_ppf, p_property_appreciation, p_rd, p_salary_hike, p_scss, p_simple_interest, p_sip, p_sip_for_1_crore, p_step_up_sip, p_stp, p_sukanya_samriddhi, p_swp, p_tax_refund, p_term_insurance_cover, p_two_wheeler_loan];
 
 /** Calculators in features/calcs/c, by file name (= CalcKey). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -125,6 +127,7 @@ export const CALC_COMPONENTS: Readonly<Record<string, ComponentType<any>>> = {
     'goal-planner': c_goal_planner,
     'gratuity': c_gratuity,
     'gst': c_gst,
+    'health-insurance-claim-settlement-ratio': c_health_insurance_claim_settlement_ratio,
     'home-loan': c_home_loan,
     'hra': c_hra,
     'kvp': c_kvp,
