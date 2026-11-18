@@ -127,6 +127,7 @@ const BusinessDetail             = lr(() => import('./pages/business/BusinessDet
 const PrivacyPolicy              = lr(() => import('./pages/PrivacyPolicy'));
 const TermsOfService             = lr(() => import('./pages/TermsOfService'));
 const About                      = lr(() => import('./pages/About'));
+const SourcesDisclaimer          = lr(() => import('./pages/SourcesDisclaimer'));
 const DataPrivacy                = lr(() => import('./pages/DataPrivacy'));
 const DataSafety                 = lr(() => import('./pages/DataSafety'));
 const SavedCalculations          = lr(() => import('./pages/SavedCalculations'));
@@ -471,6 +472,7 @@ function AppContent() {
                         <Route path="/settings" element={<Settings />} />
                         <Route path="/notifications" element={<Notifications />} />
                         <Route path="/about" element={<About />} />
+                        <Route path="/sources" element={<SourcesDisclaimer />} />
 
                         {/* Calculators */}
                         <Route path="/calculator/loan-emi" element={<EMICalculator />} />

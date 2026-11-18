@@ -12,6 +12,7 @@ export const ROUTE_TARGETS: Readonly<Record<string, string>> = {
     "/expenses/recurring": "/expense-tracker",
     "/profile": "/in-the-app",
     "/settings": "/in-the-app",
+    "/sources": "/in-the-app",
     "/world-clock": "/calculators/utilities"
 };
 

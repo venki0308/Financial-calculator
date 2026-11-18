@@ -474,3 +474,8 @@ div.tool .tool-guide { color: var(--muted); }
     .ftable { font-size: 14px; }
     .ftable th, .ftable td { padding: 9px 10px; }
 }
+
+/* "FinCalix is not a government app" notice with the official link(s), under scheme and tax page headings */
+.govt-notice { margin: 12px 0 4px; padding: 10px 14px; border: 1px solid #f0c674; background: #fff8e6; color: #5c4400; border-radius: 10px; font-size: 14px; line-height: 1.5; max-width: 60em; overflow-wrap: anywhere; }
+.govt-notice a { color: var(--primary); font-weight: 600; }
+:root[data-theme="dark"] .govt-notice { background: #2a2208; border-color: #6b5413; color: #f3e2b0; }

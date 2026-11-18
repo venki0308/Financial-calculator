@@ -226,6 +226,6 @@ export const ROUTE_OVERRIDES: Readonly<Record<string, string>> = {
     '/budget-tracker': '/expense-tracker',
 };
 /** App screens with no public content: they go to the noindex /in-the-app page. */
-export const IN_APP_SCREENS: readonly string[] = ['/app', '/profile', '/settings', '/dev/validator'];
+export const IN_APP_SCREENS: readonly string[] = ['/app', '/profile', '/settings', '/sources', '/dev/validator'];
 /** App routes that are also website pages with the same address. */
 export const SHARED_PAGES: readonly string[] = ['/calculators', '/schemes', '/goal-planner', '/two-wheeler-loan', '/cibil-score', '/business-tracker'];

@@ -31,6 +31,13 @@ export interface Update { date: string; title: string; items: string[] }
 export const UPDATES: readonly Update[] = [
     {
         date: '2026-11-18',
+        title: 'Official sources on every scheme and tax page',
+        items: [
+            'Every scheme page, the scheme list and the tax and savings-rate guides now say at the top that FinCalix is not a government app and does not represent any government entity, with a link to the official portal or source.',
+        ],
+    },
+    {
+        date: '2026-11-18',
         title: 'Privacy policy: usage analytics named',
         items: [
             'The Privacy Policy and Data & Privacy pages now say plainly that FinCalix collects anonymous usage statistics through Google Analytics, that financial amounts are never sent and that the data is processed by Google. Usage analytics run for every user of the app and the website.',

@@ -1,6 +1,6 @@
 import { safeSetItem } from '../utils/safeStorage';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Bell, FileText, Star, Share2, Info, ChevronRight, Globe, Check, Trash2, Download, Upload, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Bell, FileText, Landmark, Star, Share2, Info, ChevronRight, Globe, Check, Trash2, Download, Upload, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -252,6 +252,8 @@ export default function Settings() {
                 <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest mb-3">{t('settings.about')}</p>
                 <div className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
                     <MenuItem icon={Info} label={t('settings.about')} color="#10B981" onClick={() => navigate('/about')} />
+                    <div className="h-px bg-border mx-4" />
+                    <MenuItem icon={Landmark} label={t('sources.title', 'Sources & Disclaimer')} color="#F59E0B" onClick={() => navigate('/sources')} />
                     <div className="h-px bg-border mx-4" />
                     <MenuItem icon={FileText} label={t('settings.privacyPolicy')} color="#3B82F6" onClick={() => navigate('/privacy-policy')} />
                     <div className="h-px bg-border mx-4" />

@@ -31,6 +31,16 @@ Build 21 carried the same version name; build 22 adds the fixes below.
 - Play Console answers for the Data safety form: `PLAY_DATA_SAFETY.md`.
 - **One source for the legal pages (17 Nov 2026).** The app's Privacy Policy, Data & Privacy, Terms and About now show the website's text (`src/pages/legal/*`) in the app's own frame; the app gains a Data & Privacy (`/data-privacy`) screen. Body text is English with headings in hi/te/ta/kn, as on the website (Malayalam users see English). Absolute claims that were not literally true were corrected on both: "100% safe", "we collect no personal data at all", "we never had it", "absolutely zero access", "stores nothing on any server", "never leaves your device", "Optional" analytics. qa-landing 5c checks the app and website text match in every language.
 
+### Play review: government information and sources (18 Nov 2026)
+Play rejected the listing under the Misleading Claims policy (government information without source links).
+- **Settings → About → Sources & Disclaimer** (all 6 languages): "FinCalix is not a government app and does not represent any government entity", the 10 official sources (incometax.gov.in, indiabudget.gov.in, rbi.org.in, indiapost.gov.in, nsiindia.gov.in, epfindia.gov.in, pfrda.org.in, gst.gov.in, myscheme.gov.in, india.gov.in) and a disclaimer.
+- **Schemes list and every scheme screen:** the same notice at the top with the official portal link (myscheme.gov.in on the list; the scheme's own portal in the scheme screen's fixed header).
+- **"Official source"** on the 19 calculators that use government rules or rates (income tax, Form 16/TDS, salary hike, HRA, capital gains, LRS/TCS, GST, PPF, SSY, NSC, KVP, SCSS, Post Office MIS/TD/RD, EPF, NPS, gratuity, gold loan LTV). One list: `src/data/officialSources.ts`.
+- Official links open in the in-app browser (Chrome Custom Tabs, `@capacitor/browser` 8.0.5).
+- Broken scheme links replaced: PM-JAY → nha.gov.in/PM-JAY, PM-DAKSH → dosje.gov.in, NAPS → www.apprenticeshipindia.gov.in, PMEGP → www.kvic.gov.in, DAY-NRLM → www.rural.gov.in, MCGS-MSME source → www.ncgtc.in.
+- Website: the notice and official links under the heading of every scheme page, /schemes and the tax and government-rate guides. Store listing draft: notice and source URLs in the full description.
+- `node scripts/qa-links.mjs` checks all of it and that every official URL answers 200.
+
 ### Follow-up
 - Follow-up: translate legal body text into hi/te/ta/kn/ml from the shared source; native-speaker review.
 

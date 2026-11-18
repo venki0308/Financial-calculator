@@ -12,7 +12,8 @@ import { CALCULATORS_INTRO, IMPORT_STEPS, PUBLISHER, SCHEMES_INTRO, SUPPORT_EMAI
 import { METHODS, PROCESS, UPDATES } from './trust-content';
 import { TOOL_BLURBS } from './tool-blurbs';
 import { EXPORT_PAGE, ORIGIN } from './seoRoutes';
-import { DataTable } from './features/ui';
+import { DataTable, GovtNoticeWeb } from './features/ui';
+import { SCHEME_PORTAL } from '../data/officialSources';
 import type { ToolCard } from './data';
 
 interface Crumb { href?: string; label: string }
@@ -97,6 +98,7 @@ export function SchemesView({ count, footer }: { count: number; footer: FooterGr
             <header className="page-head">
                 <p className="eyebrow">{count} central schemes</p>
                 <h1 className="serif">Government schemes, explained simply</h1>
+                <GovtNoticeWeb label="Official scheme portal" links={[SCHEME_PORTAL]} />
                 <p className="lead">{SCHEMES_INTRO}</p>
             </header>
             {groups.map((g) => (
@@ -150,6 +152,7 @@ export function SchemeView({ page, footer }: { page: SchemePage; footer: FooterG
             <header className="page-head">
                 <p className="eyebrow">{s.category} · Central government scheme</p>
                 <h1 className="serif">{s.name}</h1>
+                <GovtNoticeWeb label="Official portal" links={[{ name: s.name, url: s.officialWebsite }]} />
                 <p className="lead">{s.description}</p>
             </header>
             <dl className="facts">
@@ -176,6 +179,7 @@ function SchemeViewV2({ page, facts, footer }: { page: SchemePage; facts: Array<
             <header className="page-head fhead">
                 <p className="eyebrow">{s.category} · Central government scheme</p>
                 <h1 className="serif">{c.h1}</h1>
+                <GovtNoticeWeb label="Official portal" links={[{ name: c.portal.label, url: c.portal.url }]} />
                 <div className="answer">{c.answer.map((p) => <p key={p}>{p}</p>)}</div>
                 <p className="updated">
                     Last verified {page.verified} · Sources:{' '}

@@ -7,6 +7,8 @@ import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { useSchemeStore } from '../store/useSchemeStore';
 import { useTranslatedSchemeList } from '../hooks/useTranslatedScheme';
 import DisclaimerComponent from '../components/DisclaimerComponent';
+import { GovtNotice } from '../components/OfficialSources';
+import { SCHEME_PORTAL } from '../data/officialSources';
 
 const catIcons: Record<string, React.ElementType> = { Women: Users, Education: GraduationCap, Farmers: Tractor, MSME: Building2, 'Senior Citizens': UserCheck, Insurance: Shield, Housing: HomeIcon, Banking: Landmark, Pension: Clock, Health: Heart, Employment: Briefcase, 'Social Welfare': HandHeart };
 
@@ -30,6 +32,10 @@ export default function Schemes() {
             <div className="mb-4">
                 <h1 className="text-2xl font-bold text-slate-900 dark:text-foreground">{t('schemes.title')}</h1>
                 <p className="text-muted-foreground text-sm mt-1">{t('schemes.subtitle')}</p>
+            </div>
+
+            <div className="mb-4">
+                <GovtNotice url={SCHEME_PORTAL.url} label={t('sources.schemePortal', 'Official scheme portal')} />
             </div>
 
             {/* Search */}

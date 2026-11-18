@@ -7901,5 +7901,28 @@
     "limitNote": "LRS cap: USD 250,000 per person per FY. The {{threshold}} threshold is aggregate across all your LRS remittances in the FY. Section 206C(1G) of the 1961 Act → Section 394 of the Income-tax Act, 2025.",
     "insightNoTcs": "No TCS on this remittance — you are within the ₹10 lakh annual threshold.",
     "insightSplit": "Only {{amount}} of this remittance crosses the threshold, so TCS applies to that part alone."
+  },
+  "sources": {
+    "title": "Sources & Disclaimer",
+    "notGovt": "FinCalix is not a government app and does not represent any government entity.",
+    "intro": "Tax rules, interest rates, limits and scheme details in FinCalix are taken from the official sources below. Check the official source before you act.",
+    "listTitle": "Official sources",
+    "disclaimerTitle": "Disclaimer",
+    "disclaimerBody": "FinCalix is an independent app by Sri Moksha Software Developers. Results are estimates for information only, not financial, tax or legal advice. Rules and rates change; the official website is the final authority.",
+    "officialSource": "Official source",
+    "officialPortal": "Official portal",
+    "schemePortal": "Official scheme portal",
+    "purpose": {
+      "incometax": "Income tax slabs, deductions, TDS, HRA and capital gains",
+      "indiabudget": "Union Budget announcements and tax changes",
+      "rbi": "Repo rate, loan rules, gold loan limits and LRS",
+      "indiapost": "Post Office savings schemes: MIS, TD, RD, SCSS, NSC, KVP",
+      "nsiindia": "Small savings interest rates: PPF, SSY, NSC, KVP, SCSS",
+      "epfindia": "EPF contributions and interest rate",
+      "pfrda": "NPS and Atal Pension Yojana rules",
+      "gst": "GST rates and rules",
+      "myscheme": "Government scheme eligibility, benefits and how to apply",
+      "indiagov": "National Portal of India: government services and schemes"
+    }
   }
 }

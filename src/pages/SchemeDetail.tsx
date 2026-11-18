@@ -9,6 +9,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import APYContributionCalculator from '../components/APYContributionCalculator';
 import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
+import { GovtNotice, OfficialLink } from '../components/OfficialSources';
 
 export default function SchemeDetail() {
     const { id } = useParams();
@@ -76,6 +77,10 @@ export default function SchemeDetail() {
                     })}
                 </div>
                 <h1 className="text-lg font-bold text-slate-900 dark:text-foreground">{scheme.name}</h1>
+                {/* In the header, right under the scheme name: on the first screen, no scrolling needed. */}
+                <div className="mt-3">
+                    <GovtNotice url={scheme.officialWebsite} label={t('sources.officialPortal', 'Official portal')} />
+                </div>
             </div>
 
 
@@ -229,7 +234,7 @@ export default function SchemeDetail() {
                         </div>
                         <p className="text-muted-foreground dark:text-muted-foreground text-[11px] leading-relaxed pl-6">
                             {t('schemes.lastVerified')}: {new Date(scheme.lastVerified).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                            {scheme.verifiedSource && <> · {t('schemes.source')}: <a href={`https://${scheme.verifiedSource}`} target="_blank" rel="noopener noreferrer" className="text-brand-blue underline">{scheme.verifiedSource}</a></>}
+                            {scheme.verifiedSource && <> · {t('schemes.source')}: <OfficialLink url={`https://${scheme.verifiedSource}`} className="font-normal">{scheme.verifiedSource}</OfficialLink></>}
                         </p>
                         <p className="text-muted-foreground text-[10px] mt-1 pl-6 italic">{t('schemes.alwaysCheck')}</p>
                     </div>

@@ -34,6 +34,7 @@ node scripts/qa-loan-engine.mjs
 node scripts/qa-export-safety.mjs     # CSV/Excel formula-injection guard
 node scripts/qa-quotes.mjs            # 366 daily quotes: ids/days, 6 languages, ≤180 chars, script, sources, authors, mix, day rule
 node scripts/qa-consent-network.mjs   # analytics events, no switch in Settings, offline queue (needs build:web + Chrome)
+node scripts/qa-links.mjs             # Play Misleading Claims: "not a government app" notice + official sources (app, 6 languages, website) and every official URL answers 200 (Chrome fallback; --offline skips the network)
 node scripts/qa-landing.mjs           # website: no-JS content, links, route targets, generated pages, sitemap, export banner, iPhone/QR (needs build:web + Chrome)
 node scripts/qa-feature-pages.mjs     # website feature + scheme pages: independent maths (+ scripts/qa-features/*.mjs per group), figures on pages, JSON-LD, links/orphans, shared wording < 10% (needs build:web)
 node scripts/landing/build-page-og.mjs   # per-page social cards → public/og/p (after build:web when pages are added or retitled; then build again)

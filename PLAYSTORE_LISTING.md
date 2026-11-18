@@ -19,6 +19,16 @@ Free Financial Calculator India: Income Tax FY 2026-27, EMI, SIP, FD, PPF & GST
 
 Every salaried employee, business owner, and investor in India needs a reliable financial calculator. FinCalix gives you 45+ calculators, trackers and planners — updated for Budget 2026 (FY 2026-27) — in one fast app. No login required. No ads. 100% free.
 
+ℹ️ FinCalix is not a government app and does not represent any government entity. Rules, rates and scheme details come from official sources:
+• Income tax: https://www.incometax.gov.in
+• Union Budget: https://www.indiabudget.gov.in
+• RBI: https://www.rbi.org.in
+• Post Office schemes: https://www.indiapost.gov.in, https://www.nsiindia.gov.in
+• EPF: https://www.epfindia.gov.in
+• NPS: https://www.pfrda.org.in
+• GST: https://www.gst.gov.in
+• Government schemes: https://www.myscheme.gov.in, https://www.india.gov.in
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 INCOME TAX CALCULATOR (Budget 2026-27 Updated)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -51,7 +61,7 @@ Every salaried employee, business owner, and investor in India needs a reliable 
 • SWP Calculator — Systematic Withdrawal Plan
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🏛 GOVERNMENT SCHEME CALCULATORS
+🏛 SMALL SAVINGS & RETIREMENT CALCULATORS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 • PPF Calculator (Public Provident Fund)
 • NPS Calculator (National Pension System)
@@ -94,16 +104,10 @@ Every salaried employee, business owner, and investor in India needs a reliable 
 ✨ WHY FINCALIX?
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ 100% Free — no hidden charges, no subscription, no premium tier
-✅ Works Offline — calculate anywhere, anytime
-✅ No Login Required — open and calculate instantly
 ✅ Updated for Budget 2026 — FY 2026-27 tax rules, checked against the Income-tax Act, 2025
-✅ Export as PDF — share or save professional reports
 ✅ CA Disclaimer included — for responsible financial guidance
-✅ Dark & Light Mode — easy on your eyes
 ✅ Multi-language — English, Hindi, Telugu, Tamil, Kannada, Malayalam
 ✅ Built in India by Sri Moksha Software Developers 🇮🇳
-
-Download FinCalix today and take control of your financial future. Whether you're planning your taxes, comparing investments, or tracking EMIs — FinCalix has you covered.
 
 Made with ❤️ in India
 ```

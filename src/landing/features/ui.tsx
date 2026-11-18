@@ -10,6 +10,23 @@ import { longDate } from '../site-data';
 import { ORIGIN } from '../seoRoutes';
 import { getCalc } from './calcs/resolve';
 import type { DisclaimerKey, FeatureDef, Faq } from './types';
+import { NOT_GOVT_NOTICE_EN, WEBSITE_PAGE_SOURCES, hostOf } from '../../data/officialSources';
+
+/**
+ * "FinCalix is not a government app …" with the official link(s), under the heading of scheme
+ * pages and of guides built on government rules (same text as the app's `sources.notGovt`).
+ */
+export function GovtNoticeWeb({ label, links }: { label: string; links: ReadonlyArray<{ name: string; url: string }> }) {
+    return (
+        <p className="govt-notice" data-govt-notice="">
+            <strong>{NOT_GOVT_NOTICE_EN}</strong>{' '}
+            {label}:{' '}
+            {links.map((l, i) => (
+                <span key={l.url}>{i > 0 && ' · '}<a href={l.url} target="_blank" rel="noopener external" data-official-link={l.url}>{l.name} ({hostOf(l.url)}) <span aria-hidden="true">↗</span></a></span>
+            ))}
+        </p>
+    );
+}
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -137,6 +154,7 @@ export function FeatureView({ f, footer, catLabel, catPath }: { f: FeatureDef; f
                     <header className="page-head fhead">
                         <p className="eyebrow">{f.eyebrow}</p>
                         <h1 className="serif">{f.h1}</h1>
+                        {WEBSITE_PAGE_SOURCES[f.slug] && <GovtNoticeWeb label="Official source" links={WEBSITE_PAGE_SOURCES[f.slug]} />}
                         <div className="answer">{f.answer}</div>
                         <p className="updated">
                             Last updated {longDate(f.updated)} · Sources:{' '}

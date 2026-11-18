@@ -5,6 +5,13 @@ changed in the app; each needs its own app release. Sources: `seo/research/verif
 
 ## Ideas
 
+- **Scheme "How to apply" steps name portals that did not answer on 18 Nov 2026** (plain text,
+  not links; the link fields were replaced): PM-JAY "Check eligibility at pmjay.gov.in" (timed out;
+  link now nha.gov.in/PM-JAY), PM-DAKSH "Register at pmdaksh.dosje.gov.in" (timed out), NAPS
+  "apprenticeshipindia.gov.in" (only the www host works), PMEGP "Visit:
+  https://www.kviconline.gov.in/pmegpeportal/" (DNS did not resolve; also in hi/te/ta/kn/ml
+  scheme translations). Re-check and rewrite the steps from the official pages.
+
 - **Moratorium support in the education loan calculator.** Interest during the course and grace
   period (simple or added to the principal), then EMIs. The website explains it with a worked
   example but does not claim the app models it (SEO plan §9, decision 1).

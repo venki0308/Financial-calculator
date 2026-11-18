@@ -1,5 +1,8 @@
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { CALCULATOR_SOURCES } from '../data/officialSources';
+import { OfficialSourceRow } from './OfficialSources';
 import { ChevronDown, ChevronUp, Lightbulb, BarChart2, ClipboardList, TrendingUp, Landmark, ShieldCheck, Target, CreditCard, AlertCircle, Scale, Building2, Briefcase, Home as HomeIcon, Gem } from 'lucide-react';
 
 export type ModuleName = 'advisor' | 'emi' | 'tax' | 'sip' | 'fd' | 'rd' | 'ppf' | 'hra' | 'gratuity' | 'gst' | 'goal' | 'expense' | 'overdraft' | 'schemes' | 'compare' | 'general' | 'time' | 'scientific' | 'swp' | 'stp' | 'prag' | 'cagr' | 'lumpsum' | 'epf' | 'nps' | 'ssy' | 'nsc' | 'kvp' | 'pomis' | 'potd' | 'scss' | 'budget' | 'insurance' | 'mortgage' | 'property' | 'goldLoan' | 'creditCard';
@@ -26,6 +29,8 @@ export interface DisclaimerProps {
 export default function DisclaimerComponent({ module = 'general' }: DisclaimerProps) {
     const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
+    // Calculators built on government rules or rates show their official source, always visible.
+    const sources = CALCULATOR_SOURCES[useLocation().pathname] || [];
 
     const Icon = MODULE_ICONS[module] || AlertCircle;
     const title = t(`disclaimer.${module}.title`);
@@ -56,6 +61,12 @@ export default function DisclaimerComponent({ module = 'general' }: DisclaimerPr
                     <p className="text-sm leading-relaxed text-left opacity-90">
                         {text}
                     </p>
+                </div>
+            )}
+
+            {sources.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-current/20">
+                    <OfficialSourceRow sources={sources} />
                 </div>
             )}
         </div>

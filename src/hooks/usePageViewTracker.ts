@@ -20,6 +20,7 @@ const ROUTE_NAMES: Record<string, string> = {
     '/settings': 'Settings',
     '/notifications': 'Notifications',
     '/about': 'About',
+    '/sources': 'Sources & Disclaimer',
     '/budget-tracker': 'Budget Tracker',
     '/goal-planner': 'Goal Planner',
     '/financial-advisor': 'Smart Planner',

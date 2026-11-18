@@ -211,7 +211,7 @@ console.log('\n5. Shared text between feature pages (8-word shingles of the page
         // Fixed template furniture (same on every page of its kind) is left out: breadcrumbs, the
         // calculator shell, related links, disclaimers, the "Last updated · Sources" line, and on scheme
         // pages the facts box and the status note. The page's own text is what is compared.
-        for (const m of ['class="crumbs"', 'class="fcalc-wrap"', 'class="related', 'class="disclaimer"', 'class="updated"', 'class="facts"', 'class="disc"', 'class="snote"']) { let prev; do { prev = h; h = cut(h, m); } while (h !== prev); }
+        for (const m of ['class="crumbs"', 'class="fcalc-wrap"', 'class="related', 'class="disclaimer"', 'class="updated"', 'class="facts"', 'class="disc"', 'class="snote"', 'class="govt-notice"']) { let prev; do { prev = h; h = cut(h, m); } while (h !== prev); }
         return h.replace(/<[^>]+>/g, ' ').replace(/&[a-z#0-9]+;/g, ' ').toLowerCase().replace(/[^a-z0-9₹%.\s]/g, ' ').split(/\s+/).filter(Boolean);
     };
     const shingles = (w) => { const s = new Set(); for (let i = 0; i + 8 <= w.length; i++) s.add(w.slice(i, i + 8).join(' ')); return s; };
