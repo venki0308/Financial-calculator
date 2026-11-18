@@ -5,6 +5,8 @@ import {
   Wallet, PiggyBank, BarChart3, CalendarDays, Trash2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { catNameUI, noteUI } from '../../utils/appUiLabels';
+import { rangeLabelUI, weekdayShortUI, fullDateUI } from '../../utils/appUiDates';
 import { useExpenseTheme } from '../../theme/expenseTheme';
 import { getEntriesForDateRange, getCategoryById, deleteEntriesInRange } from '../../utils/expenseStorage';
 import {
@@ -304,7 +306,7 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
           }}
         >
           <p className="text-sm font-bold" style={{ color: et.textPrimary }}>
-            {week.label}
+            {rangeLabelUI(week)}
           </p>
           {isCurrentWeek && (
             <span
@@ -549,7 +551,7 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
                     className="text-xs font-bold w-9 text-left"
                     style={{ color: isToday ? et.accentInvestment : et.textSecondary }}
                   >
-                    {DAY_NAMES[i]}
+                    {weekdayShortUI(i)}
                   </span>
 
                   {/* Bar track */}
@@ -624,7 +626,7 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
                                   className="flex-1 text-xs truncate"
                                   style={{ color: et.textPrimary }}
                                 >
-                                  {entry.description || cat?.name || entry.category}
+                                  {noteUI(entry.description, t) || catNameUI(cat, t) || entry.category}
                                 </span>
                                 <span
                                   className="text-xs font-bold"
@@ -784,7 +786,7 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
                     className="text-[11px] font-bold uppercase tracking-wide"
                     style={{ color: et.textMuted }}
                   >
-                    {formatFullDate(group.date)}
+                    {fullDateUI(group.date)}
                   </p>
                   <div
                     className="flex-1 h-px"
@@ -846,7 +848,7 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
                             className="text-xs font-semibold truncate"
                             style={{ color: et.textPrimary }}
                           >
-                            {entry.description || cat?.name || entry.category}
+                            {noteUI(entry.description, t) || catNameUI(cat, t) || entry.category}
                           </p>
                           <p
                             className="text-[10px] flex items-center gap-1.5 mt-0.5"
@@ -863,7 +865,7 @@ export default function WeeklyTab({ refreshKey = 0, onEditEntry }: WeeklyTabProp
                             </span>
                             {entry.type === 'transfer'
                               ? t('expenses.transfer', 'Transfer')
-                              : (cat?.name ?? entry.category)}
+                              : (catNameUI(cat, t) || entry.category)}
                           </p>
                         </div>
 

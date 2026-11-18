@@ -19,6 +19,7 @@ import {
   calculateAvalanche, calculateSnowball, calculateHybrid, calculateEqual,
   calculateMinimumOnly, type PayoffCardInput, type PayoffResult, getMinimumDue
 } from '../utils/creditCardCalculations';
+import { formatDateUI } from '../utils/uiLocale';
 
 const fmt = (v: number) => formatINR(Math.round(v));
 
@@ -54,13 +55,13 @@ export default function CreditCardPayoffCalculator() {
 
   // ── Manual cards ──
   const [manualCards, setManualCards] = useState<ManualCard[]>([
-    { id: 'm1', name: 'Card 1', balance: 50000, apr: 42, minDue: 2500 },
+    { id: 'm1', name: t('loanUi.cardN', 'Card {{n}}', { n: 1 }), balance: 50000, apr: 42, minDue: 2500 },
   ]);
 
   const addCard = () => {
     if (manualCards.length >= 20) return;
     const n = manualCards.length + 1;
-    setManualCards(prev => [...prev, { id: `m${Date.now()}`, name: `Card ${n}`, balance: 0, apr: 42, minDue: 0 }]);
+    setManualCards(prev => [...prev, { id: `m${Date.now()}`, name: t('loanUi.cardN', 'Card {{n}}', { n }), balance: 0, apr: 42, minDue: 0 }]);
   };
   const removeCard = (id: string) => setManualCards(prev => prev.filter(c => c.id !== id));
   const updateCard = (id: string, field: keyof ManualCard, val: string | number) => {
@@ -167,8 +168,8 @@ export default function CreditCardPayoffCalculator() {
   const payoffDate = useCallback((months: number) => {
     if (months <= 0 || months === Infinity) return '-';
     const d = new Date(); d.setMonth(d.getMonth() + months);
-    return d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
-  }, []);
+    return formatDateUI(d, { month: 'short', year: 'numeric' });
+  }, [t]);
 
   // ── Export ──
   const buildExportConfig = useCallback((): ExportConfig => {
@@ -259,7 +260,7 @@ export default function CreditCardPayoffCalculator() {
               <div key={c.id} className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 space-y-2">
                 <div className="flex items-center justify-between">
                   <input value={c.name} onChange={e => updateCard(c.id, 'name', e.target.value)}
-                    className="text-sm font-semibold bg-transparent border-b border-gray-300 dark:border-gray-600 outline-none w-40" placeholder="Card name" />
+                    className="text-sm font-semibold bg-transparent border-b border-gray-300 dark:border-gray-600 outline-none w-40" placeholder={t('loanUi.cardName', 'Card name')} />
                   {manualCards.length > 1 && (
                     <button onClick={() => removeCard(c.id)} className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"><Trash2 size={14} /></button>
                   )}
@@ -298,8 +299,8 @@ export default function CreditCardPayoffCalculator() {
               onChange={e => setBudget(Number(e.target.value))}
               className="w-full accent-blue-600 h-2" />
             <div className="flex justify-between text-[9px] text-gray-400">
-              <span>Min: {fmt(totalMinimum)}</span>
-              <span>Max: {fmt(maxBudget)}</span>
+              <span>{t('loanUi.minAmount', 'Min: {{amount}}', { amount: fmt(totalMinimum) })}</span>
+              <span>{t('loanUi.maxAmount', 'Max: {{amount}}', { amount: fmt(maxBudget) })}</span>
             </div>
             {/* Live preview of payoff impact */}
             {hasCards && (
@@ -351,7 +352,7 @@ export default function CreditCardPayoffCalculator() {
             className="rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 p-5 text-white shadow-lg">
             <p className="text-[10px] uppercase tracking-widest opacity-80 mb-1">{t('ccPayoff.debtFreedomDate', 'Debt Freedom Date')}</p>
             <p className="text-3xl font-black mb-1">{payoffDate(current.totalMonths)}</p>
-            <p className="text-xs opacity-80 mb-4">{current.totalMonths} months · {fmt(effectiveBudget)}/mo</p>
+            <p className="text-xs opacity-80 mb-4">{current.totalMonths} {t('common.months', 'months')} · {fmt(effectiveBudget)}{t('expenses.perMonth', '/mo')}</p>
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-white/15 rounded-xl p-2.5 text-center">
                 <p className="text-[9px] uppercase opacity-70">{t('ccPayoff.totalDebt', 'Total Debt')}</p>
@@ -449,14 +450,14 @@ export default function CreditCardPayoffCalculator() {
               <div className="text-center p-3 rounded-xl bg-white dark:bg-gray-900/60 border border-red-200 dark:border-red-800">
                 <p className="text-[9px] text-red-500 uppercase font-bold mb-1">{t('ccPayoff.minOnly', '⚠️ Minimum Only')}</p>
                 <p className="text-2xl font-black text-red-600">{fmt(minimumOnly.totalInterest)}</p>
-                <p className="text-[11px] text-gray-500 font-semibold">{minimumOnly.totalMonths} months</p>
-                <p className="text-[9px] text-gray-400 mt-1">Payoff: {payoffDate(minimumOnly.totalMonths)}</p>
+                <p className="text-[11px] text-gray-500 font-semibold">{minimumOnly.totalMonths} {t('common.months', 'months')}</p>
+                <p className="text-[9px] text-gray-400 mt-1">{t('loanUi.payoffOn', 'Payoff: {{date}}', { date: payoffDate(minimumOnly.totalMonths) })}</p>
               </div>
               <div className="text-center p-3 rounded-xl bg-white dark:bg-gray-900/60 border border-green-200 dark:border-green-800">
                 <p className="text-[9px] text-green-500 uppercase font-bold mb-1">{t('ccPayoff.yourPlan', '✅ Your Plan')}</p>
                 <p className="text-2xl font-black text-green-600">{fmt(current.totalInterest)}</p>
-                <p className="text-[11px] text-gray-500 font-semibold">{current.totalMonths} months</p>
-                <p className="text-[9px] text-gray-400 mt-1">Payoff: {payoffDate(current.totalMonths)}</p>
+                <p className="text-[11px] text-gray-500 font-semibold">{current.totalMonths} {t('common.months', 'months')}</p>
+                <p className="text-[9px] text-gray-400 mt-1">{t('loanUi.payoffOn', 'Payoff: {{date}}', { date: payoffDate(current.totalMonths) })}</p>
               </div>
             </div>
             <div className="text-center pt-3 border-t border-red-200 dark:border-red-800">
@@ -495,7 +496,7 @@ export default function CreditCardPayoffCalculator() {
                     { label: t('ccPayoff.payoffDate', 'Payoff Date'), fn: (r: PayoffResult) => payoffDate(r.totalMonths) },
                     { label: t('ccPayoff.totalInterest', 'Total Interest'), fn: (r: PayoffResult) => fmt(r.totalInterest) },
                     { label: t('ccPayoff.intSaved', 'Interest Saved'), fn: (r: PayoffResult) => fmt(minimumOnly.totalInterest - r.totalInterest) },
-                    { label: t('ccPayoff.timeSaved', 'Time Saved'), fn: (r: PayoffResult) => `${minimumOnly.totalMonths - r.totalMonths} mo` },
+                    { label: t('ccPayoff.timeSaved', 'Time Saved'), fn: (r: PayoffResult) => `${minimumOnly.totalMonths - r.totalMonths} ${t('mortgage.mo', 'mo')}` },
                   ].map((row, i) => (
                     <tr key={i} className="border-t border-gray-100 dark:border-gray-800">
                       <td className="p-2 font-medium text-gray-600 dark:text-gray-300">{row.label}</td>
@@ -511,7 +512,7 @@ export default function CreditCardPayoffCalculator() {
         {/* ── Single card note ── */}
         {hasCards && activeInputs.length === 1 && (
           <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-center">
-            <p className="text-blue-600 dark:text-blue-400 text-xs font-semibold">💡 Add more cards to compare Avalanche vs Snowball strategies</p>
+            <p className="text-blue-600 dark:text-blue-400 text-xs font-semibold">💡 {t('loanUi.addMoreCards', 'Add more cards to compare the Avalanche and Snowball strategies')}</p>
           </div>
         )}
 
@@ -533,7 +534,7 @@ export default function CreditCardPayoffCalculator() {
                     </div>
                     <div className="text-right flex-shrink-0">
                       <p className="text-xs font-bold">{payoffDate(p.month)}</p>
-                      <p className="text-[10px] text-red-500">Interest: {fmt(p.interest)}</p>
+                      <p className="text-[10px] text-red-500">{t('loanUi.interestAmount', 'Interest: {{amount}}', { amount: fmt(p.interest) })}</p>
                     </div>
                   </div>
                 );

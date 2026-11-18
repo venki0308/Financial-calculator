@@ -12,6 +12,7 @@ import { App as CapApp } from '@capacitor/app';
 import { allCalcs } from '../data/calculatorList';
 import FinancialQuote from '../components/FinancialQuote';
 import { schemes } from '../data/schemes';
+import { calcNameKey } from '../utils/appUiCalcName';
 
 /** Shown on the Government Schemes card (was a fixed "50+"). */
 const CENTRAL_SCHEME_COUNT = schemes.filter((s) => s.governmentLevel === 'central' && s.isActive !== false).length;
@@ -210,7 +211,8 @@ export default function Home() {
                 const calcInList = allCalcs.find(c => c.path === path);
                 // Canonical list wins (icon, colour, i18n label); the local catalog only covers legacy alias paths
                 const info = calcInList ? { icon: calcInList.icon, color: calcInList.color, label: calcInList.nameKey } : calcCatalog[path];
-                const label = calcInList ? t(calcInList.nameKey as any) : (t(info.label as any) !== info.label ? t(info.label as any) : info.label);
+                const aliasKey = calcNameKey(info.label);
+                const label = calcInList ? t(calcInList.nameKey as any) : (t(info.label as any) !== info.label ? t(info.label as any) : aliasKey ? t(aliasKey as any) : info.label);
                 return {
                     label,
                     path,

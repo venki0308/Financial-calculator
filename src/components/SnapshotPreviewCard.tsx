@@ -21,10 +21,11 @@
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Calendar } from 'lucide-react';
 import { useAppColors } from '../theme/useAppColors';
+import { formatDateUI } from '../utils/uiLocale';
 
 function fmtDate(dateStr: string): string {
     if (!dateStr) return '—';
-    return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    return formatDateUI(new Date(dateStr), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export interface SnapshotMetric {

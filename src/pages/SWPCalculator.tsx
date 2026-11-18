@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, ChevronLeft, ChevronRight, Activity, BrainCircuit, TrendingUp, AlertTriangle, ShieldCheck, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatINR } from '../utils/calculations';
+import { formatDateUI } from '../utils/uiLocale';
 import { exportToPDF, exportToExcel, type ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
@@ -131,8 +132,7 @@ export default function SWPCalculator() {
         }
         const now = new Date();
         const depletionDate = longevityMonths !== null
-            ? new Date(now.getFullYear(), now.getMonth() + longevityMonths, 1)
-                .toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+            ? formatDateUI(new Date(now.getFullYear(), now.getMonth() + longevityMonths, 1), { month: 'short', year: 'numeric' })
             : null;
 
         // Reverse solve (annuity formula): the max monthly withdrawal this
@@ -406,7 +406,7 @@ export default function SWPCalculator() {
                             className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground"
                         />
                         <p className="text-[10px] text-muted-foreground mt-1.5">
-                            {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                            {t('saveUi.investmentDateHint', 'Used for tracking in My Loans')}
                         </p>
                     </div>
                 )}
@@ -482,12 +482,12 @@ export default function SWPCalculator() {
                                             <p className={`text-[10px] uppercase font-bold tracking-wider mb-0.5 ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>{t('swp.corpusLifespan')}</p>
                                             <p className={`font-black text-xl mb-1 ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>
                                                 {result.depletionMonth
-                                                    ? `${(result.depletionMonth/12).toFixed(1)}y`
+                                                    ? t('saveUi.yShort', '{{n}}y', { n: (result.depletionMonth/12).toFixed(1) })
                                                     : result.perpetual
                                                         ? '∞'
                                                         : result.longevityMonths !== null
-                                                            ? `${(result.longevityMonths/12).toFixed(1)}y`
-                                                            : '100y+'}
+                                                            ? t('saveUi.yShort', '{{n}}y', { n: (result.longevityMonths/12).toFixed(1) })
+                                                            : t('saveUi.yPlus', '{{n}}y+', { n: 100 })}
                                             </p>
                                             <p className={`text-[9px] leading-tight px-1 font-bold ${result.depletionMonth ? 'text-red-500' : 'text-brand-green'}`}>
                                                 {result.depletionMonth
@@ -546,7 +546,7 @@ export default function SWPCalculator() {
                     <button onClick={() => setShowWhatIf(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-rose-500/10 rounded-lg text-rose-500"><TrendingUp size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">{t('swp.whatIfSimulator')}</span>
+                            <span className="text-foreground font-bold text-sm">{t('saveUi.whatIfTitle', 'What-If Simulator')}</span>
                         </div>
                         {showWhatIf ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>

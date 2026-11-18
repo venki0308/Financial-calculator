@@ -107,3 +107,13 @@ export const ONROAD_DEFAULTS = {
     insurancePercent: 0.03,
     handlingCharges: 2500,
 };
+
+// ─── Display-only translation keys (the English values above stay as stored/used) ───
+/** CIBIL tier chip text: score range + translated band word. */
+export const CIBIL_TIER_DISPLAY: Record<string, { range: string; rangeKey?: string; key: string }> = {
+    excellent: { range: '780+', key: 'cibil.excellent' },
+    very_good: { range: '750-779', key: 'cibil.veryGood' },
+    good: { range: '700-749', key: 'cibil.good' },
+    average: { range: '650-699', key: 'loanUi.tierAverage' },
+    poor: { range: 'Below 650', rangeKey: 'loanUi.below650', key: 'loanUi.tierPoor' },
+};

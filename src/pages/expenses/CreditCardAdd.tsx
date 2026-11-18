@@ -96,7 +96,7 @@ export default function CreditCardAdd() {
       <div style={{ position: 'relative' }}>
         <label style={labelStyle}>{t('cc.bankName', 'Bank Name')}</label>
         <input
-          style={inputStyle} value={bankInput} placeholder="e.g. HDFC"
+          style={inputStyle} value={bankInput} placeholder={t('appUi.egHdfc', 'e.g. HDFC')}
           onChange={e => { setBankInput(e.target.value); upd({ bankName: e.target.value }); setShowSuggestions(true); }}
           onFocus={() => setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
         />
@@ -113,7 +113,7 @@ export default function CreditCardAdd() {
       {/* Card Name */}
       <div>
         <label style={labelStyle}>{t('cc.cardName', 'Card Name')}</label>
-        <input style={inputStyle} value={card.cardName} placeholder="e.g. Regalia Gold"
+        <input style={inputStyle} value={card.cardName} placeholder={t('appUi.egRegalia', 'e.g. Regalia Gold')}
           onChange={e => upd({ cardName: e.target.value })} />
       </div>
       {/* Card Network */}

@@ -24,7 +24,7 @@ import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEn
 import {
     calculateReducingEMI, calculateFlatEMI, calculateEffectiveRate,
     calculateForeclosure, calculatePrepaymentSavings,
-    formatINR, formatINRShort, formatINRWords,
+    formatINR, formatINRShort,
     LOAN_TYPE_CONFIGS, type AmortizationRow, type ForeclosureResult, type PrepaymentInsight,
 } from '../utils/calculations';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -35,6 +35,8 @@ import CibilBadge from '../components/CibilBadge';
 import { useCibil } from '../context/CibilContext';
 import ShareableCard from '../components/ShareableCard';
 import { triggerCalcNotification } from '../services/calcNotifications';
+import { amountInWords, formatDateUI } from '../utils/uiLocale';
+import { loanTypeLabel, typicalRange } from '../utils/loanUi';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, PointElement, LineElement, Title);
 
@@ -193,8 +195,8 @@ export default function EMICalculator() {
         const E0 = result.emi;
         const payoffDate = (k: number) => {
             const d = new Date();
-            return new Date(d.getFullYear(), d.getMonth() + k, 1)
-                .toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+            const dd = new Date(d.getFullYear(), d.getMonth() + k, 1);
+            return formatDateUI(dd, { month: 'short', year: 'numeric' });
         };
         if (payMode === 'higher') {
             const E = higherEmi > 0 ? higherEmi : suggestedHigherEmi;
@@ -264,16 +266,16 @@ export default function EMICalculator() {
         if (monthlyIncome > 0) {
             const emiRatio = (result.emi / monthlyIncome) * 100;
             if (emiRatio > 40) {
-                items.push({ type: 'warning', text: `Your EMI exceeds ${emiRatio.toFixed(0)}% of income. Most banks recommend keeping EMI below 40% of take-home salary.` });
+                items.push({ type: 'warning', text: t('loanUi.emiOver40', 'Your EMI is over {{pct}}% of income. Most banks suggest keeping the EMI below 40% of take-home salary.', { pct: emiRatio.toFixed(0) }) });
             } else if (emiRatio >= 30) {
-                items.push({ type: 'caution', text: `Your EMI is ${emiRatio.toFixed(0)}% of income — manageable but at the higher end. Maintain 6 months EMI (${formatINR(result.emi * 6)}) as emergency fund.` });
+                items.push({ type: 'caution', text: t('loanUi.emi30to40', 'Your EMI is {{pct}}% of income. It is manageable but on the higher side, so keep 6 months of EMI ({{amount}}) as an emergency fund.', { pct: emiRatio.toFixed(0), amount: formatINR(result.emi * 6) }) });
             } else {
-                items.push({ type: 'positive', text: `Healthy EMI ratio at ${emiRatio.toFixed(0)}%. You have good repayment capacity.` });
+                items.push({ type: 'positive', text: t('loanUi.emiHealthy', 'Healthy EMI ratio at {{pct}}%. You have good repayment capacity.', { pct: emiRatio.toFixed(0) }) });
             }
         }
 
         if (result.totalInterest > principal) {
-            items.push({ type: 'warning', text: `You will pay more in interest (${formatINR(result.totalInterest)}) than the loan itself. Consider shorter tenure or prepayments.` });
+            items.push({ type: 'warning', text: t('loanUi.interestMoreThanLoan', 'You will pay more in interest ({{amount}}) than the loan itself. Consider a shorter tenure or prepayments.', { amount: formatINR(result.totalInterest) }) });
         }
 
         if (prepayInsight && prepayInsight.interestSaved > 10000) {
@@ -281,7 +283,7 @@ export default function EMICalculator() {
         }
 
         return items;
-    }, [result.emi, result.totalInterest, monthlyIncome, principal, prepayInsight]);
+    }, [result.emi, result.totalInterest, monthlyIncome, principal, prepayInsight, t]);
 
     // ─── History Tracking ───────────────────────────────────────────────
     useEffect(() => {
@@ -577,7 +579,7 @@ export default function EMICalculator() {
                                 : 'bg-slate-100 dark:bg-card border border-slate-200 dark:border-border text-slate-600 dark:text-muted-foreground hover:border-slate-400 dark:hover:border-slate-600'
                             }`}>
                             <span>{LOAN_TYPE_CONFIGS[lt].icon}</span>
-                            {t(LOAN_TYPE_CONFIGS[lt].labelKey, lt)}
+                            {loanTypeLabel(lt)}
                         </button>
                     ))}
                 </div>
@@ -612,7 +614,7 @@ export default function EMICalculator() {
                         helperText={`${formatINR(config.minAmount)} - ${formatINR(config.maxAmount)}`} />
 
                     <NumberInput label={t('emi.interestRate')} value={rate} onChange={setRate}
-                        min={1} max={30} suffix="%" step={0.05} helperText="Typical range 8-14% (Apr 2026)" />
+                        min={1} max={30} suffix="%" step={0.05} helperText={typicalRange('8-14%', 2026, 4)} />
 
                     <div>
                         <div className="flex rounded-xl bg-slate-100 dark:bg-card border border-slate-200 dark:border-border p-1 mb-2">
@@ -626,14 +628,14 @@ export default function EMICalculator() {
                                         ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white'
                                         : 'text-muted-foreground dark:text-muted-foreground'
                                     }`}>
-                                    {u}
+                                    {u === 'months' ? t('common.months') : t('common.years')}
                                 </button>
                             ))}
                         </div>
                         <NumberInput label={t('emi.loanTenure')} value={tenure} onChange={setTenure}
                             min={1} max={tenureUnit === 'months' ? config.maxTenureYears * 12 : config.maxTenureYears}
-                            suffix={tenureUnit === 'months' ? ' months' : ' years'}
-                            helperText={tenureUnit === 'months' ? `1 - ${config.maxTenureYears * 12} months` : `1 - ${config.maxTenureYears} years`} />
+                            suffix={tenureUnit === 'months' ? ` ${t('common.months')}` : ` ${t('common.years')}`}
+                            helperText={tenureUnit === 'months' ? `1 - ${config.maxTenureYears * 12} ${t('common.months')}` : `1 - ${config.maxTenureYears} ${t('common.years')}`} />
                     </div>
                 </div>
 
@@ -646,7 +648,7 @@ export default function EMICalculator() {
                             {formatINR(result.emi)}
                         </motion.p>
                         {result.emi > 100000 && (
-                            <p className="text-muted-foreground dark:text-muted-foreground text-[10px] mt-1">({formatINRWords(result.emi)})</p>
+                            <p className="text-muted-foreground dark:text-muted-foreground text-[10px] mt-1">({amountInWords(result.emi)})</p>
                         )}
                     </div>
 
@@ -665,7 +667,7 @@ export default function EMICalculator() {
                                 <span className="text-slate-600 dark:text-muted-foreground text-[10px] uppercase font-bold tracking-wider">{t('emi.principal')}</span>
                             </div>
                             <p className="text-slate-900 dark:text-foreground font-bold text-sm">{formatINR(principal)}</p>
-                            {principal >= 100000 && <p className="text-muted-foreground dark:text-muted-foreground text-[9px] mt-0.5">({formatINRWords(principal)})</p>}
+                            {principal >= 100000 && <p className="text-muted-foreground dark:text-muted-foreground text-[9px] mt-0.5">({amountInWords(principal)})</p>}
                         </div>
                         <div className="text-center p-3 rounded-xl bg-muted/30 border border-slate-200 dark:border-transparent">
                             <div className="flex items-center justify-center gap-1.5 mb-1">
@@ -673,14 +675,14 @@ export default function EMICalculator() {
                                 <span className="text-slate-600 dark:text-muted-foreground text-[10px] uppercase font-bold tracking-wider">{t('emi.interest')}</span>
                             </div>
                             <p className="text-slate-900 dark:text-foreground font-bold text-sm">{formatINR(result.totalInterest)}</p>
-                            {result.totalInterest >= 100000 && <p className="text-muted-foreground dark:text-muted-foreground text-[9px] mt-0.5">({formatINRWords(result.totalInterest)})</p>}
+                            {result.totalInterest >= 100000 && <p className="text-muted-foreground dark:text-muted-foreground text-[9px] mt-0.5">({amountInWords(result.totalInterest)})</p>}
                         </div>
                     </div>
 
                     <div className="pt-4 border-t border-slate-200 dark:border-border/40 text-center">
                         <p className="text-muted-foreground text-xs mb-1">{t('emi.totalPayment')}</p>
                         <p className="text-xl font-bold text-slate-900 dark:text-foreground">{formatINR(result.totalPayment)}</p>
-                        {result.totalPayment >= 100000 && <p className="text-muted-foreground dark:text-muted-foreground text-[9px] mt-0.5">({formatINRWords(result.totalPayment)})</p>}
+                        {result.totalPayment >= 100000 && <p className="text-muted-foreground dark:text-muted-foreground text-[9px] mt-0.5">({amountInWords(result.totalPayment)})</p>}
                     </div>
                 </motion.div>
 
@@ -1132,9 +1134,9 @@ export default function EMICalculator() {
 
                 {/* ── Shareable Card ──────────────────────────────── */}
                 <ShareableCard
-                    title={`My ${loanType} EMI`}
+                    title={t('loanUi.shareTitle', 'My {{loanType}} EMI', { loanType: loanTypeLabel(loanType) })}
                     highlight={formatINR(result.emi)}
-                    subtitle={`${loanType} @ ${rate}% for ${tenureYears} years`}
+                    subtitle={t('loanUi.shareSubtitle', '{{loanType}} @ {{rate}}% for {{years}} years', { loanType: loanTypeLabel(loanType), rate, years: tenureYears })}
                     details={[
                         { label: t('emi.loanAmount'), value: formatINR(principal) },
                         { label: t('emi.totalInterest'), value: formatINR(result.totalInterest) },

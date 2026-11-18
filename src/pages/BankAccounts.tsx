@@ -5,6 +5,8 @@ import {
   ArrowLeft, Plus, Pencil, Trash2, RefreshCw, X, Wallet,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { accTypeUI } from '../utils/appUiLabels';
+import { formatDateUI } from '../utils/uiLocale';
 import { useAppColors } from '../theme/useAppColors';
 
 import type { BankAccount, AccountType } from '../types/expense';
@@ -312,7 +314,7 @@ export default function BankAccounts() {
                           className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded"
                           style={{ backgroundColor: acc.color + '20', color: acc.color }}
                         >
-                          {typeInfo.label}
+                          {accTypeUI(acc.accountType, typeInfo.label, t)}
                         </span>
                         {acc.bankName && (
                           <span className="text-[10px]" style={{ color: c.textSecondary }}>
@@ -338,7 +340,7 @@ export default function BankAccounts() {
                     {fmtINR(acc.manualBalance)}
                   </p>
                   <p className="text-[10px] mt-0.5" style={{ color: c.textMuted }}>
-                    {t('expenses.asOf')} {new Date(acc.balanceDate + 'T00:00:00').toLocaleDateString('en-IN', {
+                    {t('expenses.asOf')} {formatDateUI(new Date(acc.balanceDate + 'T00:00:00'), {
                       day: 'numeric', month: 'short', year: 'numeric',
                     })}
                   </p>
@@ -476,7 +478,7 @@ export default function BankAccounts() {
                     }`}
                     style={selected ? {} : { borderColor: c.border, color: c.textSecondary }}
                   >
-                    {info.icon} {info.label}
+                    {info.icon} {accTypeUI(at, info.label, t)}
                   </button>
                 );
               })}

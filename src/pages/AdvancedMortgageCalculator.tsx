@@ -25,6 +25,7 @@ import { exportToPDF, exportToExcel, dateTag, emiMonthLabel, emiYearRange, type 
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Pie } from 'react-chartjs-2';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
+import { typicalRange } from '../utils/loanUi';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -589,7 +590,7 @@ export default function AdvancedMortgageCalculator() {
                             max={20}
                             step={0.1}
                             suffix="%"
-                            helperText="Typical range 7.25-8.7% (Jul 2026)"
+                            helperText={typicalRange('7.25-8.7%', 2026, 7)}
                         />
                         <NumberInput
                             label={t('mortgage.tenureYears')}
@@ -598,7 +599,7 @@ export default function AdvancedMortgageCalculator() {
                             min={1}
                             max={30}
                             step={1}
-                            suffix="Yr"
+                            suffix={t('cagr.yr', 'Yr')}
                         />
                     </div>
                     
@@ -1130,7 +1131,7 @@ export default function AdvancedMortgageCalculator() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <NumberInput label={t('mortgage.monthsAlreadyPaid')} value={fcMonths}
                                         onChange={v => setFcMonths(Math.min(v, result.schedule.length - 1))}
-                                        min={1} max={result.schedule.length - 1} suffix=" mo" />
+                                        min={1} max={result.schedule.length - 1} suffix={` ${t('mortgage.mo', 'mo')}`} />
                                     <div>
                                         <p className="text-xs font-medium mb-2" style={{ color: c.textSecondary }}>{t('mortgage.rateType')}</p>
                                         <div className="flex rounded-lg overflow-hidden border" style={{ borderColor: c.border }}>
@@ -1292,7 +1293,7 @@ export default function AdvancedMortgageCalculator() {
                                     <NumberInput label={t('mortgage.newInterestRate')} value={wiRate}
                                         onChange={setWiRate} min={4} max={20} step={0.1} suffix="%" />
                                     <NumberInput label={t('mortgage.newTenureYears')} value={wiTenure}
-                                        onChange={setWiTenure} min={1} max={30} step={1} suffix="Yr" />
+                                        onChange={setWiTenure} min={1} max={30} step={1} suffix={t('cagr.yr', 'Yr')} />
                                 </div>
 
                                 {wiResult && (

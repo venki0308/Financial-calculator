@@ -29,13 +29,15 @@ import { BarChart3, Banknote, Target, Calendar, TrendingUp } from 'lucide-react'
 import { useAppColors } from '../theme/useAppColors';
 import { formatINR } from '../utils/calculations';
 import { parseLocalDate } from '../utils/dateUtils';
+import { formatDateUI } from '../utils/uiLocale';
+import { yearsMonthsShort } from '../utils/saveUiLabels';
 
 function fmtDate(dateStr: string): string {
     if (!dateStr) return '—';
     // Parse YYYY-MM-DD as a LOCAL date — new Date('YYYY-MM-DD') is parsed as
     // UTC midnight and can display the previous day in negative-UTC timezones.
     const d = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? parseLocalDate(dateStr) : new Date(dateStr);
-    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    return formatDateUI(d, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function yearsBetween(start: string, end: Date = new Date()): number {
@@ -51,9 +53,7 @@ function fmtYearsMonths(years: number): string {
     const totalMonths = Math.round(years * 12);
     const y = Math.floor(totalMonths / 12);
     const m = totalMonths % 12;
-    if (y === 0) return `${m}m`;
-    if (m === 0) return `${y}y`;
-    return `${y}y ${m}m`;
+    return yearsMonthsShort(y, m);
 }
 
 export type TrackerMode = 'compound' | 'simple' | 'lumpsum' | 'recurring' | 'swp';
@@ -91,6 +91,7 @@ interface ComputedStatus {
     projectedFinal: number;
     nextMilestoneDate: Date;
     nextMilestoneLabel: string;
+    nextMilestoneYear: number;
     daysToNextMilestone: number;
     // SWP-specific
     withdrawnSoFar?: number;
@@ -214,6 +215,7 @@ export default function LiveInvestmentTracker(props: Props) {
             projectedFinal,
             nextMilestoneDate: nextAnniv,
             nextMilestoneLabel: `Year ${Math.min(yearsFloor, totalYears)} milestone`,
+            nextMilestoneYear: Math.min(yearsFloor, totalYears),
             daysToNextMilestone: daysToNext,
             withdrawnSoFar,
             balanceRemaining,
@@ -415,7 +417,7 @@ export default function LiveInvestmentTracker(props: Props) {
                         </span>
                     </div>
                     <p className="text-xs" style={{ color: c.textSecondary }}>
-                        {status.nextMilestoneLabel} · {fmtDate(status.nextMilestoneDate.toISOString().slice(0, 10))}
+                        {t('saveUi.yearMilestone', 'Year {{n}} milestone', { n: status.nextMilestoneYear })} · {fmtDate(status.nextMilestoneDate.toISOString().slice(0, 10))}
                     </p>
                 </div>
             )}

@@ -312,7 +312,7 @@ export default function LumpsumCalculator() {
                             className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground"
                         />
                         <p className="text-[10px] text-muted-foreground mt-1.5">
-                            {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                            {t('saveUi.investmentDateHint', 'Used for tracking in My Loans')}
                         </p>
                     </div>
                 )}

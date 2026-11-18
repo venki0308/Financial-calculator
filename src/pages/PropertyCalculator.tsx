@@ -23,6 +23,7 @@ import {
     UNIT_CONV, UNIT_LABELS, UNIT_SHORT, UNIT_KEYS, REF_UNITS, UNIT_VARIES,
     STATE_RATES, CONSTRUCTION_GRADES, fmt, fmtArea, calcEMI, getAmortization
 } from '../utils/propertyData';
+import { unitLabelUI, unitShortUI, unitVariesUI, stateNameUI, gradeLabelUI } from '../utils/loanUi';
 
 const UNIT_SHORT_LABELS = UNIT_SHORT;
 
@@ -223,7 +224,7 @@ export default function PropertyCalculator() {
             .filter(k => k !== landUnit)
             .map(k => ({
                 key: k,
-                value: `${fmtArea(sqftArea / UNIT_CONV[k])} ${UNIT_LABELS[k]}`,
+                value: `${fmtArea(sqftArea / UNIT_CONV[k])} ${unitLabelUI(k)}`,
             }));
         setLandResult({ totalValue, baseValue, premiumValue, conversions });
         scrollToResult();
@@ -598,7 +599,7 @@ export default function PropertyCalculator() {
                                     </h3>
 
                                     {/* Area + Unit selector */}
-                                    <Field label={t('property.area')} value={landArea} onChange={setLandArea} type="number" placeholder="e.g. 2000" />
+                                    <Field label={t('property.area')} value={landArea} onChange={setLandArea} type="number" placeholder={t('loanUi.eg', 'e.g. {{v}}', { v: '2000' })} />
                                     <div>
                                         <label className="text-xs text-muted-foreground mb-2 block">{t('property.unit')}</label>
                                         <div className="grid grid-cols-4 gap-1.5">
@@ -611,13 +612,13 @@ export default function PropertyCalculator() {
                                                         : 'bg-dark-bg border border-border text-muted-foreground'
                                                         }`}
                                                 >
-                                                    {UNIT_SHORT_LABELS[u]}
+                                                    {unitShortUI(u)}
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
 
-                                    <Field label={t('property.pricePerUnit')} value={landPrice} onChange={setLandPrice} type="number" prefix="₹" placeholder="e.g. 3000" />
+                                    <Field label={t('property.pricePerUnit')} value={landPrice} onChange={setLandPrice} type="number" prefix="₹" placeholder={t('loanUi.eg', 'e.g. {{v}}', { v: '3000' })} />
                                     
                                     <div className="pt-2 border-t border-border/50">
                                         <button 
@@ -637,8 +638,8 @@ export default function PropertyCalculator() {
                                                     className="overflow-hidden space-y-3 pt-2"
                                                 >
                                                     <div className="grid grid-cols-2 gap-3">
-                                                        <Field label={t('property.cornerPremium')} value={cornerPremium} onChange={setCornerPremium} type="number" suffix="%" placeholder="e.g. 5" />
-                                                        <Field label={t('property.roadPremium')} value={roadPremium} onChange={setRoadPremium} type="number" suffix="%" placeholder="e.g. 3" />
+                                                        <Field label={t('property.cornerPremium')} value={cornerPremium} onChange={setCornerPremium} type="number" suffix="%" placeholder={t('loanUi.eg', 'e.g. {{v}}', { v: '5' })} />
+                                                        <Field label={t('property.roadPremium')} value={roadPremium} onChange={setRoadPremium} type="number" suffix="%" placeholder={t('loanUi.eg', 'e.g. {{v}}', { v: '3' })} />
                                                     </div>
                                                     <p className="text-[10px] text-muted-foreground">{t('property.premiumTip')}</p>
                                                     <div className="flex items-center gap-3 py-1">
@@ -679,7 +680,7 @@ export default function PropertyCalculator() {
                                                 {fmt(landResult.totalValue)}
                                             </p>
                                             <p className="text-muted-foreground text-xs mt-2">
-                                                {landArea} {UNIT_LABELS[landUnit]} × {fmt(Number(landPrice))} {t('property.perUnit')}
+                                                {landArea} {unitLabelUI(landUnit)} × {fmt(Number(landPrice))} {t('property.perUnit')}
                                             </p>
                                             {landResult.premiumValue > 0 && (
                                                 <div className="mt-2 text-[10px] text-emerald-400 flex flex-col items-center">
@@ -701,7 +702,7 @@ export default function PropertyCalculator() {
                                             <div className="space-y-2">
                                                 {landResult.conversions.map(c => (
                                                     <div key={c.key} className="flex justify-between items-center">
-                                                        <span className="text-muted-foreground text-xs">{landArea} {UNIT_LABELS[landUnit]} =</span>
+                                                        <span className="text-muted-foreground text-xs">{landArea} {unitLabelUI(landUnit)} =</span>
                                                         <span className="text-foreground text-xs font-semibold">{c.value}</span>
                                                     </div>
                                                 ))}
@@ -770,9 +771,9 @@ export default function PropertyCalculator() {
                                     <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
                                         <Building2 size={15} className="text-brand-green" /> {t('property.flatApartmentPrice')}
                                     </h3>
-                                    <Field label={t('property.builtUpArea')} value={builtUp} onChange={setBuiltUp} type="number" placeholder="e.g. 1200" />
-                                    <Field label={t('property.carpetAreaOptional')} value={carpet} onChange={setCarpet} type="number" placeholder="e.g. 900" />
-                                    <Field label={t('property.pricePerSqft')} value={ppsf} onChange={setPpsf} type="number" prefix="₹" placeholder="e.g. 7000" />
+                                    <Field label={t('property.builtUpArea')} value={builtUp} onChange={setBuiltUp} type="number" placeholder={t('loanUi.eg', 'e.g. {{v}}', { v: '1200' })} />
+                                    <Field label={t('property.carpetAreaOptional')} value={carpet} onChange={setCarpet} type="number" placeholder={t('loanUi.eg', 'e.g. {{v}}', { v: '900' })} />
+                                    <Field label={t('property.pricePerSqft')} value={ppsf} onChange={setPpsf} type="number" prefix="₹" placeholder={t('loanUi.eg', 'e.g. {{v}}', { v: '7000' })} />
                                     <div className="grid grid-cols-3 gap-2">
                                         <Field label={t('property.parking')} value={parking} onChange={setParking} type="number" prefix="₹" placeholder="0" />
                                         <Field label={t('property.amenities')} value={amenities} onChange={setAmenities} type="number" prefix="₹" placeholder="0" />
@@ -897,12 +898,12 @@ export default function PropertyCalculator() {
                                         <Landmark size={15} className="text-brand-green" /> {t('property.villaIndependentHouse')}
                                     </h3>
                                     <div className="grid grid-cols-2 gap-3">
-                                        <Field label={t('property.plotArea')} value={villaPlotArea} onChange={setVillaPlotArea} type="number" placeholder="e.g. 2400" />
+                                        <Field label={t('property.plotArea')} value={villaPlotArea} onChange={setVillaPlotArea} type="number" placeholder={t('loanUi.eg', 'e.g. {{v}}', { v: '2400' })} />
                                         <div>
                                             <label className="text-xs text-muted-foreground mb-1 block">{t('property.plotUnit')}</label>
                                             <select value={villaPlotUnit} onChange={e => setVillaPlotUnit(e.target.value)}
                                                 className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
-                                                {['sqft', 'sqyard', 'sqm'].map((u: string) => <option key={u} value={u}>{UNIT_SHORT_LABELS[u]}</option>)}
+                                                {['sqft', 'sqyard', 'sqm'].map((u: string) => <option key={u} value={u}>{unitShortUI(u)}</option>)}
                                             </select>
                                         </div>
                                     </div>
@@ -919,7 +920,7 @@ export default function PropertyCalculator() {
                                         {CONSTRUCTION_GRADES.map((g: any) => (
                                             <button key={g.key} onClick={() => { setConstGrade(g.key); setConstRate(g.rate.toString()); }}
                                                 className={`py-2 rounded-lg text-[10px] font-semibold transition-all ${constGrade === g.key ? 'bg-brand-green text-black' : 'bg-dark-bg border border-border text-muted-foreground'}`}>
-                                                {g.label}
+                                                {gradeLabelUI(g.key, g.label)}
                                             </button>
                                         ))}
                                     </div>
@@ -1037,13 +1038,13 @@ export default function PropertyCalculator() {
                                     <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
                                         <ArrowRightLeft size={15} className="text-brand-green" /> {t('property.unitConverter')}
                                     </h3>
-                                    <Field label={t('property.value')} value={convVal} onChange={setConvVal} type="number" placeholder="e.g. 1" />
+                                    <Field label={t('property.value')} value={convVal} onChange={setConvVal} type="number" placeholder={t('loanUi.eg', 'e.g. {{v}}', { v: '1' })} />
                                     <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-end">
                                         <div>
                                             <label className="text-xs text-muted-foreground mb-1 block">{t('property.from')}</label>
                                             <select value={fromUnit} onChange={e => setFromUnit(e.target.value)}
                                                 className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
-                                                {UNIT_KEYS.map(u => <option key={u} value={u}>{UNIT_LABELS[u]}</option>)}
+                                                {UNIT_KEYS.map(u => <option key={u} value={u}>{unitLabelUI(u)}</option>)}
                                             </select>
                                         </div>
                                         {/* Swap — the most-used action on any converter */}
@@ -1057,24 +1058,24 @@ export default function PropertyCalculator() {
                                             <label className="text-xs text-muted-foreground mb-1 block">{t('property.to')}</label>
                                             <select value={toUnit} onChange={e => setToUnit(e.target.value)}
                                                 className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
-                                                {UNIT_KEYS.map(u => <option key={u} value={u}>{UNIT_LABELS[u]}</option>)}
+                                                {UNIT_KEYS.map(u => <option key={u} value={u}>{unitLabelUI(u)}</option>)}
                                             </select>
                                         </div>
                                     </div>
                                     {/* State-variance warning when either side is bigha/katha */}
                                     {(UNIT_VARIES[fromUnit] || UNIT_VARIES[toUnit]) && (
                                         <p className="text-[10px] text-amber-600 dark:text-amber-400 leading-relaxed">
-                                            ⚠ {UNIT_VARIES[fromUnit] ? `${UNIT_LABELS[fromUnit]}: ${UNIT_VARIES[fromUnit]}` : `${UNIT_LABELS[toUnit]}: ${UNIT_VARIES[toUnit]}`}
+                                            ⚠ {UNIT_VARIES[fromUnit] ? `${unitLabelUI(fromUnit)}: ${unitVariesUI(fromUnit)}` : `${unitLabelUI(toUnit)}: ${unitVariesUI(toUnit)}`}
                                         </p>
                                     )}
                                     {convVal && (
                                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
                                             className="p-4 rounded-xl bg-gradient-to-r from-brand-green/10 to-brand-blue/10 border border-brand-green/30 text-center">
-                                            <p className="text-muted-foreground text-xs mb-1">{convVal} {UNIT_LABELS[fromUnit]} =</p>
+                                            <p className="text-muted-foreground text-xs mb-1">{convVal} {unitLabelUI(fromUnit)} =</p>
                                             <p className="text-2xl font-bold text-brand-green">{convertedVal()}</p>
-                                            <p className="text-muted-foreground text-xs mt-1">{UNIT_LABELS[toUnit]}</p>
+                                            <p className="text-muted-foreground text-xs mt-1">{unitLabelUI(toUnit)}</p>
                                             <button
-                                                onClick={() => copyText(`${convVal} ${UNIT_LABELS[fromUnit]} = ${convertedVal()} ${UNIT_LABELS[toUnit]}`, 'conv')}
+                                                onClick={() => copyText(`${convVal} ${unitLabelUI(fromUnit)} = ${convertedVal()} ${unitLabelUI(toUnit)}`, 'conv')}
                                                 className="mt-3 flex items-center gap-1 text-xs text-muted-foreground mx-auto"
                                             >
                                                 {copied === 'conv' ? <Check size={12} className="text-brand-green" /> : <Copy size={12} />}
@@ -1096,10 +1097,10 @@ export default function PropertyCalculator() {
                                                 <motion.button
                                                     key={u}
                                                     whileTap={{ scale: 0.98 }}
-                                                    onClick={() => copyText(`1 ${UNIT_LABELS[u]} = ${sqftVal} ${t('property.sqft')}`, copyKey)}
+                                                    onClick={() => copyText(`1 ${unitLabelUI(u)} = ${sqftVal} ${t('property.sqft')}`, copyKey)}
                                                     className="w-full flex justify-between items-center py-3 border-b border-border last:border-0 text-left"
                                                 >
-                                                    <span className="text-muted-foreground text-sm">1 {UNIT_LABELS[u]}{UNIT_VARIES[u] ? ' *' : ''}</span>
+                                                    <span className="text-muted-foreground text-sm">1 {unitLabelUI(u)}{UNIT_VARIES[u] ? ' *' : ''}</span>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-foreground text-sm font-semibold">{sqftVal} {t('property.sqft')}</span>
                                                         {copied === copyKey
@@ -1113,7 +1114,7 @@ export default function PropertyCalculator() {
                                     </div>
                                     {/* State-variance footnote for * marked units */}
                                     <p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">
-                                        * {t('property.bighaVaries', 'Bigha')}: {UNIT_VARIES.bigha} · {t('property.kathaVaries', 'Katha')}: {UNIT_VARIES.katha}
+                                        * {t('property.bighaVaries', 'Bigha')}: {unitVariesUI('bigha')} · {t('property.kathaVaries', 'Katha')}: {unitVariesUI('katha')}
                                     </p>
                                 </div>
 
@@ -1129,7 +1130,7 @@ export default function PropertyCalculator() {
                                                 : sqftVal.toLocaleString('en-IN', { maximumFractionDigits: 4 });
                                             return (
                                                 <div key={u} className="flex justify-between py-1.5 border-b border-border/60 last:border-0">
-                                                    <span className="text-muted-foreground text-xs">1 {UNIT_LABELS[u]}</span>
+                                                    <span className="text-muted-foreground text-xs">1 {unitLabelUI(u)}</span>
                                                     <span className="text-foreground text-xs font-medium">{display} {t('property.sqft')}</span>
                                                 </div>
                                             );
@@ -1410,7 +1411,7 @@ function StampDutySection({
                 </p>
             </div>
 
-            <Field label={t('property.propertyValueRupees')} value={sdValue} onChange={setSdValue} type="number" prefix="₹" placeholder="e.g. 5000000" />
+            <Field label={t('property.propertyValueRupees')} value={sdValue} onChange={setSdValue} type="number" prefix="₹" placeholder={t('loanUi.eg', 'e.g. {{v}}', { v: '5000000' })} />
             {/* Circle-rate basis — the legal base is max(deal value, circle rate) */}
             <p className="text-[10px] text-muted-foreground leading-relaxed -mt-1">
                 {t('property.circleRateHint', 'Stamp duty is legally charged on the HIGHER of your deal value and the government circle/guidance value — enter the higher figure. If your deal price is >10% below circle rate, the gap is taxable for both sides (Sec 56(2)(x)/50C).')}
@@ -1422,7 +1423,7 @@ function StampDutySection({
                 <select value={sdState} onChange={e => handleStateChange(e.target.value)}
                     className="w-full bg-dark-bg border border-border rounded-xl py-3 px-3 text-foreground text-sm focus:outline-none focus:border-brand-green">
                     {Object.entries(STATE_RATES).map(([k, v]) => (
-                        <option key={k} value={k}>{v.name}</option>
+                        <option key={k} value={k}>{stateNameUI(v.name)}</option>
                     ))}
                 </select>
             </div>
@@ -1433,8 +1434,8 @@ function StampDutySection({
                     <p className="text-foreground text-xs font-semibold">{t('property.womanBuyer', 'Woman buyer')}</p>
                     <p className="text-[10px] text-muted-foreground leading-snug">
                         {womenDelta
-                            ? t('property.womanBuyerHas', '{{state}} charges women {{delta}}% lower stamp duty (value caps may apply)', { state: STATE_RATES[sdState]?.name, delta: womenDelta })
-                            : t('property.womanBuyerNone', 'No gender concession in {{state}}', { state: STATE_RATES[sdState]?.name })}
+                            ? t('property.womanBuyerHas', '{{state}} charges women {{delta}}% lower stamp duty (value caps may apply)', { state: stateNameUI(STATE_RATES[sdState]?.name || ''), delta: womenDelta })
+                            : t('property.womanBuyerNone', 'No gender concession in {{state}}', { state: stateNameUI(STATE_RATES[sdState]?.name || '') })}
                     </p>
                 </div>
                 <button onClick={handleWomanToggle} className={`w-11 h-6 rounded-full p-0.5 transition-colors flex-shrink-0 ${isWoman ? 'bg-pink-500' : 'bg-muted-foreground/30'}`}>
@@ -1525,7 +1526,7 @@ function HomeLoanSection({
             <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
                 <Home size={15} className="text-brand-purple" /> {t('property.homeLoanEMI')}
             </h3>
-            <Field label={t('property.loanAmount')} value={loanAmt} onChange={setLoanAmt} type="number" prefix="₹" placeholder="e.g. 6000000" />
+            <Field label={t('property.loanAmount')} value={loanAmt} onChange={setLoanAmt} type="number" prefix="₹" placeholder={t('loanUi.eg', 'e.g. {{v}}', { v: '6000000' })} />
             <div className="grid grid-cols-2 gap-2">
                 <Field label={t('property.interestRate')} value={loanRate} onChange={setLoanRate} type="number" suffix="%" placeholder="8.5" />
                 <Field label={t('property.tenure')} value={loanTenure} onChange={setLoanTenure} type="number" suffix={` ${t('property.yrsShort')}`} placeholder="20" />

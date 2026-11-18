@@ -10,7 +10,8 @@ import { LANG_OPTIONS, LangSelector, LegalText, type Lang, type LegalDoc } from 
  * The app's frame for a legal page (back button, language picker, app theme). The text is the
  * website's: `doc` comes from the page's module in src/pages/legal/, which the website renders
  * too, so the two can't drift. [data-legal-content] holds exactly what the website's <main> holds.
- * Languages are the website's (no Malayalam there: Malayalam users get English, as on the website).
+ * Languages are the website's (LANG_OPTIONS: en/hi/te/ta/kn/ml, the app's six), so the screen opens in
+ * the app's language; anything else falls back to English.
  */
 export default function AppLegalScreen({ doc }: { doc: LegalDoc }) {
     const navigate = useNavigate();

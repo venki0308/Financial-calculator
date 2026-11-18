@@ -21,6 +21,9 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import { getLoanRateInsight } from '../data/rateEnvironment';
 import { exportToPDF, exportToExcel, getEnglishT, type ExportConfig } from '../utils/exportReport';
 import { toLocalDateStr, todayStr, parseLocalDate } from '../utils/dateUtils';
+import { formatDateUI } from '../utils/uiLocale';
+import i18n from '../i18n';
+type Translate = (key: string, fallback?: unknown, opts?: Record<string, unknown>) => string;
 
 function fmtDate(d: string | number): string {
     if (!d) return '—';
@@ -28,6 +31,13 @@ function fmtDate(d: string | number): string {
     // UTC midnight and can display the previous day in negative-UTC timezones.
     const dt = typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) ? parseLocalDate(d) : new Date(d);
     return dt.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+/** Same as fmtDate but in the user's language, for on-screen text (exports keep fmtDate). */
+function fmtDateUI(d: string | number): string {
+    if (!d) return '—';
+    const dt = typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) ? parseLocalDate(d) : new Date(d);
+    return formatDateUI(dt, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 /**
@@ -327,7 +337,7 @@ export default function LoanDetail() {
         // back in negative-UTC timezones.
         const dt = /^\d{4}-\d{2}-\d{2}$/.test(d.disbursementDate || '') ? parseLocalDate(d.disbursementDate) : new Date(d.disbursementDate);
         dt.setMonth(dt.getMonth() + d.tenureMonths);
-        return fmtDate(toLocalDateStr(dt));
+        return fmtDateUI(toLocalDateStr(dt));
     }, [isLoan, d]);
 
     // Amortization schedule
@@ -388,14 +398,14 @@ export default function LoanDetail() {
         const currentRemInt = (loanStatus.emisRemaining * d.emiAmount) - loanStatus.principalOutstanding;
         const closureDate = new Date();
         closureDate.setMonth(closureDate.getMonth() + newMonths);
-        return { interestSaved: Math.round(Math.max(0, currentRemInt - newInterest)), monthsReduced: Math.max(0, loanStatus.emisRemaining - newMonths), newClosureDate: fmtDate(toLocalDateStr(closureDate)) };
+        return { interestSaved: Math.round(Math.max(0, currentRemInt - newInterest)), monthsReduced: Math.max(0, loanStatus.emisRemaining - newMonths), newClosureDate: fmtDateUI(toLocalDateStr(closureDate)) };
     }, [prepayAmount, loanStatus, d, isLoan]);
 
     // Normalize type matching (calculators save "SIP", "SSY", "PPF" etc.)
     const mt = (...names: string[]) => names.some(n => typeLC === n.toLowerCase());
 
     // Build year-wise growth table for compound-type investments
-    const yearWiseTable = useMemo((): { columns: string[]; rows: Array<Array<string | number>> } => {
+    const buildYearWiseTable = (tl: (label: string) => string): { columns: string[]; rows: Array<Array<string | number>> } => {
         if (!profile || isLoan) return { columns: [], rows: [] };
         const rate = d.rate || d.annualRate || 7;
         const startDate = d.openingDate || d.purchaseDate || d.startDate || '';
@@ -526,49 +536,51 @@ export default function LoanDetail() {
             return { columns: cols, rows };
         }
         return { columns: [], rows: [] };
-    }, [profile, d, typeLC, isLoan]);
+    };
+    const yearWiseTable = useMemo(() => buildYearWiseTable(tl), [profile, d, typeLC, isLoan]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Summary metrics — now returns cards (3 hero colored boxes) + rows (details) + progress
     type MetricCard = { label: string; value: string; color: string };
-    const investmentMetrics = useMemo((): { cards: MetricCard[]; rows: string[][]; progress: number; statusText: string; headline: string; headlineLabel: string } => {
+    // On screen in the user's language; the PDF/Excel export calls it with English (PDF fonts have no Indic letters).
+    const buildInvestmentMetrics = (t: Translate, tl: (label: string) => string, fmtDateUI: (d: string | number) => string): { cards: MetricCard[]; rows: string[][]; progress: number; statusText: string; headline: string; headlineLabel: string } => {
         const empty = { cards: [], rows: [], progress: 0, statusText: '—', headline: '—', headlineLabel: '' };
         if (!profile || isLoan) return empty;
         try {
             if (mt('sip', 'sip calculator')) {
                 const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate });
-                return { cards: [{ label: tl('Invested'), value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Gain'), value: formatINR(s.wealthGained), color: '#F59E0B' }], rows: [[tl('Months Invested'), String(s.monthsInvested)], [tl('Return %'), `${s.returnPercent.toFixed(2)}%`], [tl('Running Since'), `${s.sipRunningYears}Y ${s.sipRunningMonths}M`], [tl('Monthly SIP'), formatINR(d.monthlySip || d.monthlyAmount || 0)], [tl('Expected Return'), `${d.annualReturn || 12}% p.a.`]], progress: Math.min(100, s.monthsInvested * 0.8), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
+                return { cards: [{ label: tl('Invested'), value: formatINR(s.totalInvested), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Gain'), value: formatINR(s.wealthGained), color: '#F59E0B' }], rows: [[tl('Months Invested'), String(s.monthsInvested)], [tl('Return %'), `${s.returnPercent.toFixed(2)}%`], [tl('Running Since'), `${s.sipRunningYears}${t('liveStatus.yShort', 'Y')} ${s.sipRunningMonths}${t('liveStatus.mShort', 'M')}`], [tl('Monthly SIP'), formatINR(d.monthlySip || d.monthlyAmount || 0)], [tl('Expected Return'), `${d.annualReturn || 12}% p.a.`]], progress: Math.min(100, s.monthsInvested * 0.8), statusText: `${s.sipRunningYears}${t('liveStatus.yShort', 'Y')} ${s.sipRunningMonths}${t('liveStatus.mShort', 'M')}`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
             }
             if (mt('fd', 'fd calculator', 'potd', 'post office td')) {
                 const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4, payout: mt('potd', 'post office td') ? 'yearly' : 'cumulative' });
-                return { cards: [{ label: tl('Deposited'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.valueToday), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarnedToday), color: '#F59E0B' }], rows: [[tl('Days Invested'), String(s.daysInvested)], [tl('Daily Earning'), formatINR(s.dailyEarning)], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Maturity Value'), formatINR(s.maturityValue)], [tl('Days Remaining'), String(s.daysRemaining)], [tl('Interest Rate'), `${d.annualRate}% p.a.`], [tl('Premature Value'), formatINR(s.prematureValue)]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.valueToday), headlineLabel: tl('Value Today') };
+                return { cards: [{ label: tl('Deposited'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.valueToday), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarnedToday), color: '#F59E0B' }], rows: [[tl('Days Invested'), String(s.daysInvested)], [tl('Daily Earning'), formatINR(s.dailyEarning)], [tl('Maturity Date'), fmtDateUI(s.maturityDate)], [tl('Maturity Value'), formatINR(s.maturityValue)], [tl('Days Remaining'), String(s.daysRemaining)], [tl('Interest Rate'), `${d.annualRate}% p.a.`], [tl('Premature Value'), formatINR(s.prematureValue)]], progress: s.percentComplete, statusText: t('loanUi.pctComplete', '{{pct}}% complete', { pct: s.percentComplete.toFixed(1) }), headline: formatINR(s.valueToday), headlineLabel: tl('Value Today') };
             }
             if (mt('rd')) {
                 const s = calculateRdStatus({ monthlyDeposit: d.monthlyDeposit || 0, annualRate: d.annualRate || 5.8, tenureMonths: d.tenureMonths || 60, startDate: d.startDate });
-                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [[tl('Monthly Deposit'), formatINR(d.monthlyDeposit || 0)], [tl('Interest Rate'), `${d.annualRate || 5.8}% p.a.`], [tl('Tenure'), `${d.tenureMonths || 60} months`], [tl('Completion'), `${s.percentComplete.toFixed(1)}%`]], progress: s.percentComplete, statusText: `${s.percentComplete.toFixed(1)}% complete`, headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
+                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(s.currentValue), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [[tl('Monthly Deposit'), formatINR(d.monthlyDeposit || 0)], [tl('Interest Rate'), `${d.annualRate || 5.8}% p.a.`], [tl('Tenure'), `${d.tenureMonths || 60} ${t('common.months', 'months')}`], [tl('Completion'), `${s.percentComplete.toFixed(1)}%`]], progress: s.percentComplete, statusText: t('loanUi.pctComplete', '{{pct}}% complete', { pct: s.percentComplete.toFixed(1) }), headline: formatINR(s.currentValue), headlineLabel: tl('Current Value') };
             }
             if (mt('ppf', 'ppf calculator')) {
                 const s = calculatePpfStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 7.1, openingDate: d.openingDate || d.startDate });
-                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Balance'), value: formatINR(s.balanceToday), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [[tl('Year'), `${s.currentYear} of 15`], [tl('Yearly Deposit'), formatINR(d.yearlyDeposit || 0)], [tl('Rate'), `${d.rate || d.annualRate || 7.1}% p.a.`], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Maturity Value'), formatINR(s.maturityValue || 0)], [tl('Loan Eligible'), s.loanEligible ? `Yes — up to ${formatINR(s.loanAmount)}` : 'No (available yr 3-6)'], [tl('Withdrawal Eligible'), s.withdrawalEligible ? `Yes — up to ${formatINR(s.withdrawalAmount)}` : 'No (available after yr 7)']], progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: `Year ${s.currentYear}/15`, headline: formatINR(s.balanceToday), headlineLabel: tl('Current Balance') };
+                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Balance'), value: formatINR(s.balanceToday), color: '#10B981' }, { label: tl('Interest'), value: formatINR(s.interestEarned), color: '#F59E0B' }], rows: [[tl('Year'), t('loanUi.xOfY', '{{x}} of {{y}}', { x: s.currentYear, y: 15 })], [tl('Yearly Deposit'), formatINR(d.yearlyDeposit || 0)], [tl('Rate'), `${d.rate || d.annualRate || 7.1}% p.a.`], [tl('Maturity Date'), fmtDateUI(s.maturityDate)], [tl('Maturity Value'), formatINR(s.maturityValue || 0)], [tl('Loan Eligible'), s.loanEligible ? t('loanUi.yesUpTo', 'Yes, up to {{amount}}', { amount: formatINR(s.loanAmount) }) : t('loanUi.ppfLoanNo', 'No (available in years 3 to 6)')], [tl('Withdrawal Eligible'), s.withdrawalEligible ? t('loanUi.yesUpTo', 'Yes, up to {{amount}}', { amount: formatINR(s.withdrawalAmount) }) : t('loanUi.ppfWithdrawNo', 'No (available after year 7)')]], progress: Math.min(100, (s.yearsCompleted / 15) * 100), statusText: t('loanUi.yearNofM', 'Year {{n}}/{{total}}', { n: s.currentYear, total: 15 }), headline: formatINR(s.balanceToday), headlineLabel: tl('Current Balance') };
             }
             if (mt('ssy', 'ssy calculator')) {
                 const s = calculateSsyStatus({ yearlyDeposit: d.yearlyDeposit || 0, rate: d.rate || d.annualRate || 8.2, openingDate: d.openingDate || d.startDate, girlDob: d.girlDob || d.openingDate || d.startDate });
-                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Balance'), value: formatINR(Math.round(s.balanceToday)), color: '#10B981' }, { label: tl('Interest'), value: formatINR(Math.round(s.interestEarned)), color: '#EC4899' }], rows: [[tl('Girl\'s Age'), `${s.girlAge} years`], [tl('Account Age'), `${s.accountAge} of 21 years`], [tl('Deposit Phase'), s.depositPhaseActive ? `Active (${s.depositYearsRemaining}yr left)` : 'Complete — interest compounding'], [tl('Yearly Deposit'), formatINR(d.yearlyDeposit || 0)], [tl('Rate'), `${d.rate || d.annualRate || 8.2}% p.a.`], [tl('Maturity Value'), formatINR(Math.round(s.maturityValue))], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Days to Maturity'), String(s.daysToMaturity)], [tl('Withdrawal'), s.withdrawalEligible ? `Eligible — up to ${formatINR(s.withdrawalAmount)}` : 'After girl turns 18']], progress: Math.min(100, (s.accountAge / 21) * 100), statusText: `Year ${s.accountAge}/21`, headline: formatINR(Math.round(s.balanceToday)), headlineLabel: tl('Current Balance') };
+                return { cards: [{ label: tl('Deposited'), value: formatINR(s.totalDeposited), color: '#3B82F6' }, { label: tl('Balance'), value: formatINR(Math.round(s.balanceToday)), color: '#10B981' }, { label: tl('Interest'), value: formatINR(Math.round(s.interestEarned)), color: '#EC4899' }], rows: [[tl('Girl\'s Age'), `${s.girlAge} ${t('common.years', 'years')}`], [tl('Account Age'), t('loanUi.xOfYYears', '{{x}} of {{y}} years', { x: s.accountAge, y: 21 })], [tl('Deposit Phase'), s.depositPhaseActive ? t('loanUi.activeYrsLeft', 'Active ({{n}} yrs left)', { n: s.depositYearsRemaining }) : t('loanUi.depositsDone', 'Deposits done, interest still compounding')], [tl('Yearly Deposit'), formatINR(d.yearlyDeposit || 0)], [tl('Rate'), `${d.rate || d.annualRate || 8.2}% p.a.`], [tl('Maturity Value'), formatINR(Math.round(s.maturityValue))], [tl('Maturity Date'), fmtDateUI(s.maturityDate)], [tl('Days to Maturity'), String(s.daysToMaturity)], [tl('Withdrawal'), s.withdrawalEligible ? t('loanUi.eligibleUpTo', 'Eligible, up to {{amount}}', { amount: formatINR(s.withdrawalAmount) }) : t('loanUi.afterGirl18', 'After the girl turns 18')]], progress: Math.min(100, (s.accountAge / 21) * 100), statusText: t('loanUi.yearNofM', 'Year {{n}}/{{total}}', { n: s.accountAge, total: 21 }), headline: formatINR(Math.round(s.balanceToday)), headlineLabel: tl('Current Balance') };
             }
             if (mt('nsc', 'nsc calculator')) {
                 const s = calculateNscStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.7, purchaseDate: d.purchaseDate || d.startDate });
-                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: tl('Interest'), value: formatINR(Math.round(s.interestEarned)), color: '#F59E0B' }], rows: [[tl('Years Completed'), `${s.yearsCompleted.toFixed(1)} of 5`], [tl('Rate'), `${d.rate || d.annualRate || 7.7}% p.a.`], [tl('Maturity Value'), formatINR(Math.round(s.maturityValue))], [tl('Maturity Date'), fmtDate(s.maturityDate)], [tl('Days Remaining'), String(s.daysToMaturity)], [tl('Sec 80C Eligible'), 'Yes — Interest reinvested']], progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: `${(Math.min(1, s.yearsCompleted / 5) * 100).toFixed(0)}% of 5yr`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: tl('Value Today') };
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: tl('Interest'), value: formatINR(Math.round(s.interestEarned)), color: '#F59E0B' }], rows: [[tl('Years Completed'), t('loanUi.xOfY', '{{x}} of {{y}}', { x: s.yearsCompleted.toFixed(1), y: 5 })], [tl('Rate'), `${d.rate || d.annualRate || 7.7}% p.a.`], [tl('Maturity Value'), formatINR(Math.round(s.maturityValue))], [tl('Maturity Date'), fmtDateUI(s.maturityDate)], [tl('Days Remaining'), String(s.daysToMaturity)], [tl('Sec 80C Eligible'), t('loanUi.yesReinvested', 'Yes, interest is reinvested')]], progress: Math.min(100, (s.yearsCompleted / 5) * 100), statusText: t('loanUi.pctOf5yr', '{{pct}}% of 5 yrs', { pct: (Math.min(1, s.yearsCompleted / 5) * 100).toFixed(0) }), headline: formatINR(Math.round(s.valueToday)), headlineLabel: tl('Value Today') };
             }
             if (mt('kvp', 'kvp calculator')) {
                 const s = calculateKvpStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.5, purchaseDate: d.purchaseDate || d.startDate });
-                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: tl('Gain'), value: formatINR(Math.round(s.gainSoFar)), color: '#F59E0B' }], rows: [[tl('Progress to 2x'), `${s.progressToDoubling.toFixed(1)}%`], [tl('Rate'), `${d.rate || d.annualRate || 7.5}% p.a.`], [tl('Doubling Date'), fmtDate(s.doublingDate)], [tl('Days to Doubling'), String(s.daysToDoubling)], [tl('Maturity Amount'), formatINR(d.principal * 2)], [tl('Premature'), s.prematureEligible ? 'Eligible now' : `After ${fmtDate(s.prematureEligibleDate)}`]], progress: s.progressToDoubling, statusText: `${s.progressToDoubling.toFixed(0)}% to 2x`, headline: formatINR(Math.round(s.valueToday)), headlineLabel: tl('Value Today') };
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Value Today'), value: formatINR(Math.round(s.valueToday)), color: '#10B981' }, { label: tl('Gain'), value: formatINR(Math.round(s.gainSoFar)), color: '#F59E0B' }], rows: [[tl('Progress to 2x'), `${s.progressToDoubling.toFixed(1)}%`], [tl('Rate'), `${d.rate || d.annualRate || 7.5}% p.a.`], [tl('Doubling Date'), fmtDateUI(s.doublingDate)], [tl('Days to Doubling'), String(s.daysToDoubling)], [tl('Maturity Amount'), formatINR(d.principal * 2)], [tl('Premature'), s.prematureEligible ? t('loanUi.eligibleNow', 'Eligible now') : t('loanUi.afterDate', 'After {{date}}', { date: fmtDateUI(s.prematureEligibleDate) })]], progress: s.progressToDoubling, statusText: t('loanUi.pctTo2x', '{{pct}}% to 2x', { pct: s.progressToDoubling.toFixed(0) }), headline: formatINR(Math.round(s.valueToday)), headlineLabel: tl('Value Today') };
             }
             if (mt('pomis', 'post office mis')) {
                 const s = calculatePomisStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 7.4, startDate: d.startDate });
-                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Monthly Income'), value: formatINR(s.monthlyIncome), color: '#10B981' }, { label: tl('Total Earned'), value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [[tl('Payouts Received'), `${s.monthsCompleted} of 60`], [tl('Rate'), `${d.rate || d.annualRate || 7.4}% p.a.`], [tl('Total 5yr Income'), formatINR(s.monthlyIncome * 60)], [tl('Remaining Payouts'), `${60 - s.monthsCompleted}`], [tl('Maturity Date'), fmtDate(s.maturityDate)]], progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: `${s.monthsCompleted}/60 payouts`, headline: formatINR(s.monthlyIncome), headlineLabel: tl('Monthly Income') };
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Monthly Income'), value: formatINR(s.monthlyIncome), color: '#10B981' }, { label: tl('Total Earned'), value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [[tl('Payouts Received'), t('loanUi.xOfY', '{{x}} of {{y}}', { x: s.monthsCompleted, y: 60 })], [tl('Rate'), `${d.rate || d.annualRate || 7.4}% p.a.`], [tl('Total 5yr Income'), formatINR(s.monthlyIncome * 60)], [tl('Remaining Payouts'), `${60 - s.monthsCompleted}`], [tl('Maturity Date'), fmtDateUI(s.maturityDate)]], progress: Math.min(100, (s.monthsCompleted / 60) * 100), statusText: t('loanUi.payoutsOf', '{{n}}/{{total}} payouts', { n: s.monthsCompleted, total: 60 }), headline: formatINR(s.monthlyIncome), headlineLabel: tl('Monthly Income') };
             }
             if (mt('scss', 'scss calculator')) {
                 const s = calculateScssStatus({ principal: d.principal || 0, rate: d.rate || d.annualRate || 8.2, startDate: d.startDate, tenure: d.tenure || 5 });
-                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Quarterly'), value: formatINR(s.quarterlyIncome), color: '#10B981' }, { label: tl('Total Earned'), value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [[tl('Quarters Completed'), `${s.quartersCompleted} of 20`], [tl('Rate'), `${d.rate || d.annualRate || 8.2}% p.a.`], [tl('Annual Income'), formatINR(s.quarterlyIncome * 4)], [tl('Total 5yr Income'), formatINR(s.quarterlyIncome * 20)], [tl('Maturity Date'), fmtDate(s.maturityDate)]], progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: `${s.quartersCompleted}/20 qtrs`, headline: formatINR(s.quarterlyIncome), headlineLabel: tl('Quarterly Income') };
+                return { cards: [{ label: tl('Invested'), value: formatINR(d.principal), color: '#3B82F6' }, { label: tl('Quarterly'), value: formatINR(s.quarterlyIncome), color: '#10B981' }, { label: tl('Total Earned'), value: formatINR(s.totalIncomeReceived), color: '#F59E0B' }], rows: [[tl('Quarters Completed'), t('loanUi.xOfY', '{{x}} of {{y}}', { x: s.quartersCompleted, y: 20 })], [tl('Rate'), `${d.rate || d.annualRate || 8.2}% p.a.`], [tl('Annual Income'), formatINR(s.quarterlyIncome * 4)], [tl('Total 5yr Income'), formatINR(s.quarterlyIncome * 20)], [tl('Maturity Date'), fmtDateUI(s.maturityDate)]], progress: Math.min(100, (s.quartersCompleted / 20) * 100), statusText: t('loanUi.quartersOf', '{{n}}/{{total}} quarters', { n: s.quartersCompleted, total: 20 }), headline: formatINR(s.quarterlyIncome), headlineLabel: tl('Quarterly Income') };
             }
             if (mt('goal planner', 'goal')) {
                 const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate, targetAmount: d.targetAmount });
@@ -592,11 +604,11 @@ export default function LoanDetail() {
                 if (elapsed > 0 && rate > 0) {
                     valueToday = principal * Math.pow(1 + (rate / 100) / freq, freq * elapsed);
                     progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
-                    statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
+                    statusText = t('loanUi.yOfY', '{{x}}Y of {{y}}Y', { x: elapsed.toFixed(1), y: totalYears });
                 } else {
                     valueToday = d.maturity || 0;
                     progress = 100;
-                    statusText = `${totalYears}Y @ ${rate}%`;
+                    statusText = t('loanUi.yAtRate', '{{y}}Y @ {{rate}}%', { y: totalYears, rate: rate });
                 }
                 const interest = valueToday - principal;
                 const maturityAtEnd = principal * Math.pow(1 + (rate / 100) / freq, freq * totalYears);
@@ -607,7 +619,7 @@ export default function LoanDetail() {
                         { label: tl('Interest'), value: formatINR(interest), color: '#F59E0B' },
                     ],
                     rows: [
-                        [tl('Years Elapsed'), `${elapsed.toFixed(1)} of ${totalYears}`],
+                        [tl('Years Elapsed'), t('loanUi.xOfY', '{{x}} of {{y}}', { x: elapsed.toFixed(1), y: totalYears })],
                         [tl('Rate'), `${rate}% p.a.`],
                         [tl('Compounding'), freq === 1 ? tl('Yearly') : freq === 2 ? tl('Half-yearly') : freq === 4 ? tl('Quarterly') : freq === 12 ? tl('Monthly') : `${freq}x/year`],
                         [tl('Maturity Value'), formatINR(maturityAtEnd)],
@@ -629,11 +641,11 @@ export default function LoanDetail() {
                 if (elapsedMonths > 0 && rate > 0) {
                     interestSoFar = (principal * rate * elapsedMonths) / (12 * 100);
                     progress = totalMonths > 0 ? Math.min(100, (elapsedMonths / totalMonths) * 100) : 100;
-                    statusText = `${elapsedMonths}M of ${totalMonths}M`;
+                    statusText = t('loanUi.mOfM', '{{x}}M of {{y}}M', { x: elapsedMonths, y: totalMonths });
                 } else {
                     interestSoFar = d.interest || 0;
                     progress = 100;
-                    statusText = `${totalMonths}M @ ${rate}%`;
+                    statusText = t('loanUi.mAtRate', '{{m}}M @ {{rate}}%', { m: totalMonths, rate: rate });
                 }
                 const valueToday = principal + interestSoFar;
                 const totalAtEnd = principal + (principal * rate * totalMonths) / (12 * 100);
@@ -644,7 +656,7 @@ export default function LoanDetail() {
                         { label: tl('Value Today'), value: formatINR(valueToday), color: '#10B981' },
                     ],
                     rows: [
-                        [tl('Months Elapsed'), `${elapsedMonths} of ${totalMonths}`],
+                        [tl('Months Elapsed'), t('loanUi.xOfY', '{{x}} of {{y}}', { x: elapsedMonths, y: totalMonths })],
                         [tl('Rate'), `${rate}% p.a.`],
                         [tl('Mode'), d.mode || tl('Simple Interest')],
                         [tl('Total at Maturity'), formatINR(totalAtEnd)],
@@ -666,11 +678,11 @@ export default function LoanDetail() {
                 if (elapsed > 0 && rate > 0) {
                     valueToday = principal * Math.pow(1 + rate / 100, elapsed);
                     progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
-                    statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
+                    statusText = t('loanUi.yOfY', '{{x}}Y of {{y}}Y', { x: elapsed.toFixed(1), y: totalYears });
                 } else {
                     valueToday = d.maturity || d.fv || 0;
                     progress = 100;
-                    statusText = `${totalYears}Y @ ${rate}%`;
+                    statusText = t('loanUi.yAtRate', '{{y}}Y @ {{rate}}%', { y: totalYears, rate: rate });
                 }
                 const gain = valueToday - principal;
                 const maturityAtEnd = principal * Math.pow(1 + rate / 100, totalYears);
@@ -681,7 +693,7 @@ export default function LoanDetail() {
                         { label: tl('Gain'), value: formatINR(gain), color: '#F59E0B' },
                     ],
                     rows: [
-                        [tl('Years Elapsed'), `${elapsed.toFixed(1)} of ${totalYears}`],
+                        [tl('Years Elapsed'), t('loanUi.xOfY', '{{x}} of {{y}}', { x: elapsed.toFixed(1), y: totalYears })],
                         [tl('Rate'), `${rate}% p.a.`],
                         [tl('Maturity Value'), formatINR(maturityAtEnd)],
                         ...(d.inflation ? [[tl('Inflation'), `${d.inflation}% p.a.`]] : []),
@@ -715,12 +727,12 @@ export default function LoanDetail() {
                     withdrawnSoFar = withdrawn;
                     balanceToday = bal;
                     progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
-                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                    statusText = t('loanUi.yOfY', '{{x}}Y of {{y}}Y', { x: elapsedY.toFixed(1), y: totalYears });
                 } else {
                     withdrawnSoFar = d.totalWithdrawn || 0;
                     balanceToday = d.finalBalance || corpus;
                     progress = 100;
-                    statusText = `${totalYears}Y @ ${rate}%`;
+                    statusText = t('loanUi.yAtRate', '{{y}}Y @ {{rate}}%', { y: totalYears, rate: rate });
                 }
                 return {
                     cards: [
@@ -729,7 +741,7 @@ export default function LoanDetail() {
                         { label: tl('Withdrawn'), value: formatINR(withdrawnSoFar), color: '#F59E0B' },
                     ],
                     rows: [
-                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        [tl('Years Elapsed'), t('loanUi.xOfY', '{{x}} of {{y}}', { x: elapsedY.toFixed(1), y: totalYears })],
                         [tl('Monthly Withdrawal'), formatINR(monthlyWithdrawal)],
                         [tl('Expected Return'), `${rate}% p.a.`],
                     ],
@@ -776,13 +788,13 @@ export default function LoanDetail() {
                         { label: tl('Months Remaining'), value: String(monthsRemaining), color: '#6366F1' },
                     ],
                     rows: [
-                        [tl('Months Elapsed'), `${elapsedMonths} of ${totalMonths}`],
+                        [tl('Months Elapsed'), t('loanUi.xOfY', '{{x}} of {{y}}', { x: elapsedMonths, y: totalMonths })],
                         [tl('Transfer / Month'), formatINR(transferAmt)],
                         [tl('Rate'), `${sourceRate}% → ${targetRate}% p.a.`],
                         [tl('Maturity Value'), formatINR(Math.round(d.totalPortfolioValue || 0))],
                     ],
                     progress,
-                    statusText: `${elapsedMonths}M of ${totalMonths}M`,
+                    statusText: t('loanUi.mOfM', '{{x}}M of {{y}}M', { x: elapsedMonths, y: totalMonths }),
                     headline: formatINR(Math.round(totalPortfolio)),
                     headlineLabel: tl('Total Value'),
                 };
@@ -800,12 +812,12 @@ export default function LoanDetail() {
                         { label: tl('CAGR'), value: `${cagr.toFixed(2)}%`, color: '#F59E0B' },
                     ],
                     rows: [
-                        [tl('Period'), `${years} years`],
+                        [tl('Period'), `${years} ${t('common.years', 'years')}`],
                         [tl('Total Return'), `${(((final / Math.max(1, initial)) - 1) * 100).toFixed(2)}%`],
                         [tl('Wealth Multiplier'), `${(final / Math.max(1, initial)).toFixed(2)}x`],
                     ],
                     progress: 100,
-                    statusText: `${years}Y @ ${cagr.toFixed(1)}%`,
+                    statusText: t('loanUi.yAtRate', '{{y}}Y @ {{rate}}%', { y: years, rate: cagr.toFixed(1) }),
                     headline: `${cagr.toFixed(2)}%`,
                     headlineLabel: tl('CAGR'),
                 };
@@ -832,12 +844,12 @@ export default function LoanDetail() {
                     investedSoFar = monthlyContrib * elapsedMonths;
                     corpusToday = bal;
                     progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
-                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                    statusText = t('loanUi.yOfY', '{{x}}Y of {{y}}Y', { x: elapsedY.toFixed(1), y: totalYears });
                 } else {
                     investedSoFar = d.totalInvested || 0;
                     corpusToday = d.corpus || d.maturity || 0;
                     progress = 100;
-                    statusText = `${totalYears}Y @ ${rate}%`;
+                    statusText = t('loanUi.yAtRate', '{{y}}Y @ {{rate}}%', { y: totalYears, rate: rate });
                 }
                 const interestEarned = corpusToday - investedSoFar;
                 return {
@@ -847,9 +859,9 @@ export default function LoanDetail() {
                         { label: tl('Interest'), value: formatINR(interestEarned), color: '#F59E0B' },
                     ],
                     rows: [
-                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        [tl('Years Elapsed'), t('loanUi.xOfY', '{{x}} of {{y}}', { x: elapsedY.toFixed(1), y: totalYears })],
                         [tl('Basic Salary'), formatINR(basic)],
-                        [tl('Contribution'), `${empPct}% (emp + employer)`],
+                        [tl('Contribution'), t('loanUi.empEmployer', '{{pct}}% (you + employer)', { pct: empPct })],
                         [tl('EPF Rate'), `${rate}% p.a.`],
                         ...(d.corpus ? [[tl('Projected Corpus'), formatINR(d.corpus)]] : []),
                     ],
@@ -878,12 +890,12 @@ export default function LoanDetail() {
                     investedSoFar = monthly * elapsedMonths;
                     corpusToday = bal;
                     progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
-                    statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                    statusText = t('loanUi.yOfY', '{{x}}Y of {{y}}Y', { x: elapsedY.toFixed(1), y: totalYears });
                 } else {
                     investedSoFar = d.totalInvested || 0;
                     corpusToday = d.corpus || d.maturity || 0;
                     progress = 100;
-                    statusText = `${totalYears}Y @ ${rate}%`;
+                    statusText = t('loanUi.yAtRate', '{{y}}Y @ {{rate}}%', { y: totalYears, rate: rate });
                 }
                 return {
                     cards: [
@@ -892,7 +904,7 @@ export default function LoanDetail() {
                         { label: tl('Pension'), value: formatINR(d.monthlyPension || 0), color: '#F59E0B' },
                     ],
                     rows: [
-                        [tl('Years Elapsed'), `${elapsedY.toFixed(1)} of ${totalYears}`],
+                        [tl('Years Elapsed'), t('loanUi.xOfY', '{{x}} of {{y}}', { x: elapsedY.toFixed(1), y: totalYears })],
                         [tl('Monthly Contribution'), formatINR(monthly)],
                         [tl('Expected Return'), `${rate}% p.a.`],
                         [tl('Annuity %'), `${d.annuityPct || 40}%`],
@@ -1005,14 +1017,15 @@ export default function LoanDetail() {
                         [tl('Mode'), d.odType === 'business' ? t('od.typeBusiness', 'Business OD') : t('od.typePersonal', 'Personal OD')],
                     ],
                     progress: 100,
-                    statusText: `${d.days || 0}d @ ${d.rate || 0}%`,
+                    statusText: `${d.days || 0}${t('age.daysAbbr', 'd')} @ ${d.rate || 0}%`,
                     headline: formatINR(totalPayable),
                     headlineLabel: tl('Total Payable'),
                 };
             }
         } catch { /* skip */ }
         return empty;
-    }, [profile, d, typeLC, isLoan]);
+    };
+    const investmentMetrics = useMemo(() => buildInvestmentMetrics(t as unknown as Translate, tl, fmtDateUI), [profile, d, typeLC, isLoan, t]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Inject a "Start Date" row at the top of the rows array if a start date
     // exists in the saved profile data — works across every calculator type.
@@ -1024,7 +1037,7 @@ export default function LoanDetail() {
         if (investmentMetrics.rows.some(r => r[0] === startDateLabel)) return investmentMetrics;
         return {
             ...investmentMetrics,
-            rows: [[startDateLabel, fmtDate(startDate)], ...investmentMetrics.rows],
+            rows: [[startDateLabel, fmtDateUI(startDate)], ...investmentMetrics.rows],
         };
     }, [investmentMetrics, d]);
 
@@ -1132,7 +1145,7 @@ export default function LoanDetail() {
                             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
                         </span>
                         <p className="text-xs font-bold uppercase tracking-wider" style={{ color: c.textSecondary }}>
-                            {t('liveStatus.liveAsOf', { date: fmtDate(status.today) })}
+                            {t('liveStatus.liveAsOf', { date: fmtDateUI(status.today) })}
                         </p>
                     </div>
 
@@ -1166,7 +1179,7 @@ export default function LoanDetail() {
                             <div className="grid grid-cols-3 gap-2 mb-3">
                                 <div className="p-3 rounded-xl text-center" style={{ backgroundColor: '#10B98115' }}><p className="text-[9px] uppercase font-bold text-emerald-500">{t('liveStatus.emisPaidLabel')}</p><p className="text-lg font-black text-emerald-500">{status.emisPaid}</p></div>
                                 <div className="p-3 rounded-xl text-center" style={{ backgroundColor: '#F59E0B15' }}><p className="text-[9px] uppercase font-bold text-amber-500">{t('myLoans.emisLeft')}</p><p className="text-lg font-black text-amber-500">{status.emisRemaining}</p></div>
-                                <div className="p-3 rounded-xl text-center" style={{ backgroundColor: '#3B82F615' }}><p className="text-[9px] uppercase font-bold text-blue-500">{t('myLoans.nextEmiDue')}</p><p className="text-[11px] font-black text-blue-500">{fmtDate(status.nextEmiDate)}</p></div>
+                                <div className="p-3 rounded-xl text-center" style={{ backgroundColor: '#3B82F615' }}><p className="text-[9px] uppercase font-bold text-blue-500">{t('myLoans.nextEmiDue')}</p><p className="text-[11px] font-black text-blue-500">{fmtDateUI(status.nextEmiDate)}</p></div>
                             </div>
                             <div className="space-y-1.5">
                                 <div className="flex justify-between text-xs"><span style={{ color: c.textSecondary }}>{t('liveStatus.interestToBank')}</span><span className="font-medium text-amber-500">{formatINR(status.nextEmiInterest)} ({interestPct.toFixed(1)}%)</span></div>
@@ -1185,7 +1198,7 @@ export default function LoanDetail() {
                         <div className="space-y-0">
                             <div className="flex justify-between py-2.5 border-b text-xs" style={{ borderColor: `${c.border}50` }}>
                                 <span style={{ color: c.textSecondary }}>{t('myLoans.disbursementDate')}</span>
-                                <span className="font-bold" style={{ color: c.text }}>{fmtDate(d.disbursementDate)}</span>
+                                <span className="font-bold" style={{ color: c.text }}>{fmtDateUI(d.disbursementDate)}</span>
                             </div>
                             <div className="flex justify-between py-2.5 border-b text-xs" style={{ borderColor: `${c.border}50` }}>
                                 <span style={{ color: c.textSecondary }}>{t('myLoans.maturityDateLabel')}</span>
@@ -1243,8 +1256,8 @@ export default function LoanDetail() {
                                             <tbody>
                                                 {visibleSchedule.map(row => (
                                                     <tr key={row.month} className={row.isNext ? 'bg-blue-500/10' : row.isPaid ? '' : 'opacity-40'} style={{ borderBottom: `1px solid ${c.border}40`, color: c.text }}>
-                                                        <td className="py-1.5 font-medium">{row.isNext ? <span className="text-blue-500 font-bold">NEXT</span> : row.month}</td>
-                                                        <td className="py-1.5" style={{ color: c.textSecondary }}>{fmtDate(row.date)}</td>
+                                                        <td className="py-1.5 font-medium">{row.isNext ? <span className="text-blue-500 font-bold">{t('common.next', 'Next')}</span> : row.month}</td>
+                                                        <td className="py-1.5" style={{ color: c.textSecondary }}>{fmtDateUI(row.date)}</td>
                                                         <td className="py-1.5 text-right font-medium">{formatINR(row.emi)}</td>
                                                         <td className="py-1.5 text-right text-amber-500">{formatINR(row.interest)}</td>
                                                         <td className="py-1.5 text-right text-emerald-500">{formatINR(row.principal)}</td>
@@ -1333,19 +1346,27 @@ export default function LoanDetail() {
     // the same source so the numbers in both files never drift apart.
     const buildInvestmentExportConfig = (): ExportConfig => {
         const tag = todayStr();
+        // Exports are always English: the PDF fonts have no Indic letters (non-Latin text would be
+        // dropped), so the same figures are rebuilt with English labels, values and dates.
+        const tEn = i18n.getFixedT('en') as unknown as Translate;
+        const asIs = (label: string) => label; // tl's keys are the English labels
+        const em = buildInvestmentMetrics(tEn, asIs, fmtDate);
+        const startDate = getProfileStartDate(d);
+        const emRows = startDate && !em.rows.some((r) => r[0] === 'Start Date') ? [['Start Date', fmtDate(startDate)], ...em.rows] : em.rows;
+        const yw = buildYearWiseTable(asIs);
         return {
             title: profile.name,
             subtitle: `${profile.calculatorType} — Live Status Report (${fmtDate(todayStr())})`,
-            inputs: investmentMetrics.cards.map(card => ({ label: card.label, value: card.value })),
+            inputs: em.cards.map(card => ({ label: card.label, value: card.value })),
             results: [
-                { label: investmentMetrics.headlineLabel, value: investmentMetrics.headline },
-                { label: tl('Progress'), value: investmentMetrics.statusText },
-                ...investmentMetricsWithStartDate.rows.map(([label, value]) => ({ label, value: String(value) })),
+                { label: em.headlineLabel, value: em.headline },
+                { label: 'Progress', value: em.statusText },
+                ...emRows.map(([label, value]) => ({ label, value: String(value) })),
             ],
-            ...(yearWiseTable.rows.length > 0 ? {
+            ...(yw.rows.length > 0 ? {
                 projectionTitle: 'Year-wise Breakdown',
-                projectionColumns: yearWiseTable.columns,
-                projectionRows: yearWiseTable.rows,
+                projectionColumns: yw.columns,
+                projectionRows: yw.rows,
             } : {}),
             filename: `FinCalix_${profile.calculatorType.replace(/\s+/g, '_')}_${tag}`,
         };
@@ -1379,7 +1400,7 @@ export default function LoanDetail() {
                 {/* Live Banner */}
                 <div className="flex items-center gap-2 px-1">
                     <span className="relative flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" /><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" /></span>
-                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: c.textSecondary }}>{t('liveStatus.liveAsOf', { date: fmtDate(todayStr()) })}</p>
+                    <p className="text-xs font-bold uppercase tracking-wider" style={{ color: c.textSecondary }}>{t('liveStatus.liveAsOf', { date: fmtDateUI(todayStr()) })}</p>
                 </div>
 
                 {/* Hero Headline Card */}
@@ -1389,7 +1410,7 @@ export default function LoanDetail() {
                         <h3 className="text-sm font-bold" style={{ color: c.text }}>{investmentMetrics.headlineLabel}</h3>
                     </div>
                     <p className="text-3xl font-black text-emerald-500 mb-1">{investmentMetrics.headline}</p>
-                    <p className="text-[10px]" style={{ color: c.textSecondary }}>{t('liveStatus.liveAsOf', { date: fmtDate(todayStr()) })}</p>
+                    <p className="text-[10px]" style={{ color: c.textSecondary }}>{t('liveStatus.liveAsOf', { date: fmtDateUI(todayStr()) })}</p>
                 </div>
 
                 {/* 3 Colored Metric Cards (like loan EMI status) */}
@@ -1488,7 +1509,7 @@ export default function LoanDetail() {
                 )}
 
                 {/* Saved Date */}
-                <p className="text-[10px] text-center" style={{ color: c.textSecondary }}>{t('liveStatus.savedOn', { date: fmtDate(profile.createdAt) })}</p>
+                <p className="text-[10px] text-center" style={{ color: c.textSecondary }}>{t('liveStatus.savedOn', { date: fmtDateUI(profile.createdAt) })}</p>
 
                 {/* Actions */}
                 <div className="grid grid-cols-2 gap-3">

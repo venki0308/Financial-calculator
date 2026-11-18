@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import LegalLayout, { LangSelector, PlayStoreBadge, type Lang, type LegalDoc } from './LegalLayout';
 import { useAppColors } from '../../theme/useAppColors';
+import { legalText } from './text';
 
 // ── Translations ─────────────────────────────────────────
 const T = {
     en: {
         title: 'Privacy Policy',
         hero: 'Your Privacy Matters',
-        heroSub: 'Your calculations and financial data stay on your device. There is no account, no backend and no database. FinCalix collects anonymous usage statistics through Google Analytics; financial amounts are never sent.',
+        heroSub: 'Your calculations and financial data stay on your device. There is no account, no backend and no database. FinCalix collects anonymous usage statistics, such as which features are used most, to improve the app. Financial amounts are never sent.',
         updated: 'Last Updated: 18 November 2026',
         s: {
             collect: 'Information We Collect',
@@ -30,7 +31,7 @@ const T = {
     hi: {
         title: 'गोपनीयता नीति',
         hero: 'आपकी गोपनीयता महत्वपूर्ण है',
-        heroSub: 'आपकी गणनाएँ और वित्तीय डेटा आपके डिवाइस पर ही रहते हैं। कोई खाता नहीं, कोई बैकएंड नहीं और कोई डेटाबेस नहीं है। FinCalix Google Analytics के ज़रिए गुमनाम उपयोग आँकड़े एकत्र करता है; वित्तीय राशियाँ कभी नहीं भेजी जातीं।',
+        heroSub: 'आपकी गणनाएँ और वित्तीय डेटा आपके डिवाइस पर ही रहते हैं। कोई खाता नहीं, कोई बैकएंड नहीं और कोई डेटाबेस नहीं है। ऐप को बेहतर बनाने के लिए FinCalix गुमनाम उपयोग आँकड़े एकत्र करता है, जैसे कौन-सी सुविधाएँ सबसे ज़्यादा इस्तेमाल होती हैं। वित्तीय राशियाँ कभी नहीं भेजी जातीं।',
         updated: 'अंतिम अद्यतन: 18 नवंबर 2026',
         s: {
             collect: 'हम क्या जानकारी एकत्रित करते हैं',
@@ -53,7 +54,7 @@ const T = {
     te: {
         title: 'గోప్యతా విధానం',
         hero: 'మీ గోప్యత ముఖ్యమైనది',
-        heroSub: 'మీ లెక్కలు మరియు ఆర్థిక డేటా మీ పరికరంలోనే ఉంటాయి. ఖాతా లేదు, బ్యాకెండ్ లేదు, డేటాబేస్ లేదు. FinCalix Google Analytics ద్వారా అనామక వినియోగ గణాంకాలను సేకరిస్తుంది; ఆర్థిక మొత్తాలు ఎప్పుడూ పంపబడవు.',
+        heroSub: 'మీ లెక్కలు మరియు ఆర్థిక డేటా మీ పరికరంలోనే ఉంటాయి. ఖాతా లేదు, బ్యాకెండ్ లేదు, డేటాబేస్ లేదు. యాప్‌ను మెరుగుపరచడానికి FinCalix అనామక వినియోగ గణాంకాలను సేకరిస్తుంది, ఉదాహరణకు ఏ ఫీచర్లు ఎక్కువగా వాడుతున్నారో. ఆర్థిక మొత్తాలు ఎప్పుడూ పంపబడవు.',
         updated: 'చివరిగా నవీకరించబడింది: 18 నవంబర్ 2026',
         s: {
             collect: 'మేము సేకరించే సమాచారం',
@@ -76,7 +77,7 @@ const T = {
     ta: {
         title: 'தனியுரிமைக் கொள்கை',
         hero: 'உங்கள் தனியுரிமை முக்கியம்',
-        heroSub: 'உங்கள் கணக்கீடுகளும் நிதித் தரவும் உங்கள் சாதனத்திலேயே இருக்கும். கணக்கு இல்லை, பின்நிலை (backend) இல்லை, தரவுத்தளம் இல்லை. FinCalix, Google Analytics மூலம் அநாமதேயப் பயன்பாட்டுப் புள்ளிவிவரங்களைச் சேகரிக்கிறது; நிதித் தொகைகள் ஒருபோதும் அனுப்பப்படாது.',
+        heroSub: 'உங்கள் கணக்கீடுகளும் நிதித் தரவும் உங்கள் சாதனத்திலேயே இருக்கும். கணக்கு இல்லை, பின்நிலை (backend) இல்லை, தரவுத்தளம் இல்லை. ஆப்பை மேம்படுத்த, எந்த அம்சங்கள் அதிகம் பயன்படுத்தப்படுகின்றன என்பது போன்ற அநாமதேயப் பயன்பாட்டுப் புள்ளிவிவரங்களை FinCalix சேகரிக்கிறது. நிதித் தொகைகள் ஒருபோதும் அனுப்பப்படாது.',
         updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: 18 நவம்பர் 2026',
         s: {
             collect: 'நாங்கள் சேகரிக்கும் தகவல்',
@@ -99,7 +100,7 @@ const T = {
     kn: {
         title: 'ಗೌಪ್ಯತಾ ನೀತಿ',
         hero: 'ನಿಮ್ಮ ಗೌಪ್ಯತೆ ಮುಖ್ಯ',
-        heroSub: 'ನಿಮ್ಮ ಲೆಕ್ಕಾಚಾರಗಳು ಮತ್ತು ಹಣಕಾಸು ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಉಳಿಯುತ್ತವೆ. ಖಾತೆ ಇಲ್ಲ, ಬ್ಯಾಕೆಂಡ್ ಇಲ್ಲ, ಡೇಟಾಬೇಸ್ ಇಲ್ಲ. FinCalix Google Analytics ಮೂಲಕ ಅನಾಮಧೇಯ ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ; ಹಣಕಾಸಿನ ಮೊತ್ತಗಳನ್ನು ಎಂದಿಗೂ ಕಳುಹಿಸುವುದಿಲ್ಲ.',
+        heroSub: 'ನಿಮ್ಮ ಲೆಕ್ಕಾಚಾರಗಳು ಮತ್ತು ಹಣಕಾಸು ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಉಳಿಯುತ್ತವೆ. ಖಾತೆ ಇಲ್ಲ, ಬ್ಯಾಕೆಂಡ್ ಇಲ್ಲ, ಡೇಟಾಬೇಸ್ ಇಲ್ಲ. ಆ್ಯಪ್ ಅನ್ನು ಉತ್ತಮಪಡಿಸಲು, ಯಾವ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಹೆಚ್ಚು ಬಳಸಲಾಗುತ್ತದೆ ಎಂಬಂತಹ ಅನಾಮಧೇಯ ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳನ್ನು FinCalix ಸಂಗ್ರಹಿಸುತ್ತದೆ. ಹಣಕಾಸಿನ ಮೊತ್ತಗಳನ್ನು ಎಂದಿಗೂ ಕಳುಹಿಸುವುದಿಲ್ಲ.',
         updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: 18 ನವೆಂಬರ್ 2026',
         s: {
             collect: 'ನಾವು ಸಂಗ್ರಹಿಸುವ ಮಾಹಿತಿ',
@@ -117,6 +118,29 @@ const T = {
             access: 'ಪ್ರವೇಶ',
             delete: 'ಅಳಿಸು',
             portability: 'ಪೋರ್ಟೆಬಿಲಿಟಿ',
+        },
+    },
+    ml: {
+        title: 'സ്വകാര്യതാ നയം',
+        hero: 'നിങ്ങളുടെ സ്വകാര്യത ഞങ്ങൾക്ക് പ്രധാനമാണ്',
+        heroSub: 'നിങ്ങളുടെ കണക്കുകൂട്ടലുകളും സാമ്പത്തിക ഡാറ്റയും നിങ്ങളുടെ ഉപകരണത്തിൽ തന്നെ തുടരും. അക്കൗണ്ടില്ല, ബാക്കെൻഡില്ല, ഡാറ്റാബേസുമില്ല. ആപ്പ് മെച്ചപ്പെടുത്താൻ, ഏതൊക്കെ ഫീച്ചറുകളാണ് കൂടുതൽ ഉപയോഗിക്കുന്നത് എന്നതുപോലുള്ള അജ്ഞാത ഉപയോഗ സ്ഥിതിവിവരക്കണക്കുകൾ FinCalix ശേഖരിക്കുന്നു. സാമ്പത്തിക തുകകൾ ഒരിക്കലും അയയ്ക്കില്ല.',
+        updated: 'അവസാനം പുതുക്കിയത്: 18 നവംബർ 2026',
+        s: {
+            collect: 'ഞങ്ങൾ ശേഖരിക്കുന്ന വിവരങ്ങൾ',
+            storage: 'നിങ്ങളുടെ ഉപകരണത്തിൽ സൂക്ഷിക്കുന്ന ഡാറ്റ',
+            backup: 'ബാക്കപ്പ് & റീസ്റ്റോർ',
+            analytics: 'അനലിറ്റിക്സും ട്രാക്കിങ്ങും',
+            thirdParty: 'മൂന്നാം കക്ഷി സേവനങ്ങൾ',
+            financial: 'നിങ്ങളുടെ സാമ്പത്തിക ഡാറ്റ',
+            children: 'കുട്ടികളുടെ സ്വകാര്യത',
+            security: 'ഡാറ്റ സുരക്ഷ',
+            rights: 'നിങ്ങളുടെ അവകാശങ്ങൾ',
+            changes: 'ഈ നയത്തിലെ മാറ്റങ്ങൾ',
+            contact: 'ഞങ്ങളെ ബന്ധപ്പെടുക',
+            reporting: 'ഉപയോഗ അനലിറ്റിക്സ്',
+            access: 'കാണാനുള്ള അവകാശം',
+            delete: 'മായ്ക്കാനുള്ള അവകാശം',
+            portability: 'പോർട്ടബിലിറ്റി',
         },
     },
 } as const;
@@ -198,6 +222,7 @@ function Bullets({ items }: { items: string[] }) {
 function Body({ lang }: { lang: Lang }) {
     const c = useAppColors();
     const t = T[lang];
+    const x = legalText(lang).privacy;
 
     return (
         <>
@@ -218,116 +243,87 @@ function Body({ lang }: { lang: Lang }) {
 
             {/* 1 */}
             <Section icon="👁️" color="#8B5CF6" title={t.s.collect}>
-                <p style={{ marginBottom: '10px' }}>FinCalix does <strong style={{ color: c.text }}>not</strong> ask for, collect or store your name, contact details or financial data.</p>
-                <Bullets items={[
-                    'No name, email address, phone number, or postal address is collected',
-                    'No financial data (salary, investments, EMI amounts) is collected',
-                    'No account creation or login is required to use the app',
-                    'No user profiles are created or stored',
-                ]} />
-                <p>You can open the app and start calculating instantly — we never ask for any personal details.</p>
+                <p style={{ marginBottom: '10px' }}>{x.collect.intro.before}<strong style={{ color: c.text }}>{x.collect.intro.strong}</strong>{x.collect.intro.after}</p>
+                <Bullets items={x.collect.bullets} />
+                <p>{x.collect.outro}</p>
             </Section>
 
             {/* 2 */}
             <Section icon="📱" color="#3B82F6" title={t.s.storage}>
-                <p style={{ marginBottom: '10px' }}>FinCalix stores the following data <strong style={{ color: c.text }}>locally on your device only</strong> using your browser's LocalStorage:</p>
-                <Bullets items={[
-                    'Calculation inputs — Numbers you enter in calculators',
-                    'Recently used calculators — For quick access on the home screen',
-                    'Saved calculations — When you manually save a result',
-                    'App preferences — Theme (dark/light), language choice',
-                ]} />
+                <p style={{ marginBottom: '10px' }}>{x.storage.intro.before}<strong style={{ color: c.text }}>{x.storage.intro.strong}</strong>{x.storage.intro.after}</p>
+                <Bullets items={x.storage.bullets} />
                 <GoldBox>
-                    🔒 <strong>This data stays on your device permanently until you:</strong>
-                    <Bullets items={[
-                        'Clear the app data from your device settings',
-                        'Uninstall the app',
-                        'Clear browser data (on web version)',
-                    ]} />
-                    We cannot see the data stored on your device. It is never synced to any server and leaves your device only in a backup file you export yourself. Usage analytics (see Analytics & Tracking) record which calculators you use and your language, never the numbers you enter.
+                    🔒 <strong>{x.storage.boxTitle}</strong>
+                    <Bullets items={x.storage.boxBullets} />
+                    {x.storage.boxText}
                 </GoldBox>
             </Section>
 
             {/* 3 */}
             <Section icon="📊" color="#EC4899" title={t.s.analytics}>
-                <p style={{ marginBottom: '14px' }}>FinCalix collects anonymous usage statistics through Google Analytics. The app and this website send the following to Google Analytics; the data is processed by Google. Financial amounts are never sent.</p>
+                <p style={{ marginBottom: '14px' }}>{x.analytics.intro}</p>
                 <Card>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <div>
-                            <div style={{ color: '#10B981', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>What Is Collected</div>
-                            {['Events: page view, screen view (including app open), calculator used, scheme viewed, language changed, PDF/Excel export, calculation completed, report exported (PDF, Excel, CSV). Google Analytics also records first open, session start and engagement time automatically. On the website: taps on the Google Play buttons.','Event details: screen name, page path, calculator type, scheme type (central or state), language, export type, platform', 'Identifiers: a random client ID and a random installation ID', 'Device data: screen resolution, language, OS and browser version', 'Approximate country, derived from your IP address by Google Analytics'].map(item => (
+                            <div style={{ color: '#10B981', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{x.analytics.collectedTitle}</div>
+                            {x.analytics.collected.map(item => (
                                 <div key={item} style={{ color: c.textSecondary, fontSize: '13px', padding: '4px 0', borderBottom: `1px solid ${c.border}` }}>• {item}</div>
                             ))}
                         </div>
                         <div>
-                            <div style={{ color: '#EF4444', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>Never Collected</div>
-                            {['Your calculation inputs', 'Financial figures', 'Personal identity', 'Name or email', 'Browsing history'].map(item => (
+                            <div style={{ color: '#EF4444', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>{x.analytics.neverTitle}</div>
+                            {x.analytics.never.map(item => (
                                 <div key={item} style={{ color: c.textSecondary, fontSize: '13px', padding: '4px 0', borderBottom: `1px solid ${c.border}` }}>• {item}</div>
                             ))}
                         </div>
                     </div>
                 </Card>
-                <p style={{ marginTop: '12px' }}>This data is pseudonymous: it is tied to a random ID, not to your name or contact details. Advertising features and ad personalisation are disabled. Usage analytics run for every user of the app and this website.</p>
+                <p style={{ marginTop: '12px' }}>{x.analytics.outro}</p>
             </Section>
 
             {/* 4 */}
             <Section icon="🔗" color="#3B82F6" title={t.s.thirdParty}>
-                <p style={{ marginBottom: '14px' }}>FinCalix uses the following third-party service for analytics:</p>
+                <p style={{ marginBottom: '14px' }}>{x.thirdParty.intro}</p>
                 <Card>
-                    <div style={{ color: c.text, fontWeight: 600, marginBottom: '6px' }}>Google Analytics (Google)</div>
-                    <div style={{ color: c.textSecondary, fontSize: '13px' }}>Google processes the usage statistics listed above on our behalf through Google Analytics. The data is sent to Google's servers, which may be outside India.</div>
+                    <div style={{ color: c.text, fontWeight: 600, marginBottom: '6px' }}>{x.thirdParty.cardTitle}</div>
+                    <div style={{ color: c.textSecondary, fontSize: '13px' }}>{x.thirdParty.cardText}</div>
                 </Card>
-                <p style={{ marginTop: '12px' }}>The app also loads its font from a web font service and checks fincalix.com for update information; like any web request, these reveal your IP address to the server. No advertising networks, tracking pixels or data-selling services are used.</p>
+                <p style={{ marginTop: '12px' }}>{x.thirdParty.outro}</p>
             </Section>
 
             {/* 5 */}
             <Section icon="🔒" color="#10B981" title={t.s.financial}>
                 <GreenBox>
-                    💰 <strong>Your financial data stays on your device</strong>
-                    <Bullets items={[
-                        'All numbers you enter (salary, EMI, tax inputs, SIP amounts, etc.) are processed entirely on your device',
-                        'We never see, store, or transmit your financial figures',
-                        'All calculations happen in your browser/app — not on any server',
-                        'There is no backend or API that receives your financial data',
-                    ]} />
+                    💰 <strong>{x.financial.boxTitle}</strong>
+                    <Bullets items={x.financial.bullets} />
                 </GreenBox>
             </Section>
 
             {/* Backup & Restore */}
             <Section icon="💾" color="#14B8A6" title={t.s.backup}>
-                <p style={{ marginBottom: '10px' }}>FinCalix includes an optional Backup & Restore feature so you can move your data to a new device. The backup file contains all your locally stored app data — expenses, budgets, Business Tracker entries, loans, credit cards, CIBIL profile inputs, saved calculations and settings. Business Tracker entries are stored locally on your device, exactly like all other data.</p>
-                <Bullets items={[
-                    'Export and sharing are entirely user-initiated — nothing is backed up automatically',
-                    'The backup file is created on your device and goes only where you choose to send it (phone storage, Google Drive, email)',
-                    'Keeping the backup file secure is your responsibility — anyone with the file can read your financial data',
-                    'Importing a backup replaces the data currently on the device',
-                    'FinCalix never uploads your backup to any server',
-                ]} />
+                <p style={{ marginBottom: '10px' }}>{x.backup.intro}</p>
+                <Bullets items={x.backup.bullets} />
             </Section>
 
             {/* 6 */}
             <Section icon="👶" color="#F59E0B" title={t.s.children}>
-                <p style={{ marginBottom: '10px' }}>FinCalix is designed for users 18 years of age and above. The app contains financial calculators intended for adult use (tax planning, loan EMI, investment returns, etc.).</p>
-                <p>We do not knowingly collect data from anyone under 18 years of age.</p>
+                <p style={{ marginBottom: '10px' }}>{x.children.p1}</p>
+                <p>{x.children.p2}</p>
             </Section>
 
             {/* 7 */}
             <Section icon="🛡️" color="#6366F1" title={t.s.security}>
-                <p style={{ marginBottom: '10px' }}>FinCalix has no servers of its own and never receives your financial data. Usage analytics are processed by Google through Google Analytics, as described above.</p>
-                <Bullets items={[
-                    'Your data security equals your device security',
-                    'All web traffic uses HTTPS encryption',
-                    'We recommend using a device lock screen (PIN, fingerprint, face unlock) to protect your locally stored data',
-                ]} />
+                <p style={{ marginBottom: '10px' }}>{x.security.intro}</p>
+                <Bullets items={x.security.bullets} />
             </Section>
 
             {/* 8 */}
             <Section icon="⚖️" color="#C9A84C" title={t.s.rights}>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginTop: '4px' }}>
                     {[
-                        { title: t.s.access, text: 'All the data you enter is visible directly in the app (Saved Calculations, History, Preferences).' },
-                        { title: t.s.delete, text: 'Clear app data from your device settings, or simply uninstall the app. All data on your device is removed instantly.' },
-                        { title: t.s.portability, text: 'Your financial data never reaches us, so there is nothing for us to delete. Usage analytics are tied only to a random ID; uninstalling the app or clearing its data removes that ID from your device.' },
+                        { title: t.s.access, text: x.rights.access },
+                        { title: t.s.delete, text: x.rights.delete },
+                        { title: t.s.portability, text: x.rights.portability },
                     ].map(card => (
                         <Card key={card.title}>
                             <div style={{ color: '#C9A84C', fontWeight: 600, fontSize: '14px', marginBottom: '8px' }}>{card.title}</div>
@@ -339,33 +335,29 @@ function Body({ lang }: { lang: Lang }) {
 
             {/* 9 */}
             <Section icon="📝" color="#94A3B8" title={t.s.changes}>
-                <p style={{ marginBottom: '10px' }}>We may update this Privacy Policy from time to time. When we do, we will update the "Last Updated" date at the top of this page.</p>
-                <p>Continued use of FinCalix after changes to this policy constitutes acceptance of the updated terms. We encourage you to review this policy periodically.</p>
+                <p style={{ marginBottom: '10px' }}>{x.changes.p1}</p>
+                <p>{x.changes.p2}</p>
             </Section>
 
             {/* 10 */}
             <Section icon="✉️" color="#3B82F6" title={t.s.contact}>
-                <p style={{ marginBottom: '14px' }}>If you have any questions or concerns about this Privacy Policy, feel free to reach out:</p>
+                <p style={{ marginBottom: '14px' }}>{x.contact.intro}</p>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    <a href="mailto:support@fincalix.com" style={{ textDecoration: 'none' }}>
-                        <Card><div style={{ color: '#C9A84C', fontWeight: 600, fontSize: '14px' }}>📧 support@fincalix.com</div></Card>
+                    <a href={`mailto:${x.contact.email}`} style={{ textDecoration: 'none' }}>
+                        <Card><div style={{ color: '#C9A84C', fontWeight: 600, fontSize: '14px' }}>📧 {x.contact.email}</div></Card>
                     </a>
-                    <a href="https://fincalix.com" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                        <Card><div style={{ color: '#3B82F6', fontWeight: 600, fontSize: '14px' }}>🌐 www.fincalix.com</div></Card>
+                    <a href={x.contact.siteUrl} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                        <Card><div style={{ color: '#3B82F6', fontWeight: 600, fontSize: '14px' }}>🌐 {x.contact.siteLabel}</div></Card>
                     </a>
                 </div>
             </Section>
 
             {/* 11 */}
             <Section icon="📊" color="#EC4899" title={t.s.reporting}>
-                <p style={{ marginBottom: '14px' }}>Google processes the usage statistics described in section 3 through Google Analytics. Google's servers may be outside India, which makes this a cross-border transfer. No financial data is included. FinCalix does not use crash reporting.</p>
+                <p style={{ marginBottom: '14px' }}>{x.reporting.intro}</p>
                 <GreenBox>
-                    <div style={{ color: '#10B981', fontWeight: 600, marginBottom: '10px' }}>✅ Data Safety</div>
-                    <Bullets items={[
-                        'All calculations are performed locally on your device.',
-                        'No financial data is stored on our servers.',
-                        'No third-party data selling.',
-                    ]} />
+                    <div style={{ color: '#10B981', fontWeight: 600, marginBottom: '10px' }}>✅ {x.reporting.safetyTitle}</div>
+                    <Bullets items={x.reporting.safetyBullets} />
                 </GreenBox>
                 <div style={{ marginTop: '20px' }}>
                     <a
@@ -381,15 +373,15 @@ function Body({ lang }: { lang: Lang }) {
                         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(16,185,129,0.15)'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = c.isDark ? 'rgba(16,185,129,0.1)' : 'rgba(16,185,129,0.08)'; }}
                     >
-                        🛡️ View Data & Privacy (Play Store Data Safety)
+                        🛡️ {x.reporting.dataPrivacyLink}
                     </a>
                 </div>
             </Section>
 
             {/* 12 — DPDP Act 2023 & Grievance */}
-            <Section icon="⚖️" color="#8B5CF6" title="DPDP Act 2023 & Grievance">
+            <Section icon="⚖️" color="#8B5CF6" title={x.dpdp.title}>
                 <p style={{ marginBottom: '14px' }}>
-                    FinCalix complies with the Digital Personal Data Protection Act, 2023. Your financial inputs are stored only on your device. FinCalix collects anonymous usage statistics through Google Analytics; financial amounts are never sent. For any privacy concerns, grievances, or questions about how this app handles your data,
+                    {x.dpdp.intro}
                 </p>
 
                 <div style={{
@@ -397,13 +389,8 @@ function Body({ lang }: { lang: Lang }) {
                     border: `1px solid rgba(139,92,246,${c.isDark ? '0.3' : '0.2'})`,
                     borderRadius: '12px', padding: '14px', marginBottom: '14px',
                 }}>
-                    <div style={{ color: '#8B5CF6', fontWeight: 600, marginBottom: '8px' }}>Your Rights as a Data Principal</div>
-                    <Bullets items={[
-                        'Right to access — all the data you enter is visible inside the app at any time',
-                        'Right to correction — edit any saved entry inside the app',
-                        'Right to erasure — clear app data from device settings or uninstall the app',
-                        'Right to grievance redressal — email support@fincalix.com',
-                    ]} />
+                    <div style={{ color: '#8B5CF6', fontWeight: 600, marginBottom: '8px' }}>{x.dpdp.rightsTitle}</div>
+                    <Bullets items={x.dpdp.rights} />
                 </div>
 
                 <div style={{
@@ -411,9 +398,9 @@ function Body({ lang }: { lang: Lang }) {
                     border: `1px solid rgba(16,185,129,${c.isDark ? '0.3' : '0.2'})`,
                     borderRadius: '12px', padding: '14px', marginBottom: '14px',
                 }}>
-                    <div style={{ color: '#10B981', fontWeight: 600, marginBottom: '6px' }}>Grievance Contact</div>
-                    <a href="mailto:support@fincalix.com" style={{ color: '#10B981', fontWeight: 600, textDecoration: 'underline' }}>
-                        support@fincalix.com
+                    <div style={{ color: '#10B981', fontWeight: 600, marginBottom: '6px' }}>{x.dpdp.grievanceTitle}</div>
+                    <a href={`mailto:${x.contact.email}`} style={{ color: '#10B981', fontWeight: 600, textDecoration: 'underline' }}>
+                        {x.contact.email}
                     </a>
                 </div>
 
@@ -422,9 +409,9 @@ function Body({ lang }: { lang: Lang }) {
                     border: `1px solid rgba(245,158,11,${c.isDark ? '0.3' : '0.2'})`,
                     borderRadius: '12px', padding: '14px',
                 }}>
-                    <div style={{ color: '#F59E0B', fontWeight: 600, marginBottom: '6px' }}>Third-Party Trademarks</div>
+                    <div style={{ color: '#F59E0B', fontWeight: 600, marginBottom: '6px' }}>{x.dpdp.trademarksTitle}</div>
                     <p style={{ fontSize: '13px', lineHeight: 1.6, margin: 0 }}>
-                        CIBIL® is a registered trademark of TransUnion CIBIL Limited. FinCalix is not affiliated with, endorsed by, or partnered with TransUnion CIBIL or any credit bureau. All other trademarks (RBI, SEBI, IRDAI, AMFI, IT Department, India Post, etc.) are the property of their respective owners and are referenced for educational purposes only.
+                        {x.dpdp.trademarks}
                     </p>
                 </div>
             </Section>
@@ -445,6 +432,7 @@ export default function PrivacyPolicy() {
             title={t.title}
             updated={t.updated}
             langBar={<LangSelector lang={lang} onChange={setLang} />}
+            lang={lang}
         >
             <Body lang={lang} />
 

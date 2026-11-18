@@ -8,13 +8,16 @@ import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEn
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import { saveLoan as saveLoanToStorage, deleteLoan as deleteLoanFromStorage, getAllLoans, generateLoanId, type SavedLoan, type LoanType } from '../utils/loanStorage';
 import { parseLocalDate } from '../utils/dateUtils';
+import { formatDateUI } from '../utils/uiLocale';
 
-function fmtDate(dateStr: string, locale: string = 'en-IN'): string {
+function fmtDate(dateStr: string, locale?: string): string {
     if (!dateStr) return '—';
     // Parse YYYY-MM-DD as a LOCAL date — new Date('YYYY-MM-DD') is parsed as
     // UTC midnight and can display the previous day in negative-UTC timezones.
     const d = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? parseLocalDate(dateStr) : new Date(dateStr);
-    return d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+    const opts: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+    // On-screen date in the user's language unless a locale is passed explicitly
+    return locale ? d.toLocaleDateString(locale, opts) : formatDateUI(d, opts);
 }
 
 const LOAN_CALC_TYPES = new Set([

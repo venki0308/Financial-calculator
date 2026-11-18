@@ -244,7 +244,9 @@ export default function InsuranceCompare() {
   ], [t]);
 
   const tSumInsuredOptions = useMemo(() => SUM_INSURED_VALUES.map(value => ({
-    label: t(`insCompare.sumInsured_${value}`),
+    label: value >= 100
+      ? t('loanUi.croreAmount', '₹{{n}} Crore', { n: value / 100 })
+      : t('loanUi.lakhAmount', '₹{{n}} Lakh', { n: value }),
     value,
   })), [t]);
 
@@ -1023,7 +1025,7 @@ export default function InsuranceCompare() {
                           </div>
                           <div>
                             <p className="text-[11px] font-bold text-foreground mb-0.5">{opt.label}</p>
-                            <p className="text-[11px] text-muted-foreground leading-relaxed">{t(`ins.compare.priorityGuide_${pid}`)}</p>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">{t(`loanUi.priorityGuide_${pid}`, t(`ins.compare.priorityGuide_${pid}`))}</p>
                           </div>
                         </div>
                       );

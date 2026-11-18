@@ -4,6 +4,7 @@ import { useAppColors } from '../theme/useAppColors';
 import { useCibil } from '../context/CibilContext';
 import { LOAN_CIBIL_RATES } from '../data/cibilData';
 import { getCibilTier } from '../data/cibilData';
+import { cibilTierLabel } from '../utils/loanUi';
 
 interface Props { loanType: string }
 
@@ -53,7 +54,7 @@ export default function CibilBadge({ loanType }: Props) {
                 {isNTC ? 'NH' : score}
             </div>
             <div className="flex-1 text-left">
-                <p className="text-xs font-bold" style={{ color }}>{tierData.emoji} {tierData.label}</p>
+                <p className="text-xs font-bold" style={{ color }}>{tierData.emoji} {cibilTierLabel(tierData)}</p>
                 <p className="text-[9px]" style={{ color: c.textSecondary }}>
                     {statusIcon} {statusText}
                     {rates && ` · ${rates.min.toFixed(1)}%–${rates.max.toFixed(1)}%`}

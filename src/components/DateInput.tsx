@@ -9,6 +9,7 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { formatDateUI } from '../utils/uiLocale';
 import { Capacitor } from '@capacitor/core';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useAppColors } from '../theme/useAppColors';
@@ -34,7 +35,7 @@ function formatDisplay(s: string, t: (key: string) => string): string {
     if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return t('dateInput.selectDate');
     const [y, m, d] = s.split('-').map(Number);
     const date = new Date(y, m - 1, d);
-    return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    return formatDateUI(date, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 function daysInMonth(year: number, month: number) {

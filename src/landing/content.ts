@@ -6,7 +6,7 @@
  *
  * Never write: "#1", "best", "guaranteed", "zero data collection", "no
  * tracking", "100% offline", or that analytics can be switched off (there is
- * no switch since 18 Nov 2026). Name the provider as "Google Analytics".
+ * no switch since 18 Nov 2026) or the analytics provider's name (owner, 18 Nov 2026).
  */
 
 export { PLAY_URL, playUrl } from './play';
@@ -22,7 +22,7 @@ export const PRIVACY_CLAIMS = [
     { title: 'Works offline', body: 'The Android app’s calculators work without internet.' },
 ] as const;
 
-export const ANALYTICS_LINE = 'FinCalix collects anonymous usage statistics through Google Analytics; financial amounts are never sent.';
+export const ANALYTICS_LINE = 'FinCalix collects anonymous usage statistics, such as which features are used most; financial amounts are never sent.';
 
 export interface Feature {
     id: string;
@@ -137,7 +137,7 @@ export const FAQ_TEMPLATES: Faq[] = [
     },
     {
         q: 'What usage data does FinCalix collect?',
-        a: 'FinCalix collects anonymous usage statistics through Google Analytics: which screens are opened in the app, completed calculations, exported reports and, on this website, taps on the Google Play buttons. Financial amounts and inputs are never sent. The data is processed by Google.',
+        a: 'FinCalix collects anonymous usage statistics to improve the app: which features and screens are used most, completed calculations, exported reports and, on this website, taps on the Google Play buttons. Financial amounts and inputs are never sent.',
     },
     {
         q: 'Which languages does FinCalix support?',

@@ -310,9 +310,9 @@ export default function AgeCalculator() {
                                 </div>
                                 <div className="grid grid-cols-3 gap-3">
                                     {[
-                                        { label: t('age.totalMonths', 'Months'), value: yearsResult.totalMonths.toLocaleString() },
-                                        { label: t('age.totalWeeks'), value: yearsResult.weeks.toLocaleString() },
-                                        { label: t('age.totalDays'), value: yearsResult.days.toLocaleString() },
+                                        { label: t('age.totalMonths', 'Months'), value: yearsResult.totalMonths.toLocaleString('en-IN') },
+                                        { label: t('age.totalWeeks'), value: yearsResult.weeks.toLocaleString('en-IN') },
+                                        { label: t('age.totalDays'), value: yearsResult.days.toLocaleString('en-IN') },
                                     ].map(item => (
                                         <div key={item.label} className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-sm dark:shadow-none text-center">
                                             <p className="text-lg font-bold text-slate-800 dark:text-foreground">{item.value}</p>
@@ -345,9 +345,9 @@ export default function AgeCalculator() {
                         {/* Detailed Breakdown */}
                         <div className="grid grid-cols-2 gap-3">
                             {[
-                                { label: t('age.totalDays'), value: result.age.totalDays.toLocaleString(), icon: <Calendar size={16} />, color: 'text-blue-500' },
-                                { label: t('age.totalWeeks'), value: result.age.totalWeeks.toLocaleString(), icon: <Clock size={16} />, color: 'text-emerald-500' },
-                                { label: t('age.totalHours'), value: result.age.totalHours.toLocaleString(), icon: <Star size={16} />, color: 'text-amber-500' },
+                                { label: t('age.totalDays'), value: result.age.totalDays.toLocaleString('en-IN'), icon: <Calendar size={16} />, color: 'text-blue-500' },
+                                { label: t('age.totalWeeks'), value: result.age.totalWeeks.toLocaleString('en-IN'), icon: <Clock size={16} />, color: 'text-emerald-500' },
+                                { label: t('age.totalHours'), value: result.age.totalHours.toLocaleString('en-IN'), icon: <Star size={16} />, color: 'text-amber-500' },
                                 { label: t('age.bornOn'), value: result.dayOfWeek, icon: <Info size={16} />, color: 'text-violet-500' },
                             ].map(item => (
                                 <div key={item.label} className="p-4 rounded-2xl bg-white dark:bg-card border border-slate-200 dark:border-border shadow-sm dark:shadow-none text-center">
@@ -371,12 +371,12 @@ export default function AgeCalculator() {
                         <div className="grid grid-cols-2 gap-3">
                             <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/30 text-center">
                                 <div className="text-rose-500 mb-1 flex justify-center"><Activity size={20} /></div>
-                                <p className="text-lg font-bold text-slate-800 dark:text-foreground">{result.metrics.heartbeats.toLocaleString()}</p>
+                                <p className="text-lg font-bold text-slate-800 dark:text-foreground">{result.metrics.heartbeats.toLocaleString('en-IN')}</p>
                                 <p className="text-rose-600 dark:text-rose-400 text-[10px] uppercase font-bold mt-1">{t('age.totalHeartbeats')}</p>
                             </div>
                             <div className="p-4 rounded-2xl bg-sky-50 dark:bg-sky-500/10 border border-sky-200 dark:border-sky-500/30 text-center">
                                 <div className="text-sky-500 mb-1 flex justify-center"><Wind size={20} /></div>
-                                <p className="text-lg font-bold text-slate-800 dark:text-foreground">{result.metrics.breaths.toLocaleString()}</p>
+                                <p className="text-lg font-bold text-slate-800 dark:text-foreground">{result.metrics.breaths.toLocaleString('en-IN')}</p>
                                 <p className="text-sky-600 dark:text-sky-400 text-[10px] uppercase font-bold mt-1">{t('age.totalBreaths')}</p>
                             </div>
                             <div className="p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 text-center col-span-2">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import LegalLayout, { LangSelector, PlayStoreBadge, type Lang, type LegalDoc } from './LegalLayout';
 import { useAppColors } from '../../theme/useAppColors';
+import { legalText } from './text';
 
 const T = {
     en: { title: 'Terms of Service', subtitle: 'USAGE AGREEMENT', updated: 'Last updated · July 2026', s1: 'For Reference Only', s2: 'Not Financial Advice', s3: 'Government Schemes', s4: 'Liability', s5: 'Backups & Data Loss', closing: 'By using this app, you acknowledge and agree to the terms outlined above.' },
@@ -8,30 +9,22 @@ const T = {
     te: { title: 'సేవా నిబంధనలు', subtitle: 'వినియోగ ఒప్పందం', updated: 'చివరి నవీకరణ · జూలై 2026', s1: 'కేవలం సూచన కోసం', s2: 'ఆర్థిక సలహా కాదు', s3: 'ప్రభుత్వ పథకాలు', s4: 'బాధ్యత', s5: 'బ్యాకప్‌లు & డేటా నష్టం', closing: 'ఈ యాప్ ఉపయోగించడం ద్వారా మీరు పై నిబంధనలకు అంగీకరిస్తున్నారు.' },
     ta: { title: 'சேவை விதிமுறைகள்', subtitle: 'பயன்பாட்டு ஒப்பந்தம்', updated: 'கடைசியாக புதுப்பிக்கப்பட்டது · ஜூலை 2026', s1: 'குறிப்புக்கு மட்டும்', s2: 'நிதி ஆலோசனை இல்லை', s3: 'அரசு திட்டங்கள்', s4: 'பொறுப்பு', s5: 'காப்புப்பிரதிகள் & தரவு இழப்பு', closing: 'இந்த செயலியை பயன்படுத்துவதன் மூலம் மேற்கூறிய விதிகளுக்கு ஒப்புக்கொள்கிறீர்கள்.' },
     kn: { title: 'ಸೇವಾ ನಿಯಮಗಳು', subtitle: 'ಬಳಕೆ ಒಪ್ಪಂದ', updated: 'ಕೊನೆಯ ಅಪ್ಡೇಟ್ · ಜುಲೈ 2026', s1: 'ಉಲ್ಲೇಖಕ್ಕಾಗಿ ಮಾತ್ರ', s2: 'ಹಣಕಾಸು ಸಲಹೆ ಅಲ್ಲ', s3: 'ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು', s4: 'ಹೊಣೆಗಾರಿಕೆ', s5: 'ಬ್ಯಾಕಪ್ ಮತ್ತು ಡೇಟಾ ನಷ್ಟ', closing: 'ಈ ಅಪ್ಲಿಕೇಶನ್ ಬಳಸುವ ಮೂಲಕ ನೀವು ಮೇಲಿನ ನಿಯಮಗಳಿಗೆ ಒಪ್ಪಿಗೆ ನೀಡುತ್ತೀರಿ.' },
+    ml: { title: 'സേവന നിബന്ധനകൾ', subtitle: 'ഉപയോഗ കരാർ', updated: 'അവസാനം പുതുക്കിയത് · ജൂലൈ 2026', s1: 'സൂചനയ്ക്ക് മാത്രം', s2: 'സാമ്പത്തിക ഉപദേശമല്ല', s3: 'സർക്കാർ പദ്ധതികൾ', s4: 'ബാധ്യതയുടെ പരിധി', s5: 'ബാക്കപ്പുകളും ഡാറ്റ നഷ്ടവും', closing: 'ഈ ആപ്പ് ഉപയോഗിക്കുന്നതിലൂടെ, മുകളിൽ പറഞ്ഞിരിക്കുന്ന നിബന്ധനകൾ നിങ്ങൾ അംഗീകരിക്കുന്നു.' },
 } as const;
 
-const SECTIONS = (t: any) => [
-    {
-        n: '1', color: '#3B82F6', title: t.s1,
-        text: 'The results provided by our calculators are estimates based on standard financial formulas and are for informational purposes only. Actual bank or government figures may vary.',
-    },
-    {
-        n: '2', color: '#10B981', title: t.s2,
-        text: 'This app does not provide professional financial, legal, or tax advice. Users are encouraged to consult with qualified professionals before making significant financial decisions.',
-    },
-    {
-        n: '3', color: '#8B5CF6', title: t.s3,
-        text: 'While we provide details of government schemes, we are NOT an official government entity. Always verify details on official portals (e.g., .gov.in domains) as rules are subject to change.',
-    },
-    {
-        n: '4', color: '#F59E0B', title: t.s4,
-        text: 'FinCalix shall not be liable for any financial losses or decisions made based on the data provided within this application.',
-    },
-    {
-        n: '5', color: '#EC4899', title: t.s5,
-        text: 'You are solely responsible for safekeeping backup files you export from FinCalix and for any data loss caused by importing a wrong or outdated backup — importing a backup replaces the data currently on the device. FinCalix is not liable for backup files shared to third-party services such as Google Drive or email, or for their loss, exposure or misuse.',
-    },
-];
+// Numbered sections: number and colour here, heading from T (s1-s5), text from ./text (terms.sections).
+const SECTION_STYLE = [
+    { n: '1', color: '#3B82F6' },
+    { n: '2', color: '#10B981' },
+    { n: '3', color: '#8B5CF6' },
+    { n: '4', color: '#F59E0B' },
+    { n: '5', color: '#EC4899' },
+] as const;
+
+const SECTIONS = (t: (typeof T)[Lang], texts: readonly string[]) => {
+    const titles = [t.s1, t.s2, t.s3, t.s4, t.s5];
+    return SECTION_STYLE.map((s, i) => ({ ...s, title: titles[i], text: texts[i] }));
+};
 
 // Page text, shared by the website page below and the app screen (src/pages/TermsOfService.tsx).
 function Body({ lang }: { lang: Lang }) {
@@ -63,7 +56,7 @@ function Body({ lang }: { lang: Lang }) {
 
             {/* Numbered sections */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '48px' }}>
-                {SECTIONS(t).map((sec: any) => (
+                {SECTIONS(t, legalText(lang).terms.sections).map((sec) => (
                     <div
                         key={sec.n}
                         style={{
@@ -110,7 +103,7 @@ export default function TermsOfService() {
     const t = T[lang];
 
     return (
-        <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />}>
+        <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />} lang={lang}>
             <Body lang={lang} />
             <div style={{ textAlign: 'center' }}>
                 <PlayStoreBadge />

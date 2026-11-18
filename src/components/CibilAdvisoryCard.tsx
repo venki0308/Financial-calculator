@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import { formatINR, calculateReducingEMI } from '../utils/calculations';
 import { getCibilTier, getTierId, LOAN_CIBIL_RATES, CIBIL_TIPS, RBI_NOTES, type LoanCibilConfig } from '../data/cibilData';
+import { cibilTierLabel, cibilTipText, loanTypeLabel } from '../utils/loanUi';
 
 interface Props {
     score: number;
@@ -89,7 +90,7 @@ export default function CibilAdvisoryCard({ score, loanType, loanAmount, tenureM
                         {score > 0 ? score : 'NH'}
                     </div>
                     <div>
-                        <p className="text-sm font-bold" style={{ color: tier.color }}>{tier.emoji} {tier.label} ({tier.range})</p>
+                        <p className="text-sm font-bold" style={{ color: tier.color }}>{tier.emoji} {cibilTierLabel(tier)} ({tier.range})</p>
                         <p className="text-[10px]" style={{ color: c.textSecondary }}>{t(tier.description)}</p>
                     </div>
                 </div>
@@ -102,7 +103,7 @@ export default function CibilAdvisoryCard({ score, loanType, loanAmount, tenureM
 
             {/* Rate & LTV for this loan */}
             <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
-                <h4 className="text-xs font-bold mb-3" style={{ color: c.textSecondary }}>{t('cibil.forYourLoan', { type: config.loanType })}</h4>
+                <h4 className="text-xs font-bold mb-3" style={{ color: c.textSecondary }}>{t('cibil.forYourLoan', { type: loanTypeLabel(config.loanType) })}</h4>
                 <div className="grid grid-cols-3 gap-2">
                     <div className="p-2 rounded-lg text-center" style={{ backgroundColor: `${tier.color}15` }}>
                         <p className="text-[8px] uppercase font-bold" style={{ color: c.textSecondary }}>{t('cibil.expectedRate')}</p>
@@ -170,10 +171,10 @@ export default function CibilAdvisoryCard({ score, loanType, loanAmount, tenureM
                                     <div key={tip.id} className="p-3 rounded-xl border" style={{ borderColor: c.border }}>
                                         <div className="flex items-center justify-between mb-1">
                                             <p className="text-xs font-bold" style={{ color: c.text }}>{t(tip.titleKey)}</p>
-                                            <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${tip.impact === 'High' ? 'bg-emerald-500/15 text-emerald-500' : 'bg-amber-500/15 text-amber-500'}`}>{tip.impact} · {tip.points} {t('cibil.pts')}</span>
+                                            <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${tip.impact === 'High' ? 'bg-emerald-500/15 text-emerald-500' : 'bg-amber-500/15 text-amber-500'}`}>{cibilTipText(tip.impact)} · {cibilTipText(tip.points)} {t('cibil.pts')}</span>
                                         </div>
                                         <p className="text-[10px]" style={{ color: c.textSecondary }}>{t(tip.descKey)}</p>
-                                        <p className="text-[9px] mt-1 font-medium" style={{ color: c.textSecondary }}>⏱ {tip.time}</p>
+                                        <p className="text-[9px] mt-1 font-medium" style={{ color: c.textSecondary }}>⏱ {cibilTipText(tip.time)}</p>
                                     </div>
                                 ))}
                             </div>

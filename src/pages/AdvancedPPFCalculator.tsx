@@ -10,8 +10,10 @@ import LiveStatusCard from '../components/LiveStatusCard';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { calculatePpfStatus, type PpfStatusInput } from '../utils/investmentStatusEngine';
 
-import { formatINR, formatINRWords } from '../utils/calculations';
+import { formatINR } from '../utils/calculations';
+import { amountInWords } from '../utils/uiLocale';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
+import { smallSavingsQuarterLabel } from '../utils/saveUiLabels';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import ShareableCard from '../components/ShareableCard';
@@ -284,7 +286,7 @@ export default function AdvancedPPFCalculator() {
                         min={PPF_MIN_INVEST} max={maxPerPeriod} prefix="₹"
                         helperText={`₹${PPF_MIN_INVEST.toLocaleString()} - ₹${maxPerPeriod.toLocaleString()} (${t('ppf.annualMax')})`} />
                     <NumberInput label={t('ppf.interestRate')} value={rate} onChange={setRate}
-                        min={1} max={15} suffix="%" step={0.1} helperText={t('ppf.currentGovtRate', { rate: SMALL_SAVINGS.rates.ppf, quarter: SMALL_SAVINGS.label })} />
+                        min={1} max={15} suffix="%" step={0.1} helperText={t('ppf.currentGovtRate', { rate: SMALL_SAVINGS.rates.ppf, quarter: smallSavingsQuarterLabel() })} />
                     <NumberInput label={t('ppf.investmentPeriod')} value={years} onChange={setYears}
                         min={PPF_LOCK_IN_YEARS} max={50} suffix={` ${t('ppf.years')}`}
                         helperText={t('ppf.minYearsHelper', { min: PPF_LOCK_IN_YEARS, ext: PPF_EXTENSION_YEARS })} />
@@ -318,7 +320,7 @@ export default function AdvancedPPFCalculator() {
                             className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">
                             {formatINR(maturityValue)}
                         </motion.p>
-                        {maturityValue >= 100000 && <p className="text-muted-foreground text-[10px] mt-1">({formatINRWords(maturityValue)})</p>}
+                        {maturityValue >= 100000 && <p className="text-muted-foreground text-[10px] mt-1">({amountInWords(maturityValue)})</p>}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">

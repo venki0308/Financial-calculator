@@ -219,21 +219,21 @@ export default function CompareCalculator() {
                             <>
                                 <NumberInput label={t('compare.loanAmount')} value={emiA.principal} onChange={v => setEmiA({ ...emiA, principal: v })} min={10000} max={100000000} prefix="₹" />
                                 <NumberInput label={t('compare.interestRate')} value={emiA.rate} onChange={v => setEmiA({ ...emiA, rate: v })} min={1} max={30} suffix="%" step={0.1} />
-                                <NumberInput label={t('compare.tenureYears')} value={emiA.years} onChange={v => setEmiA({ ...emiA, years: v })} min={1} max={30} suffix=" yr" />
+                                <NumberInput label={t('compare.tenureYears')} value={emiA.years} onChange={v => setEmiA({ ...emiA, years: v })} min={1} max={30} suffix={` ${t('fd.yr', 'yr')}`} />
                             </>
                         )}
                         {selectedType === 'sip' && (
                             <>
                                 <NumberInput label={t('compare.monthlySip')} value={sipA.monthly} onChange={v => setSipA({ ...sipA, monthly: v })} min={500} max={1000000} prefix="₹" />
                                 <NumberInput label={t('compare.returnRate')} value={sipA.rate} onChange={v => setSipA({ ...sipA, rate: v })} min={1} max={30} suffix="%" step={0.5} />
-                                <NumberInput label={t('compare.years')} value={sipA.years} onChange={v => setSipA({ ...sipA, years: v })} min={1} max={40} suffix=" yr" />
+                                <NumberInput label={t('compare.years')} value={sipA.years} onChange={v => setSipA({ ...sipA, years: v })} min={1} max={40} suffix={` ${t('fd.yr', 'yr')}`} />
                             </>
                         )}
                         {selectedType === 'fd' && (
                             <>
                                 <NumberInput label={t('compare.principal')} value={fdA.principal} onChange={v => setFdA({ ...fdA, principal: v })} min={1000} max={100000000} prefix="₹" />
                                 <NumberInput label={t('compare.interestRate')} value={fdA.rate} onChange={v => setFdA({ ...fdA, rate: v })} min={1} max={15} suffix="%" step={0.1} />
-                                <NumberInput label={t('compare.tenureYears')} value={fdA.years} onChange={v => setFdA({ ...fdA, years: v })} min={1} max={10} suffix=" yr" />
+                                <NumberInput label={t('compare.tenureYears')} value={fdA.years} onChange={v => setFdA({ ...fdA, years: v })} min={1} max={10} suffix={` ${t('fd.yr', 'yr')}`} />
                             </>
                         )}
                     </div>
@@ -247,21 +247,21 @@ export default function CompareCalculator() {
                             <>
                                 <NumberInput label={t('compare.loanAmount')} value={emiB.principal} onChange={v => setEmiB({ ...emiB, principal: v })} min={10000} max={100000000} prefix="₹" />
                                 <NumberInput label={t('compare.interestRate')} value={emiB.rate} onChange={v => setEmiB({ ...emiB, rate: v })} min={1} max={30} suffix="%" step={0.1} />
-                                <NumberInput label={t('compare.tenureYears')} value={emiB.years} onChange={v => setEmiB({ ...emiB, years: v })} min={1} max={30} suffix=" yr" />
+                                <NumberInput label={t('compare.tenureYears')} value={emiB.years} onChange={v => setEmiB({ ...emiB, years: v })} min={1} max={30} suffix={` ${t('fd.yr', 'yr')}`} />
                             </>
                         )}
                         {selectedType === 'sip' && (
                             <>
                                 <NumberInput label={t('compare.monthlySip')} value={sipB.monthly} onChange={v => setSipB({ ...sipB, monthly: v })} min={500} max={1000000} prefix="₹" />
                                 <NumberInput label={t('compare.returnRate')} value={sipB.rate} onChange={v => setSipB({ ...sipB, rate: v })} min={1} max={30} suffix="%" step={0.5} />
-                                <NumberInput label={t('compare.years')} value={sipB.years} onChange={v => setSipB({ ...sipB, years: v })} min={1} max={40} suffix=" yr" />
+                                <NumberInput label={t('compare.years')} value={sipB.years} onChange={v => setSipB({ ...sipB, years: v })} min={1} max={40} suffix={` ${t('fd.yr', 'yr')}`} />
                             </>
                         )}
                         {selectedType === 'fd' && (
                             <>
                                 <NumberInput label={t('compare.principal')} value={fdB.principal} onChange={v => setFdB({ ...fdB, principal: v })} min={1000} max={100000000} prefix="₹" />
                                 <NumberInput label={t('compare.interestRate')} value={fdB.rate} onChange={v => setFdB({ ...fdB, rate: v })} min={1} max={15} suffix="%" step={0.1} />
-                                <NumberInput label={t('compare.tenureYears')} value={fdB.years} onChange={v => setFdB({ ...fdB, years: v })} min={1} max={10} suffix=" yr" />
+                                <NumberInput label={t('compare.tenureYears')} value={fdB.years} onChange={v => setFdB({ ...fdB, years: v })} min={1} max={10} suffix={` ${t('fd.yr', 'yr')}`} />
                             </>
                         )}
                     </div>

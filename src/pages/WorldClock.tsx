@@ -11,6 +11,8 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import { getCountryMeta, getSunTimes } from '../data/countryData';
 import { WORLD_TIMEZONES, POPULAR_IANA, TimezoneInfo } from '../data/timezones';
 import { getWorldClockExtras } from '../data/worldClockCurrencies';
+import { uiLocale } from '../utils/uiLocale';
+import { cityNameUI, countryNameUI } from '../utils/loanUiClock';
 
 // ── Display helpers ─────────────────────────────────────────────────
 // Intl.DateTimeFormat returns offsets prefixed with "GMT" (e.g.
@@ -205,7 +207,7 @@ function filterZones(q: string) {
 
 function getZoneLabel(iana: string) {
     const tz = WORLD_TIMEZONES.find(t => t.iana === iana);
-    return tz ? `${tz.city} (${tz.country})` : iana;
+    return tz ? `${cityNameUI(tz.city)} (${countryNameUI(tz.country)})` : iana;
 }
 
 const TZPickerSheet = memo(({
@@ -239,8 +241,8 @@ const TZPickerSheet = memo(({
                         }`}
                     >
                         <div className="flex-1 min-w-0">
-                            <p className="text-foreground font-semibold text-sm truncate">{tz.city}</p>
-                            <p className="text-muted-foreground text-[11px] font-medium">{tz.country} · {tz.iana}</p>
+                            <p className="text-foreground font-semibold text-sm truncate">{cityNameUI(tz.city)}</p>
+                            <p className="text-muted-foreground text-[11px] font-medium">{countryNameUI(tz.country)} · {tz.iana}</p>
                         </div>
                         {value === tz.iana && <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />}
                     </button>
@@ -381,13 +383,14 @@ function CompareView() {
                     timeZone: iana, hour: '2-digit', minute: '2-digit', hour12: true,
                 }).format(ref).replace(/\s/g, ' ').toLowerCase();
 
+            // Display only: date and weekday in the user's language
             const fmtDate = (iana: string) =>
-                new Intl.DateTimeFormat('en-US', {
+                new Intl.DateTimeFormat(uiLocale(), {
                     timeZone: iana, day: 'numeric', month: 'short', year: 'numeric',
                 }).format(ref);
 
             const fmtWeekday = (iana: string) =>
-                new Intl.DateTimeFormat('en-US', { timeZone: iana, weekday: 'short' }).format(ref);
+                new Intl.DateTimeFormat(uiLocale(), { timeZone: iana, weekday: 'short' }).format(ref);
 
             const srcDateStr = new Intl.DateTimeFormat('en-CA', { timeZone: srcTZ }).format(ref);
 
@@ -581,7 +584,7 @@ function CompareView() {
                         {srcResult.dst.nextDST && (
                             <div className="mt-3 pt-3 border-t border-white/10">
                                 <p className="text-[10px] text-amber-300 font-bold">
-                                    🕐 {t('worldClock.nextDst')}: {t('worldClock.clocksGo', { direction: srcResult.dst.nextDST.type })} {t('worldClock.on')} {new Intl.DateTimeFormat('en-US', { timeZone: srcTZ, month: 'short', day: 'numeric', hour: 'numeric', hour12: true }).format(srcResult.dst.nextDST.date)}
+                                    🕐 {t('worldClock.nextDst')}: {t('worldClock.clocksGo', { direction: srcResult.dst.nextDST.type === 'forward' ? t('loanUi.dirForward', 'forward') : t('loanUi.dirBackward', 'backward') })} {t('worldClock.on')} {new Intl.DateTimeFormat(uiLocale(), { timeZone: srcTZ, month: 'short', day: 'numeric', hour: 'numeric', hour12: true }).format(srcResult.dst.nextDST.date)}
                                 </p>
                             </div>
                         )}
@@ -656,7 +659,7 @@ function CompareView() {
                             {res.dst.nextDST && (
                                 <div className="bg-amber-500/20 border-t border-amber-500/20 px-5 py-2">
                                     <p className="text-[10px] text-amber-300 font-bold">
-                                        🕐 {t('worldClock.nextDstChange')}: {t('worldClock.clocksGo', { direction: res.dst.nextDST.type })} {t('worldClock.on')} {new Intl.DateTimeFormat('en-US', { timeZone: res.iana, month: 'short', day: 'numeric', hour: 'numeric', hour12: true }).format(res.dst.nextDST.date)}
+                                        🕐 {t('worldClock.nextDstChange')}: {t('worldClock.clocksGo', { direction: res.dst.nextDST.type === 'forward' ? t('loanUi.dirForward', 'forward') : t('loanUi.dirBackward', 'backward') })} {t('worldClock.on')} {new Intl.DateTimeFormat(uiLocale(), { timeZone: res.iana, month: 'short', day: 'numeric', hour: 'numeric', hour12: true }).format(res.dst.nextDST.date)}
                                     </p>
                                 </div>
                             )}
@@ -898,9 +901,9 @@ function getTimeData(iana: string, now: Date) {
         // Usually, the higher offset (more positive) is the summer/DST time.
         const currentlyDST = isDST && currentOff === Math.max(janOff, julOff);
 
-        const weekday = new Intl.DateTimeFormat('en-IN', { timeZone: iana, weekday: 'short' }).format(now);
+        const weekday = new Intl.DateTimeFormat(uiLocale(), { timeZone: iana, weekday: 'short' }).format(now);
         const day = get('day');
-        const month = new Intl.DateTimeFormat('en-IN', { timeZone: iana, month: 'short' }).format(now);
+        const month = new Intl.DateTimeFormat(uiLocale(), { timeZone: iana, month: 'short' }).format(now);
 
         // Diff vs the user's device timezone (not hardcoded IST). A user
         // in London should see "5h 30m ahead of BST" for India, not the
@@ -996,8 +999,8 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
                         <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/5" />
                         <div className="absolute -left-4 -bottom-4 w-24 h-24 rounded-full bg-black/10" />
                         <div className="relative">
-                            <h3 className="text-foreground font-bold text-xl">{clock.cityName}</h3>
-                            <p className="text-indigo-200 text-xs uppercase tracking-wider mb-4">{clock.countryName.toUpperCase()}</p>
+                            <h3 className="text-foreground font-bold text-xl">{cityNameUI(clock.cityName)}</h3>
+                            <p className="text-indigo-200 text-xs uppercase tracking-wider mb-4">{countryNameUI(clock.countryName).toUpperCase()}</p>
                             <div className="flex items-center gap-4">
                                 <AnalogClock hour={td.hour} minute={td.minute} second={td.second} />
                                 <div className="flex-1">
@@ -1096,7 +1099,7 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
                         <div className="flex-1 space-y-1.5">
                             <div className="flex items-center justify-between text-sm">
                                 <span className="text-muted-foreground text-xs">{t('worldClock.country')} :</span>
-                                <span className="text-foreground font-bold">{clock.countryName}</span>
+                                <span className="text-foreground font-bold">{countryNameUI(clock.countryName)}</span>
                             </div>
                             {extras?.capital && (
                                 <div className="flex items-center justify-between text-sm">
@@ -1155,10 +1158,10 @@ function CityDetailView({ clock, onBack }: { clock: SavedClock; onBack: () => vo
                             <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">{t('worldClock.upcomingClockChange')}</p>
                         </div>
                         <p className="text-foreground text-sm font-semibold mb-1">
-                            {t('worldClock.clocksGo', { direction: td.nextDST.type })} {t('worldClock.oneHour')}
+                            {t('worldClock.clocksGo', { direction: td.nextDST.type === 'forward' ? t('loanUi.dirForward', 'forward') : t('loanUi.dirBackward', 'backward') })} {t('worldClock.oneHour')}
                         </p>
                         <p className="text-muted-foreground text-sm">
-                            {new Intl.DateTimeFormat('en-IN', { 
+                            {new Intl.DateTimeFormat(uiLocale(), { 
                                 timeZone: clock.timezone, 
                                 weekday: 'short', 
                                 month: 'long', 
@@ -1236,7 +1239,7 @@ const LiveClockCard = memo(function LiveClockCard({ clock, index, onDetail, onRe
                     </div>
                     <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                            <h3 className="text-foreground font-bold text-base">{clock.cityName}</h3>
+                            <h3 className="text-foreground font-bold text-base">{cityNameUI(clock.cityName)}</h3>
                             {dstBadge && (
                                 <span
                                     className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${
@@ -1250,7 +1253,7 @@ const LiveClockCard = memo(function LiveClockCard({ clock, index, onDetail, onRe
                                 </span>
                             )}
                         </div>
-                        <p className="text-muted-foreground text-[11px]">{clock.countryName} · {offsetLabel}</p>
+                        <p className="text-muted-foreground text-[11px]">{countryNameUI(clock.countryName)} · {offsetLabel}</p>
                         <p className="text-muted-foreground text-[10px]">{td.weekday}, {td.day} {td.month} · {diffText}</p>
                     </div>
                 </div>
@@ -1322,8 +1325,8 @@ const LiveAddZoneItem = memo(function LiveAddZoneItem({ tz, onAdd }: { tz: Timez
                     )}
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-semibold text-sm truncate group-hover:text-primary transition-colors">{tz.city}</p>
-                    <p className="text-muted-foreground text-xs truncate">{tz.country}</p>
+                    <p className="text-foreground font-semibold text-sm truncate group-hover:text-primary transition-colors">{cityNameUI(tz.city)}</p>
+                    <p className="text-muted-foreground text-xs truncate">{countryNameUI(tz.country)}</p>
                 </div>
             </div>
             <div className="flex items-center gap-4 flex-shrink-0 text-right">
@@ -1448,7 +1451,7 @@ export default function WorldClock() {
         setClocks(nextClocks);
         setShowAddPanel(false);
         setSearchQuery('');
-        showToast(t('worldClock.cityAdded', { city: newClock.cityName }));
+        showToast(t('worldClock.cityAdded', { city: cityNameUI(newClock.cityName) }));
     };
 
     const removeZone = (clockId: string) => {

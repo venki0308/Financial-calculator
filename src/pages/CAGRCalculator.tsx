@@ -311,7 +311,7 @@ export default function CAGRCalculator() {
                             className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground"
                         />
                         <p className="text-[10px] text-muted-foreground mt-1.5">
-                            {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                            {t('saveUi.investmentDateHint', 'Used for tracking in My Loans')}
                         </p>
                     </div>
                 )}
@@ -330,7 +330,7 @@ export default function CAGRCalculator() {
                         ]}
                         notes={[
                             { label: t('cagr.wealthMultiplier', 'Multiplier'), value: `${(final / Math.max(1, initial)).toFixed(2)}x` },
-                            { label: t('cagr.doublingTime', 'Doubling Time'), value: result.doubleTime > 0 ? `${result.doubleTime.toFixed(1)} yrs` : 'N/A' },
+                            { label: t('cagr.doublingTime', 'Doubling Time'), value: result.doubleTime > 0 ? `${result.doubleTime.toFixed(1)} ${t('cagr.yrs', 'yrs')}` : t('cagr.na', 'N/A') },
                         ]}
                         label={t('cagr.snapshotTitle', 'CAGR Snapshot')}
                     />

@@ -11,6 +11,7 @@ import SaveNameDialog from '../components/SaveNameDialog';
 import { calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
 import RiskCategoryTags from '../components/RiskCategoryTags';
+import { recommendationText } from '../utils/saveUiLabels';
 import TaxInputGroup from '../components/TaxInputGroup';
 import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
@@ -514,10 +515,10 @@ export default function GratuityCalculator() {
                                                 result.recommendation.status === 'warning' ? 'text-orange-600 dark:text-orange-400' :
                                                 'text-brand-blue'
                                             }`}>
-                                                {result.recommendation.titleKey ? t(result.recommendation.titleKey, result.recommendation.title) : result.recommendation.title}
+                                                {recommendationText(result.recommendation).title}
                                             </h4>
                                             <p className="text-xs text-foreground/80 leading-relaxed">
-                                                {result.recommendation.descKey ? t(result.recommendation.descKey, result.recommendation.description) : result.recommendation.description}
+                                                {recommendationText(result.recommendation).description}
                                             </p>
                                         </div>
                                         <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2 mt-4">

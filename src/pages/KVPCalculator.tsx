@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatINR } from '../utils/calculations';
+import { formatDateUI } from '../utils/uiLocale';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
+import { smallSavingsQuarterLabel, recommendationText } from '../utils/saveUiLabels';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
@@ -293,7 +295,7 @@ export default function KVPCalculator() {
                     </div>
                     <div>
                         <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('kvp.interestRatePA')}</label>
-                        <p className="text-muted-foreground text-[10px] mb-1">{t('kvp.currentRate', { rate: SMALL_SAVINGS.rates.kvp, quarter: SMALL_SAVINGS.label })}</p>
+                        <p className="text-muted-foreground text-[10px] mb-1">{t('kvp.currentRate', { rate: SMALL_SAVINGS.rates.kvp, quarter: smallSavingsQuarterLabel() })}</p>
                         <div className="relative">
                             <input type="number" value={rate} step={0.1} onChange={e => setRate(Number(e.target.value) || 0)} className={inputCls + " pr-8"} />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
@@ -356,8 +358,8 @@ export default function KVPCalculator() {
                                                 {t('kvp.finalRecommendation')}
                                             </h3>
                                         </div>
-                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendation.titleKey ? t(recommendation.titleKey, recommendation.title) : recommendation.title}</p>
-                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendation.descKey ? t(recommendation.descKey, recommendation.description) : recommendation.description}</p>
+                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendationText(recommendation).title}</p>
+                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendationText(recommendation).description}</p>
                                     </div>
 
                                     {/* 2. Smart Insights */}
@@ -521,7 +523,7 @@ export default function KVPCalculator() {
                         progressLabel={`${kvpStatus.progressToDoubling.toFixed(1)}% ${t('kvp.toDoubling')}${kvpStatus.daysToDoubling > 0 ? ` — ${kvpStatus.daysToDoubling} ${t('kvp.daysRemaining')}` : ''}`}
                         warningText={
                             !kvpStatus.prematureEligible
-                                ? t('kvp.prematureNotAvailable', { date: new Date(kvpStatus.prematureEligibleDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) })
+                                ? t('kvp.prematureNotAvailable', { date: formatDateUI(new Date(kvpStatus.prematureEligibleDate), { day: 'numeric', month: 'short', year: 'numeric' }) })
                                 : undefined
                         }
                         insightText={

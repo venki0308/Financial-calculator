@@ -18,6 +18,9 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { catNameUI, noteUI, labelUI } from '../../utils/appUiLabels';
+import { rangeLabelUI, shortRangeUI, fullDateUI } from '../../utils/appUiDates';
+import { formatDateUI } from '../../utils/uiLocale';
 import { useExpenseTheme, getSavingsRating, getBudgetStatus, formatChange, TYPE_COLORS } from '../../theme/expenseTheme';
 import { getEntriesForDateRange, getBudgetForMonth, getCategoryById, deleteEntriesInRange } from '../../utils/expenseStorage';
 import {
@@ -214,7 +217,7 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
   const getCatInfo = (categoryId: string) => {
     const cat = allCategories.find(c => c.id === categoryId);
     return {
-      name: cat?.name ?? categoryId,
+      name: catNameUI(cat, t) || categoryId,
       icon: cat?.icon ?? '\uD83D\uDCE6',
       color: cat?.color ?? '#94a3b8',
     };
@@ -351,7 +354,7 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
         >
           <Calendar size={15} style={{ color: accentGold }} />
           <span className="text-sm font-bold tracking-wide" style={{ color: textPrimary }}>
-            {monthRange.label}
+            {rangeLabelUI(monthRange)}
           </span>
           {isCurrentMonth && (
             <span
@@ -445,7 +448,7 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
             <Wallet size={16} style={{ color: accentGold }} />
           </div>
           <h3 className="text-sm font-bold tracking-wide" style={{ color: textPrimary }}>
-            {monthRange.label} {t('expenses.cashFlow')}
+            {rangeLabelUI(monthRange)} {t('expenses.cashFlow')}
           </h3>
         </div>
 
@@ -688,7 +691,7 @@ export default function MonthlyTab({ refreshKey = 0, onEditEntry }: MonthlyTabPr
               {peak && peak.amt > 0 && (
                 <p className="text-[10px] mt-2.5 leading-relaxed" style={{ color: textMuted }}>
                   {t('expenses.spendCalendarPeak', 'Heaviest day: {{date}} — ₹{{amt}}', {
-                    date: new Date(peak.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+                    date: formatDateUI(new Date(peak.date + 'T00:00:00'), { day: 'numeric', month: 'short' }),
                     amt: Math.round(peak.amt).toLocaleString('en-IN'),
                   })}
                 </p>
@@ -940,7 +943,7 @@ function BudgetVsActualCard({
             {fmtINR(budgetTotal)}
           </p>
         </div>
-        <div className="text-[10px] font-bold px-2" style={{ color: theme.textMuted }}>vs</div>
+        <div className="text-[10px] font-bold px-2" style={{ color: theme.textMuted }}>{t('appUi.vs', 'vs')}</div>
         <div className="text-center flex-1">
           <p className="text-[10px] font-medium mb-0.5" style={{ color: theme.textMuted }}>
             {t('expenses.actual')}
@@ -1017,7 +1020,7 @@ function BudgetVsActualCard({
                       <div className="flex items-center gap-2">
                         <span className="text-sm">{cat?.icon ?? '\uD83D\uDCE6'}</span>
                         <span className="text-[11px] font-semibold" style={{ color: theme.textPrimary }}>
-                          {cat?.name ?? item.categoryId}
+                          {catNameUI(cat, t) || item.categoryId}
                         </span>
                       </div>
                       <span className="text-[10px] font-bold" style={{ color: barColor }}>
@@ -1125,7 +1128,7 @@ function WeeklyBreakdownCard({ weeks, maxExpense, theme, isDark, t }: WeeklyBrea
                       />
                     )}
                   </div>
-                  <p className="text-[9px]" style={{ color: theme.textMuted }}>{week.label}</p>
+                  <p className="text-[9px]" style={{ color: theme.textMuted }}>{shortRangeUI(week.startDate, week.endDate, week.label)}</p>
                 </div>
                 <div className="flex-1 h-5 rounded-full overflow-hidden relative" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }}>
                   <motion.div
@@ -1250,7 +1253,7 @@ function CategoryBreakdown({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-semibold truncate" style={{ color: theme.textPrimary }}>
-                      {cat.categoryName}
+                      {labelUI(cat.categoryName, t)}
                     </span>
                     <div className="flex items-center gap-2 ml-2">
                       <span
@@ -1341,10 +1344,10 @@ function CategoryBreakdown({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold truncate" style={{ color: theme.textPrimary }}>
-                      {entry.description || catInfo.name}
+                      {noteUI(entry.description, t) || catInfo.name}
                     </p>
                     <p className="text-[10px]" style={{ color: theme.textMuted }}>
-                      {formatFullDate(entry.date)}
+                      {fullDateUI(entry.date)}
                     </p>
                   </div>
                   <span className="text-xs font-bold" style={{ color: accentColor }}>

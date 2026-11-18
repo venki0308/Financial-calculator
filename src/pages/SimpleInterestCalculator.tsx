@@ -13,6 +13,7 @@ import DisclaimerComponent from '../components/DisclaimerComponent';
 import { useHistoryTracker } from '../hooks/useHistoryTracker';
 
 import { formatINR } from '../utils/calculations';
+import { formatDateUI } from '../utils/uiLocale';
 import { useAuthStore } from '../store/useAuthStore';
 import { useLiveStatusStore } from '../store/useLiveStatusStore';
 import { saveLoan as saveLoanToStorage, deleteLoan as deleteLoanFromStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
@@ -28,6 +29,8 @@ type FrequencyMonths = 1 | 3 | 6 | 12;
 interface PeriodRow {
     period: number;
     dueDate: string;
+    /** the same due date as a Date, for on-screen formatting in the user's language */
+    due: Date;
     interest: number;
     cumulative: number;
 }
@@ -52,6 +55,7 @@ function buildPeriodTable(
         rows.push({
             period: p,
             dueDate: months.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+            due: new Date(months),
             interest,
             cumulative,
         });
@@ -848,7 +852,7 @@ export default function SimpleInterestCalculator() {
                                     {periodRows.map((row, i) => (
                                         <tr key={row.period} className={`border-b border-slate-200 dark:border-slate-700 transition-colors ${i % 2 === 0 ? 'bg-white dark:bg-[#0F172A]' : 'bg-slate-50 dark:bg-slate-800/40'}`}>
                                             <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-foreground">{row.period}</td>
-                                            <td className="py-2.5 px-3 font-medium text-slate-600 dark:text-slate-300">{row.dueDate}</td>
+                                            <td className="py-2.5 px-3 font-medium text-slate-600 dark:text-slate-300">{formatDateUI(row.due, { day: '2-digit', month: 'short', year: 'numeric' })}</td>
                                             <td className="py-2.5 px-3 text-right text-amber-600 dark:text-amber-400 font-bold">{formatINR(row.interest)}</td>
                                             <td className="py-2.5 px-3 text-right text-brand-green font-bold">{formatINR(row.cumulative)}</td>
                                         </tr>
@@ -873,7 +877,7 @@ export default function SimpleInterestCalculator() {
                                 className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground text-left"
                             />
                             <p className="text-[10px] text-muted-foreground mt-1.5">
-                                {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                                {t('saveUi.investmentDateHint', 'Used for tracking in My Loans')}
                             </p>
                         </div>
                     )}

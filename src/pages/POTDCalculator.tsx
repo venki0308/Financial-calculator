@@ -9,6 +9,7 @@ import { exportToPDF, exportToExcel, getEnglishT, ExportConfig } from '../utils/
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
 import RiskCategoryTags from '../components/RiskCategoryTags';
+import { recommendationText } from '../utils/saveUiLabels';
 import { TaxRegime, calculateAssetTax } from '../utils/taxEngine';
 import { DecisionEngine } from '../services/DecisionEngine';
 import DateInput from '../components/DateInput';
@@ -380,8 +381,8 @@ export default function POTDCalculator() {
                                                 {t('potd.finalRecommendation')}
                                             </h3>
                                         </div>
-                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendation.title}</p>
-                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendation.description}</p>
+                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendationText(recommendation).title}</p>
+                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendationText(recommendation).description}</p>
                                     </div>
 
                                     {/* 2. Smart Insights */}

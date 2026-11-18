@@ -16,6 +16,7 @@ import WhatIfSimulator from '../components/WhatIfSimulator';
 import ShareableCard from '../components/ShareableCard';
 import { formatINR } from '../utils/calculations';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
+import { smallSavingsQuarterLabel } from '../utils/saveUiLabels';
 import { calculateScssStatus, type ScssStatusInput } from '../utils/investmentStatusEngine';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
@@ -239,7 +240,7 @@ export default function SCSSCalculator() {
                 {/* Inputs */}
                 <div className="space-y-3">
                     <NumberInput label={t('scss.investmentAmount')} value={investment} onChange={setInvestment} min={1000} max={3000000} prefix="₹" helperText={t('scss.maxInvestment')} />
-                    <NumberInput label={t('scss.interestRate')} value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText={t('scss.currentRate', { rate: SMALL_SAVINGS.rates.scss, quarter: SMALL_SAVINGS.label })} />
+                    <NumberInput label={t('scss.interestRate')} value={rate} onChange={setRate} min={1} max={15} suffix="%" step={0.1} helperText={t('scss.currentRate', { rate: SMALL_SAVINGS.rates.scss, quarter: smallSavingsQuarterLabel() })} />
 
                     {/* Tenure Toggle */}
                     <div className="space-y-1.5">

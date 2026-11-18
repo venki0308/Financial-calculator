@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ShieldAlert } from 'lucide-react';
 import { OFFICIAL_SOURCES } from '../data/officialSources';
-import { OfficialLink } from '../components/OfficialSources';
+import { OfficialLink, sourceName } from '../components/OfficialSources';
 
 export default function SourcesDisclaimer() {
     const navigate = useNavigate();
@@ -13,7 +13,7 @@ export default function SourcesDisclaimer() {
         <div className="min-h-dvh bg-background animate-fade-in" data-sources-screen>
             <div className="px-4 pt-14 pb-8">
                 <div className="flex items-center gap-3 mb-5">
-                    <button onClick={() => navigate(-1)} aria-label="Back" className="p-2 rounded-xl bg-card border border-border"><ArrowLeft size={18} className="text-muted-foreground" /></button>
+                    <button onClick={() => navigate(-1)} aria-label={t('common.back', 'Back')} className="p-2 rounded-xl bg-card border border-border"><ArrowLeft size={18} className="text-muted-foreground" /></button>
                     <h1 className="text-xl font-bold text-foreground">{t('sources.title', 'Sources & Disclaimer')}</h1>
                 </div>
 
@@ -28,7 +28,7 @@ export default function SourcesDisclaimer() {
                 <ul className="bg-card border border-border rounded-2xl overflow-hidden mb-6">
                     {OFFICIAL_SOURCES.map((s, i) => (
                         <li key={s.id} data-source-id={s.id} className={`p-4 ${i ? 'border-t border-border' : ''}`}>
-                            <p className="text-foreground font-medium text-sm">{s.name}</p>
+                            <p className="text-foreground font-medium text-sm">{sourceName(s, t)}</p>
                             <p className="text-muted-foreground text-xs mt-0.5">{t(`sources.purpose.${s.id}`)}</p>
                             <p className="text-sm mt-1.5"><OfficialLink url={s.url}>{s.host}</OfficialLink></p>
                         </li>

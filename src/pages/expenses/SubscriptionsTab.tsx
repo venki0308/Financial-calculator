@@ -7,6 +7,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useBudgetTrackerStore, Subscription, EXPENSE_CATEGORIES } from '../../store/useBudgetTrackerStore';
 import { getCategoryDisplayName } from '../../utils/categoryUtils';
+import { labelUI, cycleUI } from '../../utils/appUiLabels';
 import BottomSheet from '../../components/BottomSheet';
 import DateInput from '../../components/DateInput';
 import { todayStr, parseLocalDate } from '../../utils/dateUtils';
@@ -75,13 +76,13 @@ function getDaysUntil(dateStr: string): number {
     return Math.ceil((due.getTime() - now.getTime()) / (1000 * 3600 * 24));
 }
 
-function getDaysIndicator(dateStr: string) {
+function getDaysIndicator(dateStr: string, t: (key: string, opts?: any) => string) {
     const d = getDaysUntil(dateStr);
-    if (d < 0) return { text: `Overdue by ${Math.abs(d)}d`, color: 'text-red-500 bg-red-50 dark:bg-red-500/10' };
-    if (d === 0) return { text: 'Due Today', color: 'text-red-500 bg-red-50 dark:bg-red-500/10' };
-    if (d <= 3) return { text: `Due in ${d}d`, color: 'text-orange-500 bg-orange-50 dark:bg-orange-500/10' };
-    if (d <= 7) return { text: `Due in ${d}d`, color: 'text-amber-500 bg-amber-50 dark:bg-amber-500/10' };
-    return { text: `Due in ${d}d`, color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10' };
+    if (d < 0) return { text: t('appUi.sub.overdueBy', { d: Math.abs(d), defaultValue: `Overdue by ${Math.abs(d)}d` }), color: 'text-red-500 bg-red-50 dark:bg-red-500/10' };
+    if (d === 0) return { text: t('recurring.dueToday', 'Due Today'), color: 'text-red-500 bg-red-50 dark:bg-red-500/10' };
+    if (d <= 3) return { text: t('appUi.sub.dueInDays', { d, defaultValue: `Due in ${d}d` }), color: 'text-orange-500 bg-orange-50 dark:bg-orange-500/10' };
+    if (d <= 7) return { text: t('appUi.sub.dueInDays', { d, defaultValue: `Due in ${d}d` }), color: 'text-amber-500 bg-amber-50 dark:bg-amber-500/10' };
+    return { text: t('appUi.sub.dueInDays', { d, defaultValue: `Due in ${d}d` }), color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10' };
 }
 
 // ── Component ─────────────────────────────────────────────────────────────
@@ -192,9 +193,13 @@ export default function SubscriptionsTab() {
         }
     };
 
+    // Quick-add chip names: brand names stay; the generic one is shown (and pre-filled) in the user's language.
+    const subNameUI = (name: string) => name === 'Gym Membership' ? t('appUi.sub.gym', 'Gym Membership') : name;
+    // Yearly projection sentence with the amount in bold (word order differs per language).
+    const [yearSpendA, yearSpendB] = t('appUi.sub.yearSpend', { amount: '@@', defaultValue: "You'll spend @@ on subscriptions this year." }).split('@@');
     // Quick-add: opens pre-filled form (not direct add) to let user verify
     const handleQuickAdd = (s: typeof QUICK_ADD_SUGGESTIONS[0]) => {
-        openAddForm({ name: s.name, amount: s.amount, colorTag: s.color, category: s.category });
+        openAddForm({ name: subNameUI(s.name), amount: s.amount, colorTag: s.color, category: s.category });
     };
 
     const updateField = (patch: Partial<Subscription>) => {
@@ -223,7 +228,9 @@ export default function SubscriptionsTab() {
                         <Bell size={16} className="text-amber-500 mt-0.5 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                             <p className="text-amber-800 dark:text-amber-300 font-bold text-sm">
-                                {renewalsSoon.length} renewal{renewalsSoon.length > 1 ? 's' : ''} due within 3 days
+                                {renewalsSoon.length > 1
+                                    ? t('appUi.sub.renewalsSoonMany', { n: renewalsSoon.length, defaultValue: '{{n}} renewals due within 3 days' })
+                                    : t('appUi.sub.renewalsSoonOne', '1 renewal due within 3 days')}
                             </p>
                             <p className="text-amber-700 dark:text-amber-400 text-xs mt-0.5">
                                 {renewalsSoon.map(s => s.name).join(', ')}
@@ -243,13 +250,13 @@ export default function SubscriptionsTab() {
                     <span className="font-semibold text-xs uppercase tracking-wider">{t('expenses.monthlyCommitment')}</span>
                     {renewalsSoon.length > 0 && (
                         <span className="ml-auto text-[10px] font-bold bg-amber-400 text-amber-900 px-2 py-0.5 rounded-full">
-                            ⚠️ {renewalsSoon.length} due soon
+                            ⚠️ {t('appUi.sub.dueSoon', { n: renewalsSoon.length, defaultValue: '{{n}} due soon' })}
                         </span>
                     )}
                 </div>
                 <h2 className="text-4xl font-extrabold tracking-tight">
                     ₹{Math.round(totalMonthly).toLocaleString('en-IN')}
-                    <span className="text-base font-medium text-purple-200 ml-1">/mo</span>
+                    <span className="text-base font-medium text-purple-200 ml-1">{t('appUi.sub.perMo', '/mo')}</span>
                 </h2>
 
                 {/* 3-col Impact Breakdown */}
@@ -295,14 +302,14 @@ export default function SubscriptionsTab() {
                         <div className="flex-1 min-w-0">
                             <p className={`font-bold text-sm ${riskLevel === 'high' ? 'text-red-700 dark:text-red-400' : 'text-amber-800 dark:text-amber-300'}`}>
                                 {riskLevel === 'high'
-                                    ? `🔴 High Risk — ${(riskPct * 100).toFixed(1)}% of income in subscriptions`
-                                    : `🟡 Watch Out — Over 10% of income in subscriptions`
+                                    ? `🔴 ${t('appUi.sub.highRisk', { pct: (riskPct * 100).toFixed(1), defaultValue: 'High Risk — {{pct}}% of income in subscriptions' })}`
+                                    : `🟡 ${t('appUi.sub.watchOut', 'Watch Out — Over 10% of income in subscriptions')}`
                                 }
                             </p>
                             <p className={`text-xs mt-0.5 ${riskLevel === 'high' ? 'text-red-600 dark:text-red-400/80' : 'text-amber-700 dark:text-amber-400/80'}`}>
                                 {riskLevel === 'high'
-                                    ? 'Consider pausing unused services to free up cash flow.'
-                                    : 'Review which subscriptions you actually use each month.'}
+                                    ? t('appUi.sub.highRiskTip', 'Consider pausing unused services to free up cash flow.')
+                                    : t('appUi.sub.watchOutTip', 'Review which subscriptions you actually use each month.')}
                             </p>
                         </div>
                         <button onClick={() => setRiskDismissed(true)} className="text-slate-400 hover:text-slate-600 flex-shrink-0">
@@ -353,7 +360,7 @@ export default function SubscriptionsTab() {
                                     className="flex-shrink-0 flex items-center gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-2.5"
                                 >
                                     <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
-                                    <span className="font-bold text-sm text-slate-800 dark:text-foreground whitespace-nowrap">{s.name}</span>
+                                    <span className="font-bold text-sm text-slate-800 dark:text-foreground whitespace-nowrap">{subNameUI(s.name)}</span>
                                     <span className="text-muted-foreground text-xs font-semibold">₹{s.amount}</span>
                                 </motion.button>
                             ))}
@@ -368,7 +375,7 @@ export default function SubscriptionsTab() {
                     {/* Quick Add Chips (shown above list when subs exist too) */}
                     <div>
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2.5">
-                            Quick Add
+                            {t('expenses.quickAddLabel', 'Quick Add')}
                         </p>
                         <div className="flex overflow-x-auto gap-2.5 pb-1 scrollbar-hide">
                             {QUICK_ADD_SUGGESTIONS.map(s => (
@@ -379,7 +386,7 @@ export default function SubscriptionsTab() {
                                     className="flex-shrink-0 flex items-center gap-2 bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2"
                                 >
                                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color }} />
-                                    <span className="font-bold text-xs text-slate-800 dark:text-foreground whitespace-nowrap">{s.name}</span>
+                                    <span className="font-bold text-xs text-slate-800 dark:text-foreground whitespace-nowrap">{subNameUI(s.name)}</span>
                                 </motion.button>
                             ))}
                         </div>
@@ -387,7 +394,7 @@ export default function SubscriptionsTab() {
 
                     <div className="space-y-3">
                         {sortedSubs.map(sub => {
-                            const indicator = getDaysIndicator(sub.nextDueDate);
+                            const indicator = getDaysIndicator(sub.nextDueDate, t);
                             const cat = EXPENSE_CATEGORIES.find(c => c.id === sub.category);
                             const monthlyEq = toMonthlyEquivalent(sub.amount, sub.billingCycle as BillingCycle);
 
@@ -414,7 +421,7 @@ export default function SubscriptionsTab() {
                                             <h3 className="font-bold text-slate-900 dark:text-foreground text-sm truncate">{sub.name}</h3>
                                             {!sub.isActive && (
                                                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-white/10 text-muted-foreground flex-shrink-0">
-                                                    Paused
+                                                    {t('recurring.paused', 'Paused')}
                                                 </span>
                                             )}
                                         </div>
@@ -423,7 +430,7 @@ export default function SubscriptionsTab() {
                                                 {indicator.text}
                                             </span>
                                             <span className="text-[10px] text-muted-foreground capitalize">
-                                                · {sub.billingCycle}
+                                                · {cycleUI(sub.billingCycle, t)}
                                             </span>
                                         </div>
                                     </div>
@@ -435,11 +442,11 @@ export default function SubscriptionsTab() {
                                         </p>
                                         {sub.billingCycle !== 'monthly' && (
                                             <p className="text-[10px] text-muted-foreground mt-0.5">
-                                                ≈₹{Math.round(monthlyEq).toLocaleString('en-IN')}/mo
+                                                ≈₹{Math.round(monthlyEq).toLocaleString('en-IN')}{t('appUi.sub.perMo', '/mo')}
                                             </p>
                                         )}
                                         <span className="text-[9px] text-muted-foreground uppercase tracking-wider">
-                                            /{sub.billingCycle === 'monthly' ? 'mo' : sub.billingCycle === 'quarterly' ? 'qtr' : 'yr'}
+                                            {sub.billingCycle === 'monthly' ? t('appUi.sub.perMo', '/mo') : sub.billingCycle === 'quarterly' ? t('appUi.sub.perQtr', '/qtr') : t('appUi.sub.perYr', '/yr')}
                                         </span>
                                     </div>
                                 </motion.div>
@@ -456,11 +463,11 @@ export default function SubscriptionsTab() {
                         >
                             <TrendingUp size={16} className="text-brand-purple flex-shrink-0" />
                             <p className="text-sm text-slate-700 dark:text-slate-300">
-                                You'll spend{' '}
+                                {yearSpendA}
                                 <span className="font-bold text-slate-900 dark:text-foreground">
                                     ₹{Math.round(totalYearly).toLocaleString('en-IN')}
-                                </span>{' '}
-                                on subscriptions this year.
+                                </span>
+                                {yearSpendB}
                             </p>
                         </motion.div>
                     )}
@@ -469,7 +476,7 @@ export default function SubscriptionsTab() {
 
             {/* ── FAB ──────────────────────────────────────────────────── */}
             <motion.button
-                aria-label="Add Subscription"
+                aria-label={t('expenses.addSubscription', 'Add Subscription')}
                 whileTap={{ scale: 0.88 }}
                 whileHover={{ scale: 1.05 }}
                 onClick={() => openAddForm()}
@@ -550,7 +557,7 @@ export default function SubscriptionsTab() {
                                 className="w-full bg-slate-50 dark:bg-card border-transparent border rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple appearance-none cursor-pointer"
                             >
                                 {BILLING_CYCLES.map(c => (
-                                    <option key={c.value} value={c.value}>{c.label}</option>
+                                    <option key={c.value} value={c.value}>{cycleUI(c.value, t)}</option>
                                 ))}
                             </select>
                         </div>
@@ -559,7 +566,7 @@ export default function SubscriptionsTab() {
                     {/* Monthly equivalent hint */}
                     {formData.billingCycle !== 'monthly' && Number(formData.amount) > 0 && (
                         <p className="text-xs text-muted-foreground ml-1">
-                            ≈ ₹{Math.round(toMonthlyEquivalent(Number(formData.amount), formData.billingCycle as BillingCycle)).toLocaleString('en-IN')}/mo equivalent
+                            {t('appUi.sub.monthlyEquivalent', { amount: `₹${Math.round(toMonthlyEquivalent(Number(formData.amount), formData.billingCycle as BillingCycle)).toLocaleString('en-IN')}`, defaultValue: '≈ {{amount}}/mo equivalent' })}
                         </p>
                     )}
 
@@ -585,7 +592,7 @@ export default function SubscriptionsTab() {
                             className="w-full bg-slate-50 dark:bg-card border-transparent border rounded-xl px-4 py-3.5 text-slate-900 dark:text-foreground font-bold outline-none focus:ring-2 focus:ring-brand-purple appearance-none cursor-pointer"
                         >
                             {EXPENSE_CATEGORIES.map(c => (
-                                <option key={c.id} value={c.id}>{c.icon} {getCategoryDisplayName(c.id)}</option>
+                                <option key={c.id} value={c.id}>{c.icon} {labelUI(getCategoryDisplayName(c.id), t)}</option>
                             ))}
                         </select>
                     </div>

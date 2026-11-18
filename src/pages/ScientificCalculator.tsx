@@ -356,7 +356,7 @@ export default function ScientificCalculator() {
                                     : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
-                            {m}
+                            {t(`loanUi.mode_${m}`, m)}
                         </button>
                     ))}
                 </div>
@@ -457,7 +457,7 @@ export default function ScientificCalculator() {
                             onClick={() => result && copyText(result, 'result')}
                         >
                             {result
-                                ? ((asFraction && toFraction(parseFloat(result))) || result)
+                                ? (result === 'Error' ? t('loanUi.calcError', 'Error') : ((asFraction && toFraction(parseFloat(result))) || result))
                                 : livePreview
                                     ? <span className="text-muted-foreground/50">{livePreview}</span>
                                     : ''}
@@ -481,8 +481,8 @@ export default function ScientificCalculator() {
                                     className="overflow-hidden mb-4 rounded-2xl bg-card border border-border shadow-lg"
                                 >
                                     <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/50">
-                                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">History</span>
-                                        <button onClick={() => setHistory([])} className="text-[11px] text-red-500 font-bold hover:bg-red-500/10 px-2 py-1 rounded transition-colors">Clear All</button>
+                                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('profile.history', 'History')}</span>
+                                        <button onClick={() => setHistory([])} className="text-[11px] text-red-500 font-bold hover:bg-red-500/10 px-2 py-1 rounded transition-colors">{t('expenses.clearAll', 'Clear All')}</button>
                                     </div>
                                     <div className="divide-y divide-border max-h-48 overflow-y-auto">
                                         {history.map((h, i) => (

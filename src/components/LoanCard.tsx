@@ -5,6 +5,7 @@ import { Pencil, MoreVertical } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAppColors } from '../theme/useAppColors';
 import { formatINR } from '../utils/calculations';
+import { formatDateUI } from '../utils/uiLocale';
 import { type SavedLoan, LOAN_TYPE_META } from '../utils/loanStorage';
 import { calculateLiveLoanStatus, type LoanProfile } from '../utils/loanStatusEngine';
 
@@ -17,7 +18,7 @@ interface Props {
 
 function fmtDate(d: string): string {
     if (!d) return '—';
-    return new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    return formatDateUI(new Date(d), { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 export default function LoanCard({ loan, onEdit, onMenu, index }: Props) {

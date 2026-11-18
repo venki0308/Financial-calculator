@@ -163,7 +163,7 @@ export default function EPFCalculator() {
     // 3. SMART INSIGHTS
     const insight = useMemo(() => {
         if (result.interestPctOfCorpus > 60) {
-            return { msg: t('epf.insightCompounding', { pct: result.interestPctOfCorpus.toFixed(1) }), type: 'success' };
+            return { msg: t('epf.insightCompounding', { amount: formatINR(result.totalInterest) }), type: 'success' };
         }
         if (result.readinessPct < 30) {
             return { msg: t('epf.insightLowReadiness', { pct: result.readinessPct.toFixed(1) }), type: 'warn' };
@@ -171,7 +171,7 @@ export default function EPFCalculator() {
         if (result.realReturn < 1) {
             return { msg: t('epf.insightLowRealReturn', { inflation: inflationRate, realReturn: result.realReturn.toFixed(1) }), type: 'info' };
         }
-        return { msg: t('epf.insightEmployerBoost', { pct: result.employerPctOfCorpus.toFixed(1) }), type: 'success' };
+        return { msg: t('epf.insightEmployerBoost', { amount: formatINR(result.totalEmployer) }), type: 'success' };
     }, [result, inflationRate, t]);
 
     const suggestedName = `EPF — ${formatINR(basic)}/mo basic`;
@@ -434,7 +434,7 @@ export default function EPFCalculator() {
                             className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground"
                         />
                         <p className="text-[10px] text-muted-foreground mt-1.5">
-                            {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                            {t('saveUi.investmentDateHint', 'Used for tracking in My Loans')}
                         </p>
                     </div>
                 )}

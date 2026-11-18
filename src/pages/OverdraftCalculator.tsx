@@ -418,7 +418,7 @@ export default function OverdraftCalculator() {
                 : { backgroundColor: c.card, color: c.textSecondary, borderColor: c.border }
               }>
               <Icon size={16} style={{ color: active ? c.bg : c.textSecondary }} />
-              {t(type.labelKey)}
+              {type.id === 'flexi' ? t('loanUi.odTypeFlexi', 'Flexi / Dropline') : t(type.labelKey)}
             </button>
           );
         })}

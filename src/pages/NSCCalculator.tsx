@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, Che
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatINR } from '../utils/calculations';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
+import { smallSavingsQuarterLabel, recommendationText } from '../utils/saveUiLabels';
 import { exportToPDF, exportToExcel, ExportConfig, getEnglishT } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
@@ -274,7 +275,7 @@ export default function NSCCalculator() {
                     </div>
                     <div>
                         <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('nsc.interestRatePA')}</label>
-                        <p className="text-muted-foreground text-[10px] mb-1">{t('nsc.currentRate', { rate: SMALL_SAVINGS.rates.nsc, quarter: SMALL_SAVINGS.label })}</p>
+                        <p className="text-muted-foreground text-[10px] mb-1">{t('nsc.currentRate', { rate: SMALL_SAVINGS.rates.nsc, quarter: smallSavingsQuarterLabel() })}</p>
                         <div className="relative">
                             <input type="number" value={rate} step={0.1} onChange={e => setRate(Number(e.target.value) || 0)} className={inputCls + " pr-8"} />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
@@ -337,8 +338,8 @@ export default function NSCCalculator() {
                                                 {t('nsc.finalRecommendation')}
                                             </h3>
                                         </div>
-                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendation.title}</p>
-                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendation.description}</p>
+                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendationText(recommendation).title}</p>
+                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendationText(recommendation).description}</p>
                                     </div>
 
                                     {/* 2. Tax Analysis */}

@@ -18,10 +18,13 @@ import {
     round288B,
     calculateLateFiling,
 } from '../utils/jobSwitchTax';
+import { formatDateUI } from '../utils/uiLocale';
 
 // Statutory (non-audit) ITR due date: 31 July of the assessment year
 const DUE_DATES: Record<FY, string> = { '2025-26': '31 Jul 2026', '2026-27': '31 Jul 2027' };
 const AY_MAP: Record<FY, string> = { '2025-26': '2026-27', '2026-27': '2027-28' };
+// The same due date for on-screen text, with the month name in the user's language (exports keep DUE_DATES).
+const dueDateUI = (f: FY) => formatDateUI(new Date(f === '2025-26' ? 2026 : 2027, 6, 31), { day: 'numeric', month: 'short', year: 'numeric' });
 
 const todayISO = () => new Date().toISOString().slice(0, 10);
 
@@ -546,16 +549,16 @@ export default function Form16TaxCalculator() {
                             </h3>
                             <ul className="space-y-1.5">
                                 {(result.balancePayable < 0 ? [
-                                    t('jobTax.refundStep1', 'File your ITR by {{due}} and e-verify it — the refund is processed only after filing.', { due: DUE_DATES[fy] }),
+                                    t('jobTax.refundStep1', 'File your ITR by {{due}} and e-verify it — the refund is processed only after filing.', { due: dueDateUI(fy) }),
                                     t('jobTax.refundStep2', 'Pre-validate & nominate your bank account on the e-filing portal (My Profile) — refunds are paid by SBI only into a pre-validated account, usually within 15 days of the 143(1) intimation.'),
                                     t('jobTax.refundStep3', 'Keep PAN linked with Aadhaar — refunds are withheld for inoperative PANs (rule 114AAA).'),
                                     t('jobTax.refundStep4', 'Interest u/s 244A (0.5% per month) is added automatically when the refund is 10% or more of your total tax.'),
                                 ] : result.balancePayable > 0 ? [
                                     t('jobTax.payStep1', 'Pay BEFORE filing: e-filing portal → e-Pay Tax → challan ITNS 280 → "Self-Assessment Tax (300)".'),
                                     t('jobTax.payStep2', 'Enter the challan details (BSR code + serial no.) in the "Taxes Paid" section of your ITR so the payment is credited.'),
-                                    t('jobTax.payStep3', 'Pay and file by {{due}} to avoid interest u/s 234A/B/C and the ₹5,000 late-filing fee u/s 234F (₹1,000 if income ≤ ₹5L).', { due: DUE_DATES[fy] }),
+                                    t('jobTax.payStep3', 'Pay and file by {{due}} to avoid interest u/s 234A/B/C and the ₹5,000 late-filing fee u/s 234F (₹1,000 if income ≤ ₹5L).', { due: dueDateUI(fy) }),
                                 ] : [
-                                    t('jobTax.nilStep1', 'Your TDS exactly covers the liability — but you must still file the ITR by {{due}}. Not filing attracts the 234F fee even with zero balance.', { due: DUE_DATES[fy] }),
+                                    t('jobTax.nilStep1', 'Your TDS exactly covers the liability — but you must still file the ITR by {{due}}. Not filing attracts the 234F fee even with zero balance.', { due: dueDateUI(fy) }),
                                 ]).map((step, i) => (
                                     <li key={i} className="flex items-start gap-2">
                                         <span className="text-brand-purple font-bold text-xs mt-0.5">{i + 1}.</span>
@@ -604,7 +607,7 @@ export default function Form16TaxCalculator() {
                         {result.balancePayable > 0 && (
                             <div className="bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-2xl p-4 space-y-3">
                                 <h3 className="font-bold text-slate-900 dark:text-foreground text-sm">{t('jobTax.interestTitle', 'Interest & late fee check (234A/B/C/F)')}</h3>
-                                <p className="text-muted-foreground text-[10px] -mt-1.5">{t('jobTax.interestSub', 'Due date: {{due}}. Pick when you plan to pay and file — FinCalix computes the interest a CA would.', { due: DUE_DATES[fy] })}</p>
+                                <p className="text-muted-foreground text-[10px] -mt-1.5">{t('jobTax.interestSub', 'Due date: {{due}}. Pick when you plan to pay and file — FinCalix computes the interest a CA would.', { due: dueDateUI(fy) })}</p>
                                 <div className="grid grid-cols-2 gap-3">
                                     {[
                                         { label: t('jobTax.paymentDate', 'I will pay tax on'), value: paymentDate, set: setPaymentDate },
@@ -688,7 +691,7 @@ export default function Form16TaxCalculator() {
                                         detail: t('jobTax.roadmapStep1Detail', 'e-Filing portal → e-Pay Tax → Challan ITNS 280, type "(300) Self-Assessment Tax". Do this BEFORE filing to avoid interest u/s 234B/234C.'),
                                     }] : []),
                                     {
-                                        step: t('jobTax.roadmapStep2', 'File ITR-1 (Sahaj) by {{due}}', { due: DUE_DATES[fy] }),
+                                        step: t('jobTax.roadmapStep2', 'File ITR-1 (Sahaj) by {{due}}', { due: dueDateUI(fy) }),
                                         detail: t('jobTax.roadmapStep2Detail', 'ITR-1 covers salary + one house property + other sources up to ₹50L total income. Filing late costs up to ₹5,000 u/s 234F (₹1,000 if income ≤ ₹5L).'),
                                     },
                                     {

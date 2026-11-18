@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bookmark, Clock, Bell, Settings, ChevronRight, User, Globe, Pencil, Check, Heart, Landmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuthStore, DEFAULT_ACCOUNT_NAME } from '../store/useAuthStore';
+import { formatDateUI } from '../utils/uiLocale';
 import { APP_VERSION } from '../config/app';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { useSchemeStore } from '../store/useSchemeStore';
@@ -107,7 +108,7 @@ export default function Profile() {
                                 exit={{ opacity: 0 }}
                                 className="flex items-center gap-2"
                             >
-                                <h2 className="text-foreground font-semibold text-lg truncate">{user.name}</h2>
+                                <h2 className="text-foreground font-semibold text-lg truncate">{user.name === DEFAULT_ACCOUNT_NAME ? t('appUi.myAccount', 'My Account') : user.name}</h2>
                                 <button
                                     onClick={() => { setNameInput(user.name); setEditingName(true); }}
                                     className="p-1 rounded-lg text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
@@ -130,7 +131,7 @@ export default function Profile() {
                     <div className="w-12 h-12 rounded-xl flex items-center justify-center text-base font-black text-white" style={{ backgroundColor: cibil.color }}>{cibil.profile.isNTC ? 'NH' : cibil.profile.score}</div>
                     <div className="flex-1 text-left">
                         <p className="text-sm font-bold" style={{ color: cibil.color }}>{cibilTierData.emoji} {cibilTierData.label}</p>
-                        <p className="text-[9px]" style={{ color: cibilColors.textSecondary }}>{t('cp.lastUpdated')}: {new Date(cibil.profile.lastUpdated).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                        <p className="text-[9px]" style={{ color: cibilColors.textSecondary }}>{t('cp.lastUpdated')}: {formatDateUI(cibil.profile.lastUpdated, { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                     </div>
                     <ChevronRight size={16} style={{ color: cibilColors.textSecondary }} />
                 </button>
@@ -201,7 +202,7 @@ export default function Profile() {
 
             <div className="text-center mt-12 mb-8 animate-fade-in delay-400">
                 <p className="text-slate-500 dark:text-slate-400 font-medium">FinCalix</p>
-                <p className="text-slate-600 text-xs text-brand-blue/80 dark:text-cyan-400 font-bold mt-1">Version {APP_VERSION}</p>
+                <p className="text-slate-600 text-xs text-brand-blue/80 dark:text-cyan-400 font-bold mt-1">{t('appUi.version', 'Version')} {APP_VERSION}</p>
                 <div className="flex items-center justify-center gap-1 mt-2 text-xs text-muted-foreground">
                     {t('profile.madeWith')} <Heart size={10} className="text-red-500 fill-red-500" /> {t('profile.inIndia')}
                 </div>

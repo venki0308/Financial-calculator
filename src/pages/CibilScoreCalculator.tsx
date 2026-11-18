@@ -13,6 +13,13 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { exportToPDF, getEnglishT, type ExportConfig } from '../utils/exportReport';
 import { CIBIL_RANGES, getCibilTier, getTierId, LOAN_CIBIL_RATES, CIBIL_TIPS, CIBIL_MYTHS, RBI_NOTES } from '../data/cibilData';
 import { todayStr } from '../utils/dateUtils';
+import { cibilTierLabel, cibilTipText, loanTypeLabel, tKey } from '../utils/loanUi';
+
+// Display-only: action-plan priority words in the user's language (the English value is the default)
+const PRIORITY_KEYS: Record<string, string> = {
+    Critical: 'loanUi.priorityCritical', Important: 'loanUi.priorityImportant',
+    High: 'cibil.probHigh', Medium: 'cibil.probMedium', Low: 'cibil.probLow',
+};
 
 const LOAN_TYPES_FOR_CALC = [
     { id: 'home_loan', label: 'cibil.homeLoan', icon: '🏠' },
@@ -94,28 +101,28 @@ export default function CibilScoreCalculator() {
         const a: Array<{ priority: string; color: string; title: string; desc: string; impact: string; time: string }> = [];
         if (isNH) {
             a.push(
-                { priority: 'High', color: '#F59E0B', title: t('cibil.actGetCard', 'Get a Secured Credit Card'), desc: t('cibil.actGetCardDesc', 'Open a card against FD (₹10K min). Small purchases, pay full bill monthly.'), impact: '0→700+', time: '6-12 mo' },
-                { priority: 'Medium', color: '#3B82F6', title: t('cibil.actSmallLoan', 'Take a Small Consumer Loan'), desc: t('cibil.actSmallLoanDesc', '₹5,000 EMI paid on time for 12 months builds solid credit.'), impact: '+50-100', time: '12 mo' },
-                { priority: 'Medium', color: '#3B82F6', title: t('cibil.actMaintain12', 'Clean Record for 12 Months'), desc: t('cibil.actMaintain12Desc', '12 months clean → 700+ score → qualifies for most loans.'), impact: '→700+', time: '12 mo' },
+                { priority: 'High', color: '#F59E0B', title: t('cibil.actGetCard', 'Get a Secured Credit Card'), desc: t('cibil.actGetCardDesc', 'Open a card against FD (₹10K min). Small purchases, pay full bill monthly.'), impact: '0→700+', time: `6-12 ${t('cibil.mo', 'mo')}` },
+                { priority: 'Medium', color: '#3B82F6', title: t('cibil.actSmallLoan', 'Take a Small Consumer Loan'), desc: t('cibil.actSmallLoanDesc', '₹5,000 EMI paid on time for 12 months builds solid credit.'), impact: '+50-100', time: `12 ${t('cibil.mo', 'mo')}` },
+                { priority: 'Medium', color: '#3B82F6', title: t('cibil.actMaintain12', 'Clean Record for 12 Months'), desc: t('cibil.actMaintain12Desc', '12 months clean → 700+ score → qualifies for most loans.'), impact: '→700+', time: `12 ${t('cibil.mo', 'mo')}` },
             );
             return a;
         }
         if (utilization !== null && utilization > 50)
-            a.push({ priority: 'Critical', color: '#EF4444', title: t('cibil.actReduceUtil', 'Urgently Reduce Utilization'), desc: t('cibil.actReduceUtilDesc', { pct: Math.round(utilization), defaultValue: 'At {{pct}}% — pay down to below 30% of limit.' }), impact: '+20-50', time: '1-2 mo' });
+            a.push({ priority: 'Critical', color: '#EF4444', title: t('cibil.actReduceUtil', 'Urgently Reduce Utilization'), desc: t('cibil.actReduceUtilDesc', { pct: Math.round(utilization), defaultValue: 'At {{pct}}% — pay down to below 30% of limit.' }), impact: '+20-50', time: `1-2 ${t('cibil.mo', 'mo')}` });
         else if (utilization !== null && utilization > 30)
-            a.push({ priority: 'Important', color: '#F59E0B', title: t('cibil.actOptimizeUtil', 'Reduce Utilization Below 30%'), desc: t('cibil.actOptimizeUtilDesc', { pct: Math.round(utilization), defaultValue: 'Currently {{pct}}% — drop below 30% for +10-25 pts.' }), impact: '+10-25', time: '1-2 mo' });
+            a.push({ priority: 'Important', color: '#F59E0B', title: t('cibil.actOptimizeUtil', 'Reduce Utilization Below 30%'), desc: t('cibil.actOptimizeUtilDesc', { pct: Math.round(utilization), defaultValue: 'Currently {{pct}}% — drop below 30% for +10-25 pts.' }), impact: '+10-25', time: `1-2 ${t('cibil.mo', 'mo')}` });
         if (tierId === 'very_poor' || tierId === 'poor')
-            a.push({ priority: 'Critical', color: '#EF4444', title: t('cibil.actPayOnTime', 'Pay All EMIs & Bills On Time'), desc: t('cibil.actPayOnTimeDesc', 'Payment history = 35% of score. Set auto-pay. 1 miss = −50-100 pts.'), impact: '+50-100', time: '3-6 mo' });
+            a.push({ priority: 'Critical', color: '#EF4444', title: t('cibil.actPayOnTime', 'Pay All EMIs & Bills On Time'), desc: t('cibil.actPayOnTimeDesc', 'Payment history = 35% of score. Set auto-pay. 1 miss = −50-100 pts.'), impact: '+50-100', time: `3-6 ${t('cibil.mo', 'mo')}` });
         else if (tierId !== 'excellent')
-            a.push({ priority: 'Important', color: '#F59E0B', title: t('cibil.actPayOnTime', 'Pay All EMIs & Bills On Time'), desc: t('cibil.actPayOnTimeDesc', 'Payment history = 35% of score. Set auto-pay. 1 miss = −50-100 pts.'), impact: '+50-100', time: '3-6 mo' });
+            a.push({ priority: 'Important', color: '#F59E0B', title: t('cibil.actPayOnTime', 'Pay All EMIs & Bills On Time'), desc: t('cibil.actPayOnTimeDesc', 'Payment history = 35% of score. Set auto-pay. 1 miss = −50-100 pts.'), impact: '+50-100', time: `3-6 ${t('cibil.mo', 'mo')}` });
         if (tierId === 'very_poor' || tierId === 'poor' || tierId === 'average')
-            a.push({ priority: 'High', color: '#F97316', title: t('cibil.actCheckErrors', 'Check Report for Errors'), desc: t('cibil.actCheckErrorsDesc', '1 in 5 reports has errors. Free check at cibil.com — dispute takes 30 days.'), impact: '+100', time: '30-45 days' });
+            a.push({ priority: 'High', color: '#F97316', title: t('cibil.actCheckErrors', 'Check Report for Errors'), desc: t('cibil.actCheckErrorsDesc', '1 in 5 reports has errors. Free check at cibil.com — dispute takes 30 days.'), impact: '+100', time: t('loanUi.time30to45d', '30-45 days') });
         if (cardCount === 0)
-            a.push({ priority: 'Medium', color: '#3B82F6', title: t('cibil.actGetCard', 'Get a Secured Credit Card'), desc: t('cibil.actGetCardDesc', 'Open a card against FD (₹10K min). Small purchases, pay full bill monthly.'), impact: '+30-50', time: '6-12 mo' });
+            a.push({ priority: 'Medium', color: '#3B82F6', title: t('cibil.actGetCard', 'Get a Secured Credit Card'), desc: t('cibil.actGetCardDesc', 'Open a card against FD (₹10K min). Small purchases, pay full bill monthly.'), impact: '+30-50', time: `6-12 ${t('cibil.mo', 'mo')}` });
         else if (tierId === 'good' || tierId === 'average')
-            a.push({ priority: 'Medium', color: '#3B82F6', title: t('cibil.actCreditMix', 'Diversify Credit Mix'), desc: t('cibil.actCreditMixDesc', 'Both secured (home/car) and unsecured (card) credit improves score.'), impact: '+10-20', time: 'Gradual' });
+            a.push({ priority: 'Medium', color: '#3B82F6', title: t('cibil.actCreditMix', 'Diversify Credit Mix'), desc: t('cibil.actCreditMixDesc', 'Both secured (home/car) and unsecured (card) credit improves score.'), impact: '+10-20', time: t('loanUi.timeGradual', 'Gradual') });
         if (tierId === 'excellent' || tierId === 'very_good')
-            a.push({ priority: 'Low', color: '#10B981', title: t('cibil.actMaintain', 'Maintain Excellent Habits'), desc: t('cibil.actMaintainDesc', 'Keep utilization <30%, never miss payments, keep old accounts open.'), impact: 'Maintain', time: 'Ongoing' });
+            a.push({ priority: 'Low', color: '#10B981', title: t('cibil.actMaintain', 'Maintain Excellent Habits'), desc: t('cibil.actMaintainDesc', 'Keep utilization <30%, never miss payments, keep old accounts open.'), impact: t('loanUi.impactMaintain', 'Maintain'), time: t('loanUi.timeOngoing', 'Ongoing') });
         return a.slice(0, 3);
     }, [isNH, tierId, utilization, cardCount, t]);
 
@@ -243,7 +250,7 @@ export default function CibilScoreCalculator() {
                             <div className="flex items-center gap-3 mt-3">
                                 <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black text-white" style={{ backgroundColor: tier.color }}>{score}</div>
                                 <div>
-                                    <p className="text-sm font-bold" style={{ color: tier.color }}>{tier.emoji} {tier.label}</p>
+                                    <p className="text-sm font-bold" style={{ color: tier.color }}>{tier.emoji} {cibilTierLabel(tier)}</p>
                                     <p className="text-[10px]" style={{ color: c.textSecondary }}>{t(tier.description)}</p>
                                 </div>
                             </div>
@@ -323,7 +330,7 @@ export default function CibilScoreCalculator() {
                                             <div key={i} className="p-3 rounded-xl border" style={{ borderColor: c.border }}>
                                                 <div className="flex items-center justify-between mb-1">
                                                     <p className="text-xs font-bold flex-1" style={{ color: c.text }}>{action.title}</p>
-                                                    <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold ml-2" style={{ backgroundColor: action.color + '20', color: action.color }}>{action.priority}</span>
+                                                    <span className="text-[8px] px-1.5 py-0.5 rounded-full font-bold ml-2" style={{ backgroundColor: action.color + '20', color: action.color }}>{t(PRIORITY_KEYS[action.priority] || action.priority, action.priority)}</span>
                                                 </div>
                                                 <p className="text-[10px]" style={{ color: c.textSecondary }}>{action.desc}</p>
                                                 <div className="flex gap-3 mt-1.5">
@@ -381,13 +388,13 @@ export default function CibilScoreCalculator() {
                                                 <div>
                                                     <p className="text-[9px] font-bold" style={{ color: c.textSecondary }}>{t('cibil.simCurrent', 'Current')}</p>
                                                     <p className="text-2xl font-black" style={{ color: tier.color }}>{effectiveScore}</p>
-                                                    <p className="text-[9px]" style={{ color: tier.color }}>{tier.emoji} {tier.label}</p>
+                                                    <p className="text-[9px]" style={{ color: tier.color }}>{tier.emoji} {cibilTierLabel(tier)}</p>
                                                 </div>
                                                 <div className="text-xl" style={{ color: c.textSecondary }}>→</div>
                                                 <div>
                                                     <p className="text-[9px] font-bold" style={{ color: c.textSecondary }}>{t('cibil.simPredicted', 'Predicted')}</p>
                                                     <p className="text-2xl font-black" style={{ color: simTier.color }}>{simulatedScore}</p>
-                                                    <p className="text-[9px]" style={{ color: simTier.color }}>{simTier.emoji} {simTier.label}</p>
+                                                    <p className="text-[9px]" style={{ color: simTier.color }}>{simTier.emoji} {cibilTierLabel(simTier)}</p>
                                                 </div>
                                             </div>
                                             {simDelta > 0 && (
@@ -454,7 +461,7 @@ export default function CibilScoreCalculator() {
                     <div className="space-y-2">
                         {probabilityEligibility.map(e => (
                             <div key={e.key} className="flex items-center gap-3">
-                                <p className="text-[10px] font-medium w-24 flex-shrink-0" style={{ color: c.text }}>{e.loanType}</p>
+                                <p className="text-[10px] font-medium w-24 flex-shrink-0" style={{ color: c.text }}>{loanTypeLabel(e.loanType)}</p>
                                 <div className="flex-1 h-4 rounded-full overflow-hidden" style={{ backgroundColor: c.border + '40' }}>
                                     <div className="h-full rounded-full transition-all" style={{ width: `${e.pct}%`, backgroundColor: e.color }} />
                                 </div>
@@ -475,12 +482,12 @@ export default function CibilScoreCalculator() {
                             <button key={lt.id} onClick={() => setCalcLoanType(lt.id)}
                                 className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold ${calcLoanType === lt.id ? 'bg-violet-600 text-white' : 'border'}`}
                                 style={calcLoanType !== lt.id ? { borderColor: c.border, color: c.textSecondary } : {}}
-                            >{lt.icon} {t(lt.label)}</button>
+                            >{lt.icon} {tKey(lt.label)}</button>
                         ))}
                     </div>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                         <NumberInput label={t('cibil.loanAmount')} value={calcAmount} onChange={setCalcAmount} min={50000} max={100000000} prefix="₹" />
-                        <NumberInput label={t('cibil.tenureYrs')} value={calcTenure} onChange={setCalcTenure} min={1} max={30} suffix=" yrs" />
+                        <NumberInput label={t('cibil.tenureYrs')} value={calcTenure} onChange={setCalcTenure} min={1} max={30} suffix={` ${t('si.yrs', 'yrs')}`} />
                     </div>
                     {rateComparison.length > 0 && (
                         <div className="overflow-x-auto">
@@ -538,10 +545,10 @@ export default function CibilScoreCalculator() {
                                         <div key={tip.id} className="p-3 rounded-xl border" style={{ borderColor: c.border }}>
                                             <div className="flex items-center justify-between mb-1">
                                                 <p className="text-xs font-bold" style={{ color: c.text }}>{t(tip.titleKey)}</p>
-                                                <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${tip.impact === 'High' ? 'bg-emerald-500/15 text-emerald-500' : 'bg-amber-500/15 text-amber-500'}`}>{tip.impact} · {tip.points}</span>
+                                                <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-bold ${tip.impact === 'High' ? 'bg-emerald-500/15 text-emerald-500' : 'bg-amber-500/15 text-amber-500'}`}>{cibilTipText(tip.impact)} · {cibilTipText(tip.points)}</span>
                                             </div>
                                             <p className="text-[10px]" style={{ color: c.textSecondary }}>{t(tip.descKey)}</p>
-                                            <p className="text-[9px] mt-1" style={{ color: c.textSecondary }}>⏱ {tip.time}</p>
+                                            <p className="text-[9px] mt-1" style={{ color: c.textSecondary }}>⏱ {cibilTipText(tip.time)}</p>
                                         </div>
                                     ))}
                                 </div>

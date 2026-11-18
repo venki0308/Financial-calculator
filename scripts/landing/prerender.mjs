@@ -148,7 +148,7 @@ console.log(`prerender: sitemap.xml index of ${index.length} sitemaps, ${urls.si
         '',
         'Every figure on these pages is computed with the same functions the FinCalix app uses, and every rule links to its official source (Income-tax Act 2025, RBI, India Post / NSI, EPFO, PFRDA, scheme portals) with the date it was checked. Estimates only; not financial, tax or legal advice. App: https://play.google.com/store/apps/details?id=com.fincalix.app',
         '',
-        'Privacy: financial data stays on the device; there is no login and no ads. FinCalix collects anonymous usage statistics through Google Analytics (screens opened, completed calculations, exported reports, Google Play button taps on the website); financial amounts are never sent and the data is processed by Google.',
+        'Privacy: financial data stays on the device; there is no login and no ads. FinCalix collects anonymous usage statistics, such as which features and screens are used most, completed calculations, exported reports and Google Play button taps on the website; financial amounts are never sent.',
         '',
         '## Calculators and guides',
         ...calcs.map(line),

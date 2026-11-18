@@ -9,6 +9,8 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { X, Search } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { catNameUI, noteUI } from '../utils/appUiLabels';
+import { fullDateUI } from '../utils/appUiDates';
 import { useExpenseTheme } from '../theme/expenseTheme';
 import type { Entry, EntryType } from '../types/expense';
 import { getAllEntries, getAllCategories } from '../utils/expenseStorage';
@@ -293,7 +295,7 @@ export default function TransactionSearch({ refreshKey = 0, onEditEntry, onClose
               <div key={group.date}>
                 <div className="flex items-center gap-2 mb-2">
                   <p className="text-[11px] font-bold uppercase tracking-wide" style={{ color: et.textMuted }}>
-                    {formatFullDate(group.date)}
+                    {fullDateUI(group.date)}
                   </p>
                   <div className="flex-1 h-px" style={{ backgroundColor: et.borderSubtle }} />
                 </div>
@@ -322,12 +324,12 @@ export default function TransactionSearch({ refreshKey = 0, onEditEntry, onClose
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-semibold truncate" style={{ color: et.textPrimary }}>
-                            {entry.description
-                              || (isTransfer ? t('expenses.transfer', 'Transfer') : cat?.name)
+                            {noteUI(entry.description, t)
+                              || (isTransfer ? t('expenses.transfer', 'Transfer') : catNameUI(cat, t))
                               || entry.category}
                           </p>
                           <p className="text-[10px] truncate mt-0.5" style={{ color: et.textMuted }}>
-                            {isTransfer ? t('expenses.transfer', 'Transfer') : (cat?.name ?? entry.category)}
+                            {isTransfer ? t('expenses.transfer', 'Transfer') : (catNameUI(cat, t) || entry.category)}
                           </p>
                         </div>
                         <p

@@ -14,7 +14,7 @@ against Google's form definitions at <https://support.google.com/googleplay/andr
   - Events raised while offline are kept on the device (at most 200, none older than 7 days) and sent when the app is back online.
 - Uninstalling the app or clearing its storage removes the client ID, the installation ID and any queued events from the device. Nothing in the app deletes them otherwise, and the app sends no deletion request to Google.
 - No ads SDK, no account, no crash reporting (Crashlytics and Firebase Messaging were removed in build 22), no server of our own that receives user data.
-- What users read: the disclaimer, privacy policy, Data & Privacy screen, website and store listing say "FinCalix collects anonymous usage statistics through Google Analytics", that financial amounts are never sent and that the data is processed by Google.
+- What users read: the disclaimer, privacy policy, Data & Privacy screen, website and store listing say "FinCalix collects anonymous usage statistics, such as which features are used most" and that financial amounts are never sent. At the owner's request (18 Nov 2026) they do not name the provider; the privacy policy says "an analytics service" processes the data on our behalf. The Data safety form asks for data types, not provider names.
 
 ## Step by step in Play Console
 

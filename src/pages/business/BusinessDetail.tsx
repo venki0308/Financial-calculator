@@ -9,6 +9,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { rangeLabelUI, monthYearUI, fullDateUI } from '../../utils/appUiDates';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, ChevronLeft, ChevronRight, Plus, Trash2, X,
@@ -406,7 +407,7 @@ export default function BusinessDetail() {
             <ChevronLeft size={16} style={{ color: et.textSecondary }} />
           </motion.button>
           <div className="text-center">
-            <span className="text-xs font-bold" style={{ color: et.textPrimary }}>{range.label}</span>
+            <span className="text-xs font-bold" style={{ color: et.textPrimary }}>{rangeLabelUI(range)}</span>
             {offset === 0 && (
               <span
                 className="ml-2 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full"
@@ -524,7 +525,7 @@ export default function BusinessDetail() {
             </div>
             {monthSummaries.map(m => (
               <div key={m.key} className="grid grid-cols-4 gap-2 py-2" style={{ borderBottom: `1px solid ${et.borderSubtle}` }}>
-                <p className="text-[11px] font-bold" style={{ color: et.textPrimary }}>{m.label}</p>
+                <p className="text-[11px] font-bold" style={{ color: et.textPrimary }}>{monthYearUI(Number(m.key.slice(5, 7)), Number(m.key.slice(0, 4)))}</p>
                 <p className="text-[11px] font-semibold text-right" style={{ color: et.accentIncome, fontVariantNumeric: 'tabular-nums' }}>
                   {fmtINR(m.income)}
                 </p>
@@ -553,7 +554,7 @@ export default function BusinessDetail() {
                 <div key={date}>
                   <div className="flex items-center justify-between px-1 mb-1.5">
                     <p className="text-[11px] font-bold" style={{ color: et.textSecondary }}>
-                      {formatFullDate(date)}
+                      {fullDateUI(date)}
                     </p>
                     <p
                       className="text-[11px] font-bold"

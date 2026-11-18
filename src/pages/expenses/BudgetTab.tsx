@@ -7,6 +7,8 @@ import {
   AlertCircle, Sparkles, Landmark, ChevronRight as ChevronRightArrow,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { catNameUI, accTypeUI, cycleUI } from '../../utils/appUiLabels';
+import { rangeLabelUI } from '../../utils/appUiDates';
 import { useExpenseTheme, getBudgetStatus } from '../../theme/expenseTheme';
 
 import type { Budget, BankAccount, FixedExpense, CategoryLimit, InvestmentTarget } from '../../types/expense';
@@ -461,7 +463,7 @@ export default function BudgetTab() {
   const catInfo = (catId: string) => {
     const def = DEFAULT_EXPENSE_CATEGORIES.find(c => c.id === catId)
       ?? DEFAULT_INVESTMENT_CATEGORIES.find(c => c.id === catId);
-    return { icon: def?.icon ?? '\u{1F4E6}', name: def?.name ?? catId, color: def?.color ?? '#94a3b8' };
+    return { icon: def?.icon ?? '\u{1F4E6}', name: def ? catNameUI(def, t) : catId, color: def?.color ?? '#94a3b8' };
   };
 
   // ── section expand/collapse animation ─────────────────────
@@ -508,7 +510,7 @@ export default function BudgetTab() {
 
           <div className="flex flex-col items-center gap-1.5">
             <span className="font-bold text-sm tracking-wide" style={{ color: theme.textPrimary }}>
-              {range.label}
+              {rangeLabelUI(range)}
             </span>
             {/* Health badge */}
             <motion.span
@@ -584,7 +586,7 @@ export default function BudgetTab() {
             className="text-[10px] font-semibold mt-2 pt-2 border-t"
             style={{ color: theme.accentInvestment, borderColor: theme.borderSubtle }}
           >
-            {t('expenses.currentCycle', 'Current cycle')}: {range.label}
+            {t('expenses.currentCycle', 'Current cycle')}: {rangeLabelUI(range)}
           </p>
         )}
       </motion.div>
@@ -877,7 +879,7 @@ export default function BudgetTab() {
                           {acc.name}
                         </p>
                         <p className="text-[10px] truncate" style={{ color: theme.textMuted }}>
-                          {acc.bankName || typeInfo.label}
+                          {acc.bankName || accTypeUI(acc.accountType, typeInfo.label, t)}
                           {acc.lastFourDigits ? ` \u00B7 ****${acc.lastFourDigits}` : ''}
                         </p>
                       </div>
@@ -1581,9 +1583,7 @@ export default function BudgetTab() {
                     const monthly = sub.billingCycle === 'quarterly' ? sub.amount / 3
                       : sub.billingCycle === 'yearly' ? sub.amount / 12
                       : sub.amount;
-                    const cycleLabel = sub.billingCycle === 'quarterly' ? 'Quarterly'
-                      : sub.billingCycle === 'yearly' ? 'Yearly'
-                      : 'Monthly';
+                    const cycleLabel = cycleUI(sub.billingCycle, t);
                     return (
                       <div
                         key={sub.id}

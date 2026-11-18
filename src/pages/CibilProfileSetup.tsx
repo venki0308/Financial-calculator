@@ -11,6 +11,7 @@ import { getCibilColor, type CibilProfile, clearCibilProfile } from '../utils/ci
 import { formatINR, calculateReducingEMI } from '../utils/calculations';
 import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { todayStr } from '../utils/dateUtils';
+import { cibilTierLabel } from '../utils/loanUi';
 
 const EMPLOYMENT_TYPES = [
     { id: 'salaried_govt', icon: '🏛', labelKey: 'cp.govtSalaried' },
@@ -191,7 +192,7 @@ export default function CibilProfileSetup() {
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black text-white" style={{ backgroundColor: tierColor }}>{score}</div>
                                     <div>
-                                        <p className="text-sm font-bold" style={{ color: tierColor }}>{tier.emoji} {tier.label}</p>
+                                        <p className="text-sm font-bold" style={{ color: tierColor }}>{tier.emoji} {cibilTierLabel(tier)}</p>
                                         <p className="text-[10px]" style={{ color: c.textSecondary }}>{t(tier.description)}</p>
                                     </div>
                                 </div>
@@ -235,7 +236,7 @@ export default function CibilProfileSetup() {
                             <button key={et.id} onClick={() => setEmpType(empType === et.id ? null : et.id)}
                                 className={`px-3 py-1.5 rounded-xl text-[10px] font-semibold flex items-center gap-1.5 ${empType === et.id ? 'bg-violet-600 text-white' : 'border'}`}
                                 style={empType !== et.id ? { borderColor: c.border, color: c.textSecondary } : {}}
-                            >{et.icon} {t(et.labelKey)}</button>
+                            >{et.icon} {t(`loanUi.emp_${et.id}`, t(et.labelKey))}</button>
                         ))}
                     </div>
                 </div>

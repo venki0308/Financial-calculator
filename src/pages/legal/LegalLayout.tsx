@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ComponentType, ReactNode } from 'react';
 import { useAppColors } from '../../theme/useAppColors';
+import { legalText } from './text';
 
 // ── Language types ───────────────────────────────────────
-export type Lang = 'en' | 'hi' | 'te' | 'ta' | 'kn';
+export type Lang = 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml';
 
 /**
  * One legal page's text: the single source for the website page (LegalLayout) and the
@@ -36,6 +37,7 @@ export const LANG_OPTIONS: { code: Lang; label: string }[] = [
     { code: 'te', label: 'తెలుగు' },
     { code: 'ta', label: 'தமிழ்' },
     { code: 'kn', label: 'ಕನ್ನಡ' },
+    { code: 'ml', label: 'മലയാളം' },
 ];
 
 // ── Language selector dropdown ───────────────────────────
@@ -129,13 +131,17 @@ export default function LegalLayout({
     updated,
     children,
     langBar,
+    lang = 'en',
 }: {
     title: string;
     updated: string;
     children: ReactNode;
     langBar?: ReactNode;
+    /** Language of the frame's own words (Home link, footer); the page passes its selected language. */
+    lang?: Lang;
 }) {
     const c = useAppColors();
+    const l = legalText(lang).layout;
 
     useEffect(() => {
         if (!document.querySelector('link[data-fc-poppins]')) {
@@ -187,7 +193,7 @@ export default function LegalLayout({
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         {langBar}
                         <a href="/" style={{ fontSize: '12px', color: c.textSecondary, textDecoration: 'none', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            ← Home
+                            ← {l.home}
                         </a>
                     </div>
                 </div>
@@ -202,15 +208,15 @@ export default function LegalLayout({
 
             {/* Footer */}
             <footer style={{ borderTop: `1px solid ${c.border}`, background: c.card, padding: '24px', textAlign: 'center', fontSize: '12px', color: c.textSecondary }}>
-                <div style={{ marginBottom: '8px' }}>FinCalix — Smart Financial Planning Tool</div>
+                <div style={{ marginBottom: '8px' }}>{l.tagline}</div>
                 <div>
-                    Made with ❤️ in India ·{' '}
-                    <a href="/privacy-policy" style={{ color: c.textSecondary, textDecoration: 'none' }}>Privacy</a>
+                    {l.madeIn} ·{' '}
+                    <a href="/privacy-policy" style={{ color: c.textSecondary, textDecoration: 'none' }}>{l.privacy}</a>
                     {' · '}
-                    <a href="/terms-of-service" style={{ color: c.textSecondary, textDecoration: 'none' }}>Terms</a>
+                    <a href="/terms-of-service" style={{ color: c.textSecondary, textDecoration: 'none' }}>{l.terms}</a>
                     {' · '}
-                    <a href="/about" style={{ color: c.textSecondary, textDecoration: 'none' }}>About</a>
-                    {' · '}© 2026 FinCalix. All rights reserved.
+                    <a href="/about" style={{ color: c.textSecondary, textDecoration: 'none' }}>{l.about}</a>
+                    {' · '}{l.copyright}
                 </div>
             </footer>
         </div>

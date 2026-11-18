@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 import { useCalculatorStore, Calculation } from '../store/useCalculatorStore';
 import { formatINR } from '../utils/calculations';
+import { calcNameKey } from '../utils/appUiCalcName';
+import { formatDateUI } from '../utils/uiLocale';
 
 // Map calculator types to readable labels and icons
 const calcMeta: Record<string, { label: string; icon: any; color: string; gradient: string }> = {
@@ -133,6 +135,8 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
     const { t } = useTranslation();
     const [expanded, setExpanded] = useState(false);
     const meta = calcMeta[calc.calculatorType] || defaultMeta;
+    // Display name: the calculator's translated name when the saved type is a known English name.
+    const nameKey = calcNameKey(calc.calculatorType);
     const Icon = meta.icon;
     const primaryValue = (() => {
         if (typeof calc.resultValues === 'number') return calc.resultValues;
@@ -160,13 +164,13 @@ function SavedCard({ calc, onRemove }: { calc: Calculation; onRemove: () => void
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-foreground font-bold text-sm">{t(meta.label as any, meta.label)}</h3>
+                            <h3 className="text-foreground font-bold text-sm">{nameKey ? t(nameKey) : t(meta.label as any, meta.label)}</h3>
                             <div className="flex items-center gap-2">
                                 {expanded ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
                             </div>
                         </div>
                         <p className="text-2xl font-black mt-1" style={{ color: meta.color }}>{formatINR(primaryValue)}</p>
-                        <p className="text-[10px] text-muted-foreground mt-1">{new Date(calc.timestamp).toLocaleString('en-IN')}</p>
+                        <p className="text-[10px] text-muted-foreground mt-1">{formatDateUI(calc.timestamp, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
                     </div>
                 </div>
             </button>

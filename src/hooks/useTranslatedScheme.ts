@@ -17,6 +17,9 @@ export function useTranslatedScheme(scheme: Scheme): Scheme {
         ministry: t(`sd.${id}.m`, { defaultValue: scheme.ministry }),
         schemeCategory: t(`sd.${id}.sc`, { defaultValue: scheme.schemeCategory }),
         benefitAmount: scheme.benefitAmount ? t(`sd.${id}.ba`, { defaultValue: scheme.benefitAmount }) : undefined,
+        interestRate: scheme.interestRate ? t(`sd.${id}.ir`, { defaultValue: scheme.interestRate }) : undefined,
+        maxAmount: scheme.maxAmount ? t(`sd.${id}.mx`, { defaultValue: scheme.maxAmount }) : undefined,
+        taxBenefit: scheme.taxBenefit ? t(`sd.${id}.tb`, { defaultValue: scheme.taxBenefit }) : undefined,
         notes: scheme.notes ? t(`sd.${id}.nt`, { defaultValue: scheme.notes }) : undefined,
         eligibility: scheme.eligibility.map((e, i) => t(`sd.${id}.e.${i}`, { defaultValue: e })),
         benefits: scheme.benefits.map((b, i) => t(`sd.${id}.b.${i}`, { defaultValue: b })),
@@ -37,5 +40,6 @@ export function useTranslatedSchemeList(schemeList: Scheme[]): Scheme[] {
         name: t(`sd.${scheme.id}.n`, { defaultValue: scheme.name }),
         description: t(`sd.${scheme.id}.d`, { defaultValue: scheme.description }),
         benefitAmount: scheme.benefitAmount ? t(`sd.${scheme.id}.ba`, { defaultValue: scheme.benefitAmount }) : undefined,
+        interestRate: scheme.interestRate ? t(`sd.${scheme.id}.ir`, { defaultValue: scheme.interestRate }) : undefined,
     }));
 }

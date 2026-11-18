@@ -17,12 +17,13 @@ import CibilBadge from '../components/CibilBadge';
 
 const fmtINR = (v: number) => formatINR(Math.round(v));
 
-const RATE_PRESETS: { rate: number; label: string }[] = [
-  { rate: 24, label: 'Low 24%' },
-  { rate: 30, label: 'Standard 30%' },
-  { rate: 36, label: 'Mid 36%' },
-  { rate: 42, label: 'High 42%' },
-  { rate: 45, label: 'Very High 45%' },
+// `key` is the display-only translation of the level word; `label` stays the English default
+const RATE_PRESETS: { rate: number; label: string; key: string }[] = [
+  { rate: 24, label: 'Low 24%', key: 'loanUi.rateLow' },
+  { rate: 30, label: 'Standard 30%', key: 'loanUi.rateStandard' },
+  { rate: 36, label: 'Mid 36%', key: 'loanUi.rateMid' },
+  { rate: 42, label: 'High 42%', key: 'loanUi.rateHigh' },
+  { rate: 45, label: 'Very High 45%', key: 'loanUi.rateVeryHigh' },
 ];
 
 interface Insight { text: string; tone: 'warning' | 'success' | 'info' }
@@ -116,10 +117,10 @@ export default function CreditCardInterestCalculator() {
         if (balance <= 0) return [];
         const r = rate / 100 / 12;
         const paymentLevels = [
-            { label: 'Fixed 5% of Today\'s Balance', pct: 0.05 },
-            { label: '10% of Balance', pct: 0.10 },
-            { label: '25% of Balance', pct: 0.25 },
-            { label: 'Full Statement', pct: 1.0 },
+            { label: t('loanUi.payFixed5', 'Fixed 5% of today\'s balance'), pct: 0.05 },
+            { label: t('loanUi.payPctBalance', '{{pct}}% of balance', { pct: 10 }), pct: 0.10 },
+            { label: t('loanUi.payPctBalance', '{{pct}}% of balance', { pct: 25 }), pct: 0.25 },
+            { label: t('loanUi.payFullStatement', 'Full statement'), pct: 1.0 },
         ];
         return paymentLevels.map(({ label, pct }) => {
             const payment = Math.max(Math.round(balance * pct), 200);
@@ -137,7 +138,7 @@ export default function CreditCardInterestCalculator() {
             }
             return { label, payment, months: m, totalInterest: Math.round(totalInt), totalPaid: Math.round(balance + totalInt) };
         });
-    }, [balance, rate, includeGST]);
+    }, [balance, rate, includeGST, t]);
 
     // ── Debt-free-by-target (reverse solve) ──
     // "I want this cleared in N months → what do I pay?" Closed-form annuity
@@ -316,7 +317,7 @@ export default function CreditCardInterestCalculator() {
                                         ? 'bg-brand-blue/20 border-brand-blue text-brand-blue'
                                         : 'bg-card border-border text-muted-foreground hover:bg-muted'
                                 }`}>
-                                {p.label}
+                                {t(p.key, p.label, { rate: p.rate })}
                             </button>
                         ))}
                         <button onClick={() => setUseCustomRate(true)}
@@ -543,11 +544,11 @@ export default function CreditCardInterestCalculator() {
                                     <div key={i} className={`flex items-center justify-between p-3 rounded-xl border ${i === debtTimeline.length - 1 ? 'bg-green-500/5 border-green-500/20' : 'border-border/50'}`}>
                                         <div>
                                             <p className="text-xs font-bold text-foreground">{d.label}</p>
-                                            <p className="text-[10px] text-muted-foreground">{fmtINR(d.payment)}/mo</p>
+                                            <p className="text-[10px] text-muted-foreground">{fmtINR(d.payment)}{t('expenses.perMonth', '/mo')}</p>
                                         </div>
                                         <div className="text-right">
                                             <p className={`text-sm font-black ${d.months === 1 ? 'text-green-500' : d.months > 60 ? 'text-red-500' : 'text-foreground'}`}>
-                                                {d.months === Infinity ? '∞' : d.months === 1 ? t('ccInterest.zeroInterest', '0 interest!') : `${d.months} mo`}
+                                                {d.months === Infinity ? '∞' : d.months === 1 ? t('ccInterest.zeroInterest', '0 interest!') : `${d.months} ${t('ccInterest.monthsShort', 'mo')}`}
                                             </p>
                                             {d.totalInterest > 0 && d.totalInterest < Infinity && (
                                                 <p className="text-[10px] text-red-400">{t('ccInterest.interestLabel', 'Interest')}: {fmtINR(d.totalInterest)}</p>
@@ -639,7 +640,7 @@ export default function CreditCardInterestCalculator() {
                                             <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: alt.color }} />
                                             <div>
                                                 <p className="text-xs font-bold text-foreground">{alt.name}</p>
-                                                <p className="text-[10px] text-muted-foreground">{alt.apr}% APR · {fmtINR(alt.emi)}/mo</p>
+                                                <p className="text-[10px] text-muted-foreground">{alt.apr}% APR · {fmtINR(alt.emi)}{t('expenses.perMonth', '/mo')}</p>
                                             </div>
                                         </div>
                                         <div className="text-right">

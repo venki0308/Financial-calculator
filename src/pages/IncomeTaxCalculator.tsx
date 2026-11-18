@@ -873,7 +873,7 @@ export default function IncomeTaxCalculator() {
                                     </>
                                 ) : (
                                     <>
-                                        <p className="font-extrabold text-lg text-brand-green">{betterRegime.toUpperCase()} {t('tax.regime')}</p>
+                                        <p className="font-extrabold text-lg text-brand-green">{betterRegime === 'Old' ? t('tax.oldRegime', 'Old Regime') : t('tax.newRegime', 'New Regime')}</p>
                                         <p className="text-brand-green text-xs mt-1">{t('tax.estimatedTaxSaving')}: {fmt(saving)}</p>
                                         {regimeExplanation && (
                                             <p className="text-muted-foreground dark:text-muted-foreground text-[10px] mt-2 leading-relaxed text-left">{regimeExplanation}</p>

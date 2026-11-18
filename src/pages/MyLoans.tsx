@@ -16,6 +16,7 @@ import {
 import { getAllCreditCards } from '../utils/creditCardStorage';
 import { getUtilization, getUtilizationBarColor, getDaysUntilDue } from '../utils/creditCardCalculations';
 import { parseLocalDate } from '../utils/dateUtils';
+import { formatDateUI } from '../utils/uiLocale';
 
 const TYPE_META: Record<string, { icon: string; color: string; labelKey: string }> = {
     'Loan EMI': { icon: '🏠', color: '#8B5CF6', labelKey: 'myLoans.typeLabelLoanEmi' },
@@ -73,7 +74,7 @@ function fmtDate(ts: number | string): string {
     // Parse YYYY-MM-DD as a LOCAL date — new Date('YYYY-MM-DD') is parsed as
     // UTC midnight and can display the previous day in negative-UTC timezones.
     const d = typeof ts === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(ts) ? parseLocalDate(ts) : new Date(ts);
-    return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+    return formatDateUI(d, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
 /**
@@ -195,7 +196,7 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 label1: t('myLoans.metricAmount'), value1: formatINR(utilized),
                 label2: t('myLoans.metricInterest'), value2: formatINR(totalInterest),
                 label3: t('myLoans.metricValue'), value3: formatINR(totalPayable),
-                progress, statusText: `${d.days || 0}d @ ${d.rate || 0}%`,
+                progress, statusText: `${d.days || 0}${t('age.daysAbbr', 'd')} @ ${d.rate || 0}%`,
             };
         }
         if (isAnyLoanType(type)) {
@@ -207,7 +208,7 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
         }
         if (matchType(type, 'sip', 'sip calculator')) {
             const s = calculateSipStatus({ monthlySip: d.monthlySip || d.monthlyAmount || 0, annualReturn: d.annualReturn || 12, startDate: d.startDate });
-            return { label1: t('myLoans.metricInvested'), value1: formatINR(s.totalInvested), label2: t('myLoans.metricValue'), value2: formatINR(s.currentValue), label3: t('myLoans.metricGain'), value3: formatINR(s.wealthGained), progress: Math.min(100, s.monthsInvested), statusText: `${s.sipRunningYears}Y ${s.sipRunningMonths}M` };
+            return { label1: t('myLoans.metricInvested'), value1: formatINR(s.totalInvested), label2: t('myLoans.metricValue'), value2: formatINR(s.currentValue), label3: t('myLoans.metricGain'), value3: formatINR(s.wealthGained), progress: Math.min(100, s.monthsInvested), statusText: `${s.sipRunningYears}${t('liveStatus.yShort', 'Y')} ${s.sipRunningMonths}${t('liveStatus.mShort', 'M')}` };
         }
         if (matchType(type, 'fd', 'fd calculator', 'potd', 'post office td')) {
             const s = calculateFdStatus({ principal: d.principal, annualRate: d.annualRate, tenureMonths: d.tenureMonths, startDate: d.startDate, compoundingFreq: d.compoundingFreq || 4, payout: matchType(type, 'potd', 'post office td') ? 'yearly' : 'cumulative' });
@@ -265,12 +266,12 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 // Standard compound interest: P × (1 + r/n)^(n×t)
                 valueToday = principal * Math.pow(1 + (rate / 100) / freq, freq * elapsed);
                 progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
-                statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
+                statusText = t('loanUi.yOfY', { defaultValue: '{{x}}Y of {{y}}Y', x: elapsed.toFixed(1), y: totalYears });
             } else {
                 // Snapshot fallback (no start date or future date)
                 valueToday = d.maturity || 0;
                 progress = 100;
-                statusText = `${totalYears}Y @ ${rate}%`;
+                statusText = t('loanUi.yAtRate', { defaultValue: '{{y}}Y @ {{rate}}%', y: totalYears, rate: rate });
             }
             const interest = valueToday - principal;
             return {
@@ -294,11 +295,11 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 // Simple interest: P × R × T (monthly)
                 interestSoFar = (principal * rate * elapsedMonths) / (12 * 100);
                 progress = totalMonths > 0 ? Math.min(100, (elapsedMonths / totalMonths) * 100) : 100;
-                statusText = `${elapsedMonths}M of ${totalMonths}M`;
+                statusText = t('loanUi.mOfM', { defaultValue: '{{x}}M of {{y}}M', x: elapsedMonths, y: totalMonths });
             } else {
                 interestSoFar = d.interest || 0;
                 progress = 100;
-                statusText = `${totalMonths}M @ ${rate}%`;
+                statusText = t('loanUi.mAtRate', { defaultValue: '{{m}}M @ {{rate}}%', m: totalMonths, rate: rate });
             }
             const totalPayable = principal + interestSoFar;
             return {
@@ -313,8 +314,8 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
             return {
                 label1: t('myLoans.metricValue'), value1: formatINR(value),
                 label2: t('myLoans.metricStatus'), value2: d.mode || '—',
-                label3: t('myLoans.metricEarned'), value3: d.area ? `${d.area} sqft` : '—',
-                progress: 100, statusText: d.mode || 'Property',
+                label3: t('myLoans.metricEarned'), value3: d.area ? `${d.area} ${t('liveStatus.sqft', 'sqft')}` : '—',
+                progress: 100, statusText: d.mode || t('liveStatus.property', 'Property'),
             };
         }
         if (matchType(type, 'insurance')) {
@@ -341,11 +342,11 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 // FV = P × (1 + r)^t (annual compounding)
                 valueToday = principal * Math.pow(1 + rate / 100, elapsed);
                 progress = totalYears > 0 ? Math.min(100, (elapsed / totalYears) * 100) : 100;
-                statusText = `${elapsed.toFixed(1)}Y of ${totalYears}Y`;
+                statusText = t('loanUi.yOfY', { defaultValue: '{{x}}Y of {{y}}Y', x: elapsed.toFixed(1), y: totalYears });
             } else {
                 valueToday = d.maturity || d.fv || 0;
                 progress = 100;
-                statusText = `${totalYears}Y @ ${rate}%`;
+                statusText = t('loanUi.yAtRate', { defaultValue: '{{y}}Y @ {{rate}}%', y: totalYears, rate: rate });
             }
             const gain = valueToday - principal;
             return {
@@ -378,11 +379,11 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 }
                 withdrawnSoFar = withdrawn;
                 progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
-                statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                statusText = t('loanUi.yOfY', { defaultValue: '{{x}}Y of {{y}}Y', x: elapsedY.toFixed(1), y: totalYears });
             } else {
                 withdrawnSoFar = d.totalWithdrawn || 0;
                 progress = 100;
-                statusText = `${totalYears}Y @ ${rate}%`;
+                statusText = t('loanUi.yAtRate', { defaultValue: '{{y}}Y @ {{rate}}%', y: totalYears, rate: rate });
             }
             return {
                 label1: t('myLoans.metricInvested'), value1: formatINR(corpus),
@@ -416,7 +417,7 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 label1: t('myLoans.metricInvested'), value1: formatINR(initial),
                 label2: t('myLoans.metricValue'), value2: formatINR(totalPortfolio),
                 label3: t('myLoans.metricGain'), value3: formatINR(totalPortfolio - initial),
-                progress, statusText: `${elapsedMonths}M of ${totalMonths}M`,
+                progress, statusText: t('loanUi.mOfM', { defaultValue: '{{x}}M of {{y}}M', x: elapsedMonths, y: totalMonths }),
             };
         }
         // ── CAGR (compound annual growth — snapshot) ──
@@ -454,12 +455,12 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 investedSoFar = monthlyContrib * elapsedMonths;
                 corpusToday = bal;
                 progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
-                statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                statusText = t('loanUi.yOfY', { defaultValue: '{{x}}Y of {{y}}Y', x: elapsedY.toFixed(1), y: totalYears });
             } else {
                 investedSoFar = d.totalInvested || 0;
                 corpusToday = d.corpus || d.maturity || 0;
                 progress = 100;
-                statusText = `${totalYears}Y @ ${rate}%`;
+                statusText = t('loanUi.yAtRate', { defaultValue: '{{y}}Y @ {{rate}}%', y: totalYears, rate: rate });
             }
             const interest = corpusToday - investedSoFar;
             return {
@@ -489,12 +490,12 @@ function computeMetrics(p: SavedLiveProfile, t: (key: string, opts?: any) => str
                 investedSoFar = monthly * elapsedMonths;
                 corpusToday = bal;
                 progress = totalYears > 0 ? Math.min(100, (elapsedY / totalYears) * 100) : 100;
-                statusText = `${elapsedY.toFixed(1)}Y of ${totalYears}Y`;
+                statusText = t('loanUi.yOfY', { defaultValue: '{{x}}Y of {{y}}Y', x: elapsedY.toFixed(1), y: totalYears });
             } else {
                 investedSoFar = d.totalInvested || 0;
                 corpusToday = d.corpus || d.maturity || 0;
                 progress = 100;
-                statusText = `${totalYears}Y @ ${rate}%`;
+                statusText = t('loanUi.yAtRate', { defaultValue: '{{y}}Y @ {{rate}}%', y: totalYears, rate: rate });
             }
             const monthlyPension = d.monthlyPension || 0;
             return {

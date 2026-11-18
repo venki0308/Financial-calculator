@@ -10,6 +10,7 @@ import APYContributionCalculator from '../components/APYContributionCalculator';
 import { AnalyticsService } from '../lib/analytics';
 import { nativeShare } from '../utils/nativeShare';
 import { GovtNotice, OfficialLink } from '../components/OfficialSources';
+import { formatDateUI } from '../utils/uiLocale';
 
 export default function SchemeDetail() {
     const { id } = useParams();
@@ -233,7 +234,7 @@ export default function SchemeDetail() {
                             <span className={`font-semibold text-[12px] ${stale ? 'text-amber-600' : 'text-brand-green'}`}>{stale ? t('schemes.verifiedAgeWarn', { months: ageMonths }) : t('schemes.verifiedSource')}</span>
                         </div>
                         <p className="text-muted-foreground dark:text-muted-foreground text-[11px] leading-relaxed pl-6">
-                            {t('schemes.lastVerified')}: {new Date(scheme.lastVerified).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            {t('schemes.lastVerified')}: {formatDateUI(scheme.lastVerified, { day: 'numeric', month: 'short', year: 'numeric' })}
                             {scheme.verifiedSource && <> · {t('schemes.source')}: <OfficialLink url={`https://${scheme.verifiedSource}`} className="font-normal">{scheme.verifiedSource}</OfficialLink></>}
                         </p>
                         <p className="text-muted-foreground text-[10px] mt-1 pl-6 italic">{t('schemes.alwaysCheck')}</p>

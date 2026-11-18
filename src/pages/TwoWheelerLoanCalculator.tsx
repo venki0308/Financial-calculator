@@ -14,7 +14,9 @@ import { useTrackCalculator } from '../hooks/useTrackCalculator';
 import { nativeShare } from '../utils/nativeShare';
 import { saveLoan as saveLoanToStorage, generateLoanId, type SavedLoan } from '../utils/loanStorage';
 import { todayStr } from '../utils/dateUtils';
-import { VEHICLE_TYPES, VEHICLE_SEGMENTS, CIBIL_TIERS, EV_SUBSIDY, STATE_EV_BENEFITS, RUNNING_COSTS, ONROAD_DEFAULTS, type VehicleType } from '../data/twoWheelerData';
+import { VEHICLE_TYPES, VEHICLE_SEGMENTS, CIBIL_TIERS, CIBIL_TIER_DISPLAY, EV_SUBSIDY, STATE_EV_BENEFITS, RUNNING_COSTS, ONROAD_DEFAULTS, type VehicleType } from '../data/twoWheelerData';
+import { typicalRange, stateNameUI, evBenefitUI } from '../utils/loanUi';
+import { formatDateUI } from '../utils/uiLocale';
 import CibilAdvisoryCard from '../components/CibilAdvisoryCard';
 import CibilBadge from '../components/CibilBadge';
 import { useCibil } from '../context/CibilContext';
@@ -276,7 +278,7 @@ export default function TwoWheelerLoanCalculator() {
     };
 
     const handleShare = async () => {
-        const text = `🛵 ${t('tw.title')}\n\n${isEV ? '⚡' : '⛽'} ${segment.label}\n💰 ${t('tw.exShowroom')}: ${formatINR(exShowroom)}\n📊 ${t('tw.loanAmt')}: ${formatINR(loanAmount)}\n📈 ${t('tw.rate')}: ${rate}%\n📅 ${t('tw.tenure')}: ${tenureMonths} ${t('tw.months')}\n\n✅ EMI: ${formatINR(emi)}\n💵 ${t('tw.totalInt')}: ${formatINR(totalInterest)}\n\nCalculated with FinCalix 🧮`;
+        const text = `🛵 ${t('tw.title')}\n\n${isEV ? '⚡' : '⛽'} ${t(`tw.seg_${segment.id}`, segment.label)}\n💰 ${t('tw.exShowroom')}: ${formatINR(exShowroom)}\n📊 ${t('tw.loanAmt')}: ${formatINR(loanAmount)}\n📈 ${t('tw.rate')}: ${rate}%\n📅 ${t('tw.tenure')}: ${tenureMonths} ${t('tw.months')}\n\n✅ EMI: ${formatINR(emi)}\n💵 ${t('tw.totalInt')}: ${formatINR(totalInterest)}\n\nCalculated with FinCalix 🧮`;
         await nativeShare(`${t('tw.title')} — FinCalix`, text);
     };
 
@@ -407,7 +409,7 @@ export default function TwoWheelerLoanCalculator() {
                             );
                         })}
                     </div>
-                    <p className="text-[9px] mt-1" style={{ color: c.textSecondary }}>{t(`tw.segDesc_${segment.id}`, segment.desc)} · {t(`tw.segFor_${segment.id}`, segment.for)} · {t('tw.typical')}: {formatINR(segment.priceRange[0])} — {formatINR(segment.priceRange[1])}</p>
+                    <p className="text-[9px] mt-1" style={{ color: c.textSecondary }}>{t(`tw.segDesc_${segment.id}`, segment.desc)} · {t(`tw.segFor_${segment.id}`, t(`loanUi.segFor_${segment.id}`, segment.for))} · {t('tw.typical')}: {formatINR(segment.priceRange[0])} — {formatINR(segment.priceRange[1])}</p>
                 </div>
 
                 {/* Ex-showroom */}
@@ -419,7 +421,7 @@ export default function TwoWheelerLoanCalculator() {
                         <div className="flex items-center gap-2"><Zap className="w-4 h-4 text-emerald-500" /><h3 className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{t('tw.evSubsidies')}</h3></div>
                         <NumberInput label={t('tw.batteryKwh')} value={batteryKwh} onChange={setBatteryKwh} min={1} max={10} step={0.5} suffix=" kWh" />
                         <div className="flex justify-between text-xs"><span style={{ color: c.textSecondary }}>{t('tw.pmEdrive')}</span><span className="font-bold text-emerald-500">-{formatINR(centralSubsidy)}</span></div>
-                        <p className="text-[9px]" style={{ color: c.textSecondary }}>₹{EV_SUBSIDY.ratePerKwh}/kWh, max ₹{EV_SUBSIDY.maxPerVehicle} · Valid till {EV_SUBSIDY.validUntil}</p>
+                        <p className="text-[9px]" style={{ color: c.textSecondary }}>{t('loanUi.evSubsidyLine', '₹{{rate}}/kWh, max ₹{{max}} · Valid till {{date}}', { rate: EV_SUBSIDY.ratePerKwh, max: EV_SUBSIDY.maxPerVehicle, date: formatDateUI(EV_SUBSIDY.validUntilDate + 'T00:00:00', { day: 'numeric', month: 'long', year: 'numeric' }) })}</p>
                         {/* Expiry banner — PM E-DRIVE runs only till 31 Jul 2026.
                             Show an early-warning amber banner once we are within
                             120 days of expiry, and a red "expired" banner once
@@ -434,7 +436,7 @@ export default function TwoWheelerLoanCalculator() {
                                     <div className="flex items-start gap-2 p-2 rounded-lg" style={{ backgroundColor: '#EF444415', border: '1px solid #EF444430' }}>
                                         <Info className="w-3 h-3 mt-0.5 text-red-500 flex-shrink-0" />
                                         <p className="text-[10px] text-red-600 dark:text-red-400 leading-snug">
-                                            {t('tw.subsidyExpired', 'PM E-DRIVE subsidy ended on {{date}}. The amount above is shown for reference only — confirm latest scheme details with your dealer.', { date: EV_SUBSIDY.validUntil })}
+                                            {t('tw.subsidyExpired', 'PM E-DRIVE subsidy ended on {{date}}. The amount above is shown for reference only — confirm latest scheme details with your dealer.', { date: formatDateUI(EV_SUBSIDY.validUntilDate + 'T00:00:00', { day: 'numeric', month: 'long', year: 'numeric' }) })}
                                         </p>
                                     </div>
                                 );
@@ -444,7 +446,7 @@ export default function TwoWheelerLoanCalculator() {
                                     <div className="flex items-start gap-2 p-2 rounded-lg" style={{ backgroundColor: '#F59E0B15', border: '1px solid #F59E0B30' }}>
                                         <Info className="w-3 h-3 mt-0.5 text-amber-500 flex-shrink-0" />
                                         <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-snug">
-                                            {t('tw.subsidyExpiringSoon', 'Heads up: PM E-DRIVE expires in {{days}} days ({{date}}). If you plan to buy after that, the subsidy may no longer apply.', { days: daysLeft, date: EV_SUBSIDY.validUntil })}
+                                            {t('tw.subsidyExpiringSoon', 'Heads up: PM E-DRIVE expires in {{days}} days ({{date}}). If you plan to buy after that, the subsidy may no longer apply.', { days: daysLeft, date: formatDateUI(EV_SUBSIDY.validUntilDate + 'T00:00:00', { day: 'numeric', month: 'long', year: 'numeric' }) })}
                                         </p>
                                     </div>
                                 );
@@ -465,9 +467,9 @@ export default function TwoWheelerLoanCalculator() {
                             <select value={selectedState} onChange={e => setSelectedState(e.target.value)}
                                 className="w-full bg-transparent border rounded-xl px-3 py-2.5 text-sm outline-none" style={{ borderColor: c.border, color: c.text }}>
                                 <option value="">{t('tw.selectState')}</option>
-                                {Object.keys(STATE_EV_BENEFITS).map(s => <option key={s} value={s}>{s}</option>)}
+                                {Object.keys(STATE_EV_BENEFITS).map(s => <option key={s} value={s}>{stateNameUI(s)}</option>)}
                             </select>
-                            {selectedState && STATE_EV_BENEFITS[selectedState] && <p className="text-[10px] mt-1 text-emerald-500 font-medium">{STATE_EV_BENEFITS[selectedState]}</p>}
+                            {selectedState && STATE_EV_BENEFITS[selectedState] && <p className="text-[10px] mt-1 text-emerald-500 font-medium">{evBenefitUI(selectedState, STATE_EV_BENEFITS[selectedState])}</p>}
                         </div>
                         {totalSubsidy > 0 && (
                             <div className="p-3 rounded-xl text-center" style={{ backgroundColor: '#10B98120' }}>
@@ -481,7 +483,7 @@ export default function TwoWheelerLoanCalculator() {
                 {/* {t('tw.onRoadPrice')} */}
                 <div className="p-4 rounded-2xl border shadow-sm space-y-3" style={{ backgroundColor: c.card, borderColor: c.border }}>
                     <div className="flex items-center gap-2"><Info className="w-4 h-4 text-blue-500" /><h3 className="text-sm font-bold" style={{ color: c.text }}>{t('tw.onRoadPrice')}</h3></div>
-                    <NumberInput label={t('tw.rtoReg')} value={effectiveRto} onChange={setRtoCharges} min={0} max={50000} prefix="₹" helperText={isEV ? t('tw.rtoWaivedEv') : `~${(ONROAD_DEFAULTS.rtoPercentPetrol * 100).toFixed(0)}% of ex-showroom`} />
+                    <NumberInput label={t('tw.rtoReg')} value={effectiveRto} onChange={setRtoCharges} min={0} max={50000} prefix="₹" helperText={isEV ? t('tw.rtoWaivedEv') : t('loanUi.pctOfExShowroom', '~{{pct}}% of ex-showroom', { pct: (ONROAD_DEFAULTS.rtoPercentPetrol * 100).toFixed(0) })} />
                     <NumberInput label={t('tw.insurance1yr')} value={effectiveInsurance} onChange={setInsuranceAmt} min={0} max={30000} prefix="₹" />
                     <NumberInput label={t('tw.handling')} value={handlingCharges} onChange={setHandlingCharges} min={0} max={10000} prefix="₹" />
                     <NumberInput label={t('tw.accessories')} value={accessories} onChange={setAccessories} min={0} max={50000} prefix="₹" />
@@ -506,7 +508,7 @@ export default function TwoWheelerLoanCalculator() {
                     <div>
                         <label className="text-xs font-bold mb-1.5 block" style={{ color: c.textSecondary }}>{t('tw.downPayment')} ({downPaymentPct}%)</label>
                         <input type="range" min={0} max={50} value={downPaymentPct} onChange={e => setDownPaymentPct(Number(e.target.value))} className="w-full accent-violet-600" />
-                        <p className="text-[10px] font-medium" style={{ color: c.text }}>{formatINR(downPayment)} ({downPaymentPct}% of {formatINR(effectivePrice)})</p>
+                        <p className="text-[10px] font-medium" style={{ color: c.text }}>{formatINR(downPayment)} ({t('loanUi.pctOfAmount', '{{pct}}% of {{amount}}', { pct: downPaymentPct, amount: formatINR(effectivePrice) })})</p>
                     </div>
                     <div>
                         <label className="text-xs font-bold mb-1.5 block" style={{ color: c.textSecondary }}>{t('tw.cibilScore')}</label>
@@ -515,7 +517,7 @@ export default function TwoWheelerLoanCalculator() {
                                 <button key={tier.id} onClick={() => setCibilIdx(i)}
                                     className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold ${cibilIdx === i ? 'bg-violet-600 text-white' : 'border'}`}
                                     style={cibilIdx !== i ? { borderColor: c.border, color: c.textSecondary } : {}}
-                                >{tier.label}</button>
+                                >{(() => { const d = CIBIL_TIER_DISPLAY[tier.id]; return d ? `${d.rangeKey ? t(d.rangeKey, d.range) : d.range} (${t(d.key)})` : tier.label; })()}</button>
                             ))}
                         </div>
                     </div>
@@ -527,7 +529,7 @@ export default function TwoWheelerLoanCalculator() {
                     </div>
                     <div>
                         <p className="text-[9px] mb-1 font-medium" style={{ color: c.textSecondary }}>{t('tw.suggestedRate')}: {suggestedRange[0]}% — {suggestedRange[1]}% {isFemale ? `(${t('tw.womenDiscountApplied')})` : ''}</p>
-                        <NumberInput label={t('tw.rate')} value={rate} onChange={setRate} min={1} max={36} suffix="%" step={0.25} helperText="Typical range 10-15% (Apr 2026)" />
+                        <NumberInput label={t('tw.rate')} value={rate} onChange={setRate} min={1} max={36} suffix="%" step={0.25} helperText={typicalRange('10-15%', 2026, 4)} />
                     </div>
                     <div>
                         <label className="text-xs font-bold mb-1.5 block" style={{ color: c.textSecondary }}>{t('tw.tenure')}</label>
@@ -567,7 +569,7 @@ export default function TwoWheelerLoanCalculator() {
                         {/* {t('tw.trueCost')} */}
                         <div className="p-4 rounded-2xl border shadow-sm" style={{ backgroundColor: c.card, borderColor: c.border }}>
                             <h3 className="text-sm font-bold mb-3" style={{ color: c.text }}>{t('tw.trueCost')} ({tenureYears.toFixed(0)}{t('tw.yr')})</h3>
-                            <NumberInput label={t('tw.yearlyKm')} value={yearlyKm} onChange={setYearlyKm} min={1000} max={30000} suffix=" km" />
+                            <NumberInput label={t('tw.yearlyKm')} value={yearlyKm} onChange={setYearlyKm} min={1000} max={30000} suffix={` ${t('loanUi.km', 'km')}`} />
                             <div className="space-y-1.5 mt-3 text-xs">
                                 {[[t('tw.loanEmiTotal'), totalPayment], [t('tw.processingFeeLabel'), processingFee], [`${isEV ? t('tw.chargingCost') : t('tw.fuelCost')} (${tenureYears.toFixed(0)}${t('tw.yr')})`, ownershipCost.fuelCost], [`${t('tw.serviceCost')} (${tenureYears.toFixed(0)}${t('tw.yr')})`, ownershipCost.serviceCost], [`${t('tw.insuranceCost')} (${tenureYears.toFixed(0)}${t('tw.yr')})`, ownershipCost.insuranceCost]].map(([l, v]) => (
                                     <div key={String(l)} className="flex justify-between"><span style={{ color: c.textSecondary }}>{l}</span><span className="font-medium" style={{ color: c.text }}>{formatINR(Number(v))}</span></div>
@@ -750,11 +752,11 @@ export default function TwoWheelerLoanCalculator() {
                                     <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(affordability.ratio, 100)}%`, background: affordability.status === 'red' ? '#EF4444' : affordability.status === 'yellow' ? '#F59E0B' : '#10B981' }} />
                                 </div>
                                 <div className="flex justify-between text-[9px] mb-3" style={{ color: c.textMuted }}>
-                                    <span>0%</span><span className="text-emerald-500 font-bold">25% Safe</span><span className="text-amber-500 font-bold">40%</span><span>100%</span>
+                                    <span>0%</span><span className="text-emerald-500 font-bold">{t('loanUi.pctSafe', '{{pct}}% safe', { pct: 25 })}</span><span className="text-amber-500 font-bold">40%</span><span>100%</span>
                                 </div>
                                 <div className="grid grid-cols-2 gap-2">
                                     <div className="p-2 rounded-lg text-center" style={{ background: affordability.status === 'red' ? '#EF444410' : affordability.status === 'yellow' ? '#F59E0B10' : '#10B98110' }}>
-                                        <p className="text-[9px] uppercase font-bold" style={{ color: c.textMuted }}>EMI-to-Income</p>
+                                        <p className="text-[9px] uppercase font-bold" style={{ color: c.textMuted }}>{t('loanUi.emiToIncome', 'EMI-to-income')}</p>
                                         <p className="text-lg font-black" style={{ color: affordability.status === 'red' ? '#EF4444' : affordability.status === 'yellow' ? '#F59E0B' : '#10B981' }}>{affordability.ratio.toFixed(1)}%</p>
                                     </div>
                                     <div className="p-2 rounded-lg text-center" style={{ background: '#3B82F610' }}>

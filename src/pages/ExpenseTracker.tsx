@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense, useMemo, useCallback } from 'react
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { formatDateUI } from '../utils/uiLocale';
 import { ArrowLeft, CalendarDays, Calendar, BarChart3, TrendingUp, FileText, Target, Plus, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useExpenseTheme } from '../theme/expenseTheme';
@@ -51,6 +52,7 @@ const TAB_SUBTITLES: Record<TabId, string> = {
 
 // ─── LOADING FALLBACK ────────────────────────────────────────
 function TabLoader({ theme }: { theme: ReturnType<typeof useExpenseTheme> }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center justify-center py-24 gap-3">
       <div
@@ -61,7 +63,7 @@ function TabLoader({ theme }: { theme: ReturnType<typeof useExpenseTheme> }) {
         }}
       />
       <span className="text-[10px] font-semibold tracking-wider uppercase" style={{ color: theme.textMuted }}>
-        Loading...
+        {t('appUi.loading', 'Loading...')}
       </span>
     </div>
   );
@@ -145,11 +147,11 @@ export default function ExpenseTracker() {
     const now = new Date();
     switch (activeTab) {
       case 'daily':
-        return now.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short' });
+        return formatDateUI(now, { weekday: 'long', day: 'numeric', month: 'short' });
       case 'weekly':
         return t('expenses.weeklySubtitle');
       case 'monthly':
-        return now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+        return formatDateUI(now, { month: 'long', year: 'numeric' });
       case 'yearly':
         return String(now.getFullYear());
       case 'reports':

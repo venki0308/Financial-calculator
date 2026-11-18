@@ -4,6 +4,11 @@ import { ExternalLink as ExternalIcon, Info, Landmark } from 'lucide-react';
 import { openExternal } from '../utils/openExternal';
 import { hostOf, type OfficialSource } from '../data/officialSources';
 
+/** An official source's name in the user's language (English name when no translation). */
+export function sourceName(s: OfficialSource, t: (key: string, fallback: string) => string): string {
+    return t(`appUi.source.${s.id}`, s.name);
+}
+
 /** A link to an official page: a real <a href> (readable, testable), opened in the in-app browser. */
 export function OfficialLink({ url, children, className = '' }: { url: string; children: ReactNode; className?: string }) {
     const onClick = (e: MouseEvent) => { e.preventDefault(); void openExternal(url); };
@@ -49,7 +54,7 @@ export function OfficialSourceRow({ sources }: { sources: readonly OfficialSourc
                 {sources.map((s, i) => (
                     <span key={s.url}>
                         {i > 0 && ' · '}
-                        {s.name} (<OfficialLink url={s.url}>{s.host}</OfficialLink>)
+                        {sourceName(s, t)} (<OfficialLink url={s.url}>{s.host}</OfficialLink>)
                     </span>
                 ))}
             </div>

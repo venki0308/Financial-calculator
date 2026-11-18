@@ -5,6 +5,33 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotificationStore, AppNotification } from '../store/useNotificationStore';
+import { localizeNotif } from '../utils/appUiNotif';
+import { formatQuote, getDailyQuote, loadQuoteCatalog } from '../data/quotes';
+
+/**
+ * Daily-quote entries: the quote of that entry's day in the current language. Entries saved
+ * before the day number was stored are found by their English text. null = keep the saved text.
+ */
+function useQuoteBody(n: AppNotification, quoteDay: number | undefined, lang: string): string | null {
+    const [text, setText] = useState<string | null>(null);
+    useEffect(() => {
+        if (n.type !== 'quote_insight') return;
+        let alive = true;
+        (async () => {
+            let day = quoteDay;
+            if (day === undefined) {
+                const catalog = await loadQuoteCatalog();
+                day = catalog.find((q) => formatQuote(q.en) === n.body)?.day;
+            }
+            if (day === undefined) return;
+            // Any date with that day number on a leap-year calendar (2024 is a leap year).
+            const r = await getDailyQuote(lang, new Date(2024, 0, day));
+            if (alive) setText(formatQuote(r.text));
+        })().catch(() => { /* quote data unavailable: keep the saved text */ });
+        return () => { alive = false; };
+    }, [n.type, n.body, quoteDay, lang]);
+    return text;
+}
 
 const TYPE_META: Record<string, { emoji: string; color: string; bg: string }> = {
     // Scheduler notifications
@@ -77,6 +104,9 @@ interface NotifCardProps {
 function NotifCard({ n, onRead, onDismiss, onClick, t }: NotifCardProps) {
     const meta = TYPE_META[n.type] || TYPE_META.general;
     const isUnread = !n.isRead;
+    const { i18n } = useTranslation();
+    const shown = localizeNotif(n, t);
+    const quoteBody = useQuoteBody(n, shown.quoteDay, i18n.language);
 
     return (
         <motion.div
@@ -99,9 +129,9 @@ function NotifCard({ n, onRead, onDismiss, onClick, t }: NotifCardProps) {
                     </div>
                     <div className="flex-1 min-w-0 pr-4">
                         <h4 className={`text-sm font-semibold truncate ${isUnread ? 'text-slate-900 dark:text-foreground' : 'text-slate-600 dark:text-muted-foreground'}`}>
-                            {n.title}
+                            {shown.title}
                         </h4>
-                        <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed line-clamp-2">{n.body}</p>
+                        <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed line-clamp-2">{quoteBody ?? shown.body}</p>
                         <p className="text-[10px] text-muted-foreground mt-1.5">{timeAgo(new Date(n.createdAt).toISOString(), t)}</p>
                     </div>
                 </div>

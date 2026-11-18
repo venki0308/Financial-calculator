@@ -191,7 +191,7 @@ export default function GenericCalculator({ config }: { config: CalcConfig }) {
                         </button>
                         <button
                             className="p-2 rounded-xl bg-card border border-border"
-                            onClick={() => nativeShare(config.title, `Check out this ${config.title} calculation!`, window.location.href)}
+                            onClick={() => nativeShare(config.title, t('saveUi.shareCheckOut', 'Check out this {{title}} calculation!', { title: config.title }), window.location.href)}
                         >
                             <Share2 size={16} className="text-muted-foreground" />
                         </button>

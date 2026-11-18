@@ -2,6 +2,7 @@ import { useState } from 'react';
 import LegalLayout, { LangSelector, PlayStoreBadge, type Lang, type LegalDoc } from './LegalLayout';
 import { useAppColors } from '../../theme/useAppColors';
 import { APP_VERSION } from '../../config/app';
+import { legalText } from './text';
 
 const T = {
     en: { title: 'About FinCalix', updated: 'Last Updated: 17 November 2026', s: { ref: 'Reference Tool', accuracy: 'Data Accuracy', official: 'Official Sources', resources: 'Key Resources', trademarks: 'Trademarks & Disclaimers' } },
@@ -9,18 +10,22 @@ const T = {
     te: { title: 'FinCalix గురించి', updated: 'చివరి నవీకరణ: 17 నవంబర్ 2026', s: { ref: 'రెఫరెన్స్ సాధనం', accuracy: 'డేటా ఖచ్చితత్వం', official: 'అధికారిక వనరులు', resources: 'ముఖ్యమైన వనరులు', trademarks: 'ట్రేడ్‌మార్క్‌లు & నిరాకరణలు' } },
     ta: { title: 'FinCalix பற்றி', updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: 17 நவம்பர் 2026', s: { ref: 'குறிப்பு கருவி', accuracy: 'தரவு துல்லியம்', official: 'அதிகாரப்பூர்வ ஆதாரங்கள்', resources: 'முக்கிய ஆதாரங்கள்', trademarks: 'வர்த்தக முத்திரைகள் & மறுப்புகள்' } },
     kn: { title: 'FinCalix ಬಗ್ಗೆ', updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: 17 ನವೆಂಬರ್ 2026', s: { ref: 'ಉಲ್ಲೇಖ ಸಾಧನ', accuracy: 'ಡೇಟಾ ನಿಖರತೆ', official: 'ಅಧಿಕೃತ ಮೂಲಗಳು', resources: 'ಪ್ರಮುಖ ಸಂಪನ್ಮೂಲಗಳು', trademarks: 'ಟ್ರೇಡ್‌ಮಾರ್ಕ್‌ಗಳು & ನಿರಾಕರಣೆಗಳು' } },
+    ml: { title: 'FinCalix-നെക്കുറിച്ച്', updated: 'അവസാനം പുതുക്കിയത്: 17 നവംബർ 2026', s: { ref: 'റഫറൻസ് ടൂൾ', accuracy: 'ഡാറ്റയുടെ കൃത്യത', official: 'ഔദ്യോഗിക സ്രോതസ്സുകൾ', resources: 'പ്രധാന ലിങ്കുകൾ', trademarks: 'ട്രേഡ്‌മാർക്കുകളും നിരാകരണങ്ങളും' } },
 } as const;
 
-const RESOURCES = [
-    { color: '#3B82F6', icon: '🔵', name: 'National Portal of India', url: 'https://india.gov.in', domain: 'india.gov.in' },
-    { color: '#10B981', icon: '🟢', name: 'Income Tax Department', url: 'https://incometax.gov.in', domain: 'incometax.gov.in' },
-    { color: '#F59E0B', icon: '🟡', name: 'RBI Official Website', url: 'https://rbi.org.in', domain: 'rbi.org.in' },
-];
+// Link colour and dot per official resource; name, URL and domain come from ./text (about.resources).
+const RESOURCE_STYLE = [
+    { color: '#3B82F6', icon: '🔵' },
+    { color: '#10B981', icon: '🟢' },
+    { color: '#F59E0B', icon: '🟡' },
+] as const;
 
 // Page text, shared by the website page below and the app screen (src/pages/About.tsx).
 function Body({ lang }: { lang: Lang }) {
     const t = T[lang];
+    const x = legalText(lang).about;
     const c = useAppColors();
+    const resources = RESOURCE_STYLE.map((s, i) => ({ ...s, ...x.resources[i] }));
 
     const goldColor = c.isDark ? '#C9A84C' : '#A68A3D';
     const emeraldColor = c.isDark ? '#10B981' : '#059669';
@@ -31,7 +36,7 @@ function Body({ lang }: { lang: Lang }) {
             {/* App identity */}
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
                 <img src="/icons/fincalix-logo.png" alt="FinCalix" style={{ width: '80px', height: '80px', borderRadius: '22px', margin: '0 auto 16px', display: 'block', boxShadow: `0 0 40px ${c.isDark ? 'rgba(201,168,76,0.2)' : 'rgba(201,168,76,0.1)'}` }} />
-                <h2 style={{ fontSize: '2rem', fontWeight: 700, color: goldColor, marginBottom: '8px', letterSpacing: '-0.5px' }}>FinCalix</h2>
+                <h2 style={{ fontSize: '2rem', fontWeight: 700, color: goldColor, marginBottom: '8px', letterSpacing: '-0.5px' }}>{x.appName}</h2>
                 <div style={{ 
                     display: 'inline-flex', 
                     alignItems: 'center', 
@@ -54,15 +59,15 @@ function Body({ lang }: { lang: Lang }) {
                 {[
                     {
                         icon: '🔵', color: c.isDark ? '#3B82F6' : '#2563EB', title: t.s.ref,
-                        text: 'This application is designed as a companion tool for Indian citizens to explore government schemes and perform financial projections.',
+                        text: x.cards[0],
                     },
                     {
                         icon: '🟢', color: c.isDark ? '#10B981' : '#059669', title: t.s.accuracy,
-                        text: 'We strive to provide the most accurate and up-to-date information for 2026. However, interest rates and scheme rules change frequently.',
+                        text: x.cards[1],
                     },
                     {
                         icon: '🟡', color: c.isDark ? '#F59E0B' : '#D97706', title: t.s.official,
-                        text: 'All calculations and scheme details are based on publicly available data from official portals like india.gov.in, npsc.gov.in, etc.',
+                        text: x.cards[2],
                     },
                 ].map(card => (
                     <div
@@ -100,7 +105,7 @@ function Body({ lang }: { lang: Lang }) {
                     {t.s.resources}
                 </h2>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {RESOURCES.map(r => (
+                    {resources.map(r => (
                         <a
                             key={r.url}
                             href={r.url}
@@ -133,10 +138,10 @@ function Body({ lang }: { lang: Lang }) {
                 <div style={{ background: c.card, border: `1px solid ${c.border}`, borderRadius: '14px', padding: '20px 24px' }}>
                     <h2 style={{ fontSize: '1.05rem', fontWeight: 600, color: c.text, margin: '0 0 10px' }}>{t.s.trademarks}</h2>
                     <p style={{ color: c.textSecondary, fontSize: '13px', lineHeight: 1.7, margin: '0 0 10px' }}>
-                        CIBIL is a registered trademark of TransUnion CIBIL Limited. FinCalix is not affiliated with, endorsed by, or partnered with TransUnion CIBIL or any credit bureau. All CIBIL scores entered in this app are manually self-declared by the user and are never fetched from any bureau or uploaded to any server.
+                        {x.trademarks[0]}
                     </p>
                     <p style={{ color: c.textSecondary, fontSize: '13px', lineHeight: 1.7, margin: 0 }}>
-                        FinCalix provides educational calculators and reference information only. We are not a SEBI-registered investment advisor, lender, or financial advisor. All outputs are automated calculations, not financial advice. Consult a licensed professional for personal advice.
+                        {x.trademarks[1]}
                     </p>
                 </div>
             </section>
@@ -149,9 +154,9 @@ function Body({ lang }: { lang: Lang }) {
                     borderRadius: '14px', 
                     padding: '24px' 
                 }}>
-                    <div style={{ color: goldColor, fontWeight: 600, marginBottom: '8px', fontSize: '15px' }}>📧 Contact</div>
-                    <a href="mailto:support@fincalix.com" style={{ color: c.text, fontSize: '14px', textDecoration: 'none', fontWeight: 500 }}>support@fincalix.com</a>
-                    <div style={{ color: c.textSecondary, fontSize: '13px', marginTop: '6px' }}>FinCalix Team · Hyderabad, India</div>
+                    <div style={{ color: goldColor, fontWeight: 600, marginBottom: '8px', fontSize: '15px' }}>📧 {x.contactTitle}</div>
+                    <a href={`mailto:${x.email}`} style={{ color: c.text, fontSize: '14px', textDecoration: 'none', fontWeight: 500 }}>{x.email}</a>
+                    <div style={{ color: c.textSecondary, fontSize: '13px', marginTop: '6px' }}>{x.team}</div>
                 </div>
             </section>
         </>
@@ -166,7 +171,7 @@ export default function About() {
     const t = T[lang];
 
     return (
-        <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />}>
+        <LegalLayout title={t.title} updated={t.updated} langBar={<LangSelector lang={lang} onChange={setLang} />} lang={lang}>
             <Body lang={lang} />
             <div style={{ textAlign: 'center' }}>
                 <PlayStoreBadge />

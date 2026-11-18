@@ -4,13 +4,14 @@
  * calculators, the Schemes notice), the website (scheme and tax pages) and the link audit
  * (scripts/qa-links.mjs checks that every URL here and every scheme's officialWebsite answers 200).
  *
- * Names are the bodies' own English names; what each source is used for is translated
- * (i18n `sources.purpose.<id>`).
+ * Names are the bodies' own English names (the website shows these); the app shows each name in the
+ * user's language (i18n `appUi.source.<id>`, see sourceName() in src/components/OfficialSources.tsx)
+ * and what each source is used for (i18n `sources.purpose.<id>`).
  */
 
 export interface OfficialSource {
     id: string;
-    /** The body's own name (not translated). */
+    /** The body's own name in English (the app translates it on screen: i18n `appUi.source.<id>`). */
     name: string;
     /** Shown to the reader as the address. */
     host: string;

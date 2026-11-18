@@ -308,7 +308,7 @@ export default function GoalPlanner() {
                             <NumberInput label={t('goalPlanner.currentCost')} value={currentCost} onChange={setCurrentCost} min={10000} max={1000000000} prefix="₹" helperText={t('goalPlanner.currentCostHelper')} />
                             <NumberInput label={t('goalPlanner.currentSaving')} value={currentSavings} onChange={setCurrentSavings} min={0} max={currentCost * 10} prefix="₹" helperText={t('goalPlanner.currentSavingHelper')} />
                             <div className="grid grid-cols-2 gap-3">
-                                <NumberInput label={t('goalPlanner.targetYears')} value={targetYears} onChange={setTargetYears} min={1} max={40} suffix=" yrs" />
+                                <NumberInput label={t('goalPlanner.targetYears')} value={targetYears} onChange={setTargetYears} min={1} max={40} suffix={` ${t('si.yrs', 'yrs')}`} />
                                 <NumberInput label={t('goalPlanner.inflationRate')} value={inflationRate} onChange={setInflationRate} min={0} max={20} suffix="%" step={0.5} />
                             </div>
                             <NumberInput label={t('goalPlanner.expectedReturn')} value={expectedReturn} onChange={setExpectedReturn} min={1} max={30} suffix="%" step={0.5} />
@@ -338,7 +338,7 @@ export default function GoalPlanner() {
                                 <p className="text-muted-foreground text-xs mt-1">{t('goalPlanner.perMonth')}</p>
                                 {inflationRate > 0 && (
                                     <p className="text-muted-foreground text-[10px] mt-1.5 italic">
-                                        Inflation-adjusted: target value at {inflationRate}% inflation = {formatINR(result.targetFV)}
+                                        {t('saveUi.goalInflationAdjusted', 'Inflation-adjusted: target value at {{rate}}% inflation = {{amount}}', { rate: inflationRate, amount: formatINR(result.targetFV) })}
                                     </p>
                                 )}
                             </div>

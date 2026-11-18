@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Plus, Trash2, Repeat, Calendar, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { catNameUI, noteUI, pmLabelUI } from '../../utils/appUiLabels';
+import { formatDateUI } from '../../utils/uiLocale';
 import { useExpenseTheme } from '../../theme/expenseTheme';
 
 import type { PaymentMethod } from '../../types/expense';
@@ -452,7 +454,7 @@ export default function RecurringTransactions() {
                     <button onClick={() => openEdit(rule)} className="flex-1 min-w-0 text-left">
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold text-sm truncate" style={{ color: theme.textPrimary }}>
-                          {rule.note || cat?.name || rule.category}
+                          {noteUI(rule.note, t) || catNameUI(cat, t) || rule.category}
                         </h3>
                         {!rule.isActive && (
                           <span
@@ -469,7 +471,7 @@ export default function RecurringTransactions() {
                           style={{ backgroundColor: theme.bgPrimary, color: theme.textSecondary }}
                         >
                           <Calendar size={10} />
-                          {rule.nextDueDate} · {dueLabel}
+                          {formatDateUI(parseLocalDate(rule.nextDueDate), { day: 'numeric', month: 'short', year: 'numeric' })} · {dueLabel}
                         </span>
                         <span className="text-[10px]" style={{ color: theme.textMuted }}>
                           {freqLabel(rule.frequency)}
@@ -687,7 +689,7 @@ export default function RecurringTransactions() {
                             className="text-[9px] font-semibold text-center leading-tight"
                             style={{ color: active ? c.color : theme.textMuted }}
                           >
-                            {c.name}
+                            {catNameUI(c, t)}
                           </span>
                         </motion.button>
                       );
@@ -761,7 +763,7 @@ export default function RecurringTransactions() {
                       >
                         <span className="text-xs font-semibold text-left pr-2" style={{ color: theme.textSecondary }}>
                           {t('recurring.backfillLabel', "Also log this month's {{date}} (already passed)", {
-                            date: parseLocalDate(addMonthsAnchoredISO(todayStr(), 0, form.monthDay)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+                            date: formatDateUI(parseLocalDate(addMonthsAnchoredISO(todayStr(), 0, form.monthDay)), { day: 'numeric', month: 'short' }),
                           })}
                         </span>
                         <span className="w-10 h-6 rounded-full p-0.5 flex-shrink-0 transition-colors"
@@ -834,7 +836,7 @@ export default function RecurringTransactions() {
                             ? { backgroundColor: theme.accentInvestment, color: '#fff', borderColor: theme.accentInvestment }
                             : { backgroundColor: theme.bgCard, borderColor: theme.borderSubtle, color: theme.textSecondary }}
                         >
-                          {info.icon} {info.label}
+                          {info.icon} {pmLabelUI(pm, info.label, t)}
                         </button>
                       );
                     })}

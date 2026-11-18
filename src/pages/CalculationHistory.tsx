@@ -2,6 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Clock, Trash2 } from 'lucide-react';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import { formatINR } from '../utils/calculations';
+import { useTranslation } from 'react-i18next';
+import { calcNameKey } from '../utils/appUiCalcName';
+import { formatDateUI, uiLocale } from '../utils/uiLocale';
 
 function getPrimaryValue(resultValues: any): number {
     if (typeof resultValues === 'number') return resultValues;
@@ -17,6 +20,7 @@ function getPrimaryValue(resultValues: any): number {
 export default function CalculationHistory() {
     const navigate = useNavigate();
     const { history, removeHistory, clearHistory } = useCalculatorStore();
+    const { t } = useTranslation();
 
     return (
         <div className="min-h-dvh bg-background pb-10 animate-fade-in" style={{ maxWidth: 428, margin: '0 auto' }}>
@@ -26,7 +30,7 @@ export default function CalculationHistory() {
                         <button onClick={() => navigate(-1)} className="p-2 rounded-xl bg-card border border-border">
                             <ArrowLeft size={18} className="text-muted-foreground" />
                         </button>
-                        <h1 className="text-lg font-bold text-foreground">History</h1>
+                        <h1 className="text-lg font-bold text-foreground">{t('profile.history', 'History')}</h1>
                     </div>
                     {history.length > 0 && (
                         <button onClick={clearHistory} className="p-2 text-red-400">
@@ -40,25 +44,26 @@ export default function CalculationHistory() {
                 {history.length === 0 ? (
                     <div className="text-center py-20">
                         <Clock size={48} className="text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground text-sm">No recent history</p>
+                        <p className="text-muted-foreground text-sm">{t('appUi.noRecentHistory', 'No recent history')}</p>
                     </div>
                 ) : (
                     <div className="space-y-3">
                         {history.map((item) => {
                             const primaryValue = getPrimaryValue(item.resultValues);
+                            const nameKey = calcNameKey(item.calculatorType);
                             return (
                                 <div key={item.id} className="p-4 rounded-2xl bg-card border border-border">
                                     <div className="flex justify-between items-start mb-1">
-                                        <h3 className="text-foreground font-bold text-sm flex-1 truncate pr-2">{item.calculatorType}</h3>
+                                        <h3 className="text-foreground font-bold text-sm flex-1 truncate pr-2">{nameKey ? t(nameKey, item.calculatorType) : item.calculatorType}</h3>
                                         <div className="flex items-center gap-2 shrink-0">
-                                            <span className="text-[10px] text-muted-foreground">{new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                            <span className="text-[10px] text-muted-foreground">{new Date(item.timestamp).toLocaleTimeString(uiLocale(), { hour: '2-digit', minute: '2-digit' })}</span>
                                             <button onClick={() => removeHistory(item.id)} className="p-1 text-red-400 hover:text-red-500">
                                                 <Trash2 size={13} />
                                             </button>
                                         </div>
                                     </div>
                                     <p className="text-lg font-bold text-brand-blue">{formatINR(primaryValue)}</p>
-                                    <p className="text-[10px] text-muted-foreground mt-1">{new Date(item.timestamp).toLocaleDateString()}</p>
+                                    <p className="text-[10px] text-muted-foreground mt-1">{formatDateUI(item.timestamp, { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                                 </div>
                             );
                         })}

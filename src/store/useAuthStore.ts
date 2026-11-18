@@ -34,9 +34,12 @@ function generateUID(): string {
     return Math.random().toString(36).slice(2) + Date.now().toString(36);
 }
 
+/** Stored default name (kept in English); screens show it translated (Profile: appUi.myAccount). */
+export const DEFAULT_ACCOUNT_NAME = 'My Account';
+
 const DEFAULT_USER: User = {
     uid: generateUID(),
-    name: 'My Account',
+    name: DEFAULT_ACCOUNT_NAME,
     createdAt: Date.now(),
 };
 
@@ -46,7 +49,7 @@ export const useAuthStore = create<LocalUserState>()(
             user: DEFAULT_USER,
 
             updateName: (name: string) =>
-                set((s) => ({ user: { ...s.user, name: name.trim() || 'My Account' } })),
+                set((s) => ({ user: { ...s.user, name: name.trim() || DEFAULT_ACCOUNT_NAME } })),
 
             /** No admin role in offline mode */
             isAdmin: () => false,
@@ -57,7 +60,7 @@ export const useAuthStore = create<LocalUserState>()(
             /** Clear all locally stored data (optional reset) */
             clearAllData: () => {
                 const uid = generateUID();
-                set({ user: { uid, name: 'My Account', createdAt: Date.now() } });
+                set({ user: { uid, name: DEFAULT_ACCOUNT_NAME, createdAt: Date.now() } });
             },
         }),
         {

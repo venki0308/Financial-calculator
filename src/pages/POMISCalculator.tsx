@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, FileText, Download, ShieldAlert, ChevronLeft, ChevronRight, Activity, BrainCircuit, Target, BarChart2, Info, TrendingUp, RotateCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatINR } from '../utils/calculations';
+import { formatDateUI } from '../utils/uiLocale';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
+import { smallSavingsQuarterLabel, recommendationText } from '../utils/saveUiLabels';
 import { exportToPDF, exportToExcel, getEnglishT, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import TaxInputGroup from '../components/TaxInputGroup';
@@ -298,7 +300,7 @@ export default function POMISCalculator() {
                     </div>
                     <div>
                         <label className="text-muted-foreground text-xs font-medium mb-1 block">{t('pomis.interestRate')}</label>
-                        <p className="text-muted-foreground text-[10px] mb-1">{t('pomis.currentRate', { rate: SMALL_SAVINGS.rates.pomis, quarter: SMALL_SAVINGS.label })}</p>
+                        <p className="text-muted-foreground text-[10px] mb-1">{t('pomis.currentRate', { rate: SMALL_SAVINGS.rates.pomis, quarter: smallSavingsQuarterLabel() })}</p>
                         <div className="relative">
                             <input type="number" value={rate} step={0.1} onChange={e => setRate(Number(e.target.value) || 0)} className={inputCls + " pr-8"} />
                             <span className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
@@ -374,8 +376,8 @@ export default function POMISCalculator() {
                                                 {t('pomis.finalRecommendation')}
                                             </h3>
                                         </div>
-                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendation.title}</p>
-                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendation.description}</p>
+                                        <p className="text-foreground font-semibold text-sm mb-1">{recommendationText(recommendation).title}</p>
+                                        <p className="text-muted-foreground text-xs leading-relaxed">{recommendationText(recommendation).description}</p>
                                     </div>
 
                                     {/* 2. Smart Insights */}
@@ -560,7 +562,7 @@ export default function POMISCalculator() {
                     ]}
                     progressPercent={(pomisStatus.monthsCompleted / 60) * 100}
                     progressLabel={t('pomis.progressLabel', { completed: pomisStatus.monthsCompleted, total: 60, percent: ((pomisStatus.monthsCompleted / 60) * 100).toFixed(0) })}
-                    insightText={t('pomis.insightText', { totalReceived: formatINR(pomisStatus.totalIncomeReceived), monthsRemaining: pomisStatus.monthsRemaining, maturityDate: new Date(pomisStatus.maturityDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) })}
+                    insightText={t('pomis.insightText', { totalReceived: formatINR(pomisStatus.totalIncomeReceived), monthsRemaining: pomisStatus.monthsRemaining, maturityDate: formatDateUI(new Date(pomisStatus.maturityDate), { month: 'short', year: 'numeric' }) })}
                 />
             )}
 

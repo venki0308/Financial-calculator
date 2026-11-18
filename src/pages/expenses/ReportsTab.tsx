@@ -5,6 +5,9 @@ import {
   Shield, PieChart, Landmark, AlertTriangle, Heart,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { rangeLabelUI, monthYearUI } from '../../utils/appUiDates';
+import { labelUI, catNameUI } from '../../utils/appUiLabels';
+import { formatDateUI } from '../../utils/uiLocale';
 import { useExpenseTheme, getSavingsRating, formatChange } from '../../theme/expenseTheme';
 import {
   getEntriesForMonth,
@@ -737,14 +740,14 @@ export default function ReportsTab() {
 
   // Pie chart data
   const expensePieData = currentSummary.expenseByCategory.slice(0, 8).map(c => ({
-    label: c.categoryName,
+    label: labelUI(c.categoryName, t),
     value: c.amount,
     color: c.categoryColor,
     icon: c.categoryIcon,
   }));
 
   const incomePieData = currentSummary.incomeByCategory.map(c => ({
-    label: c.categoryName,
+    label: labelUI(c.categoryName, t),
     value: c.amount,
     color: c.categoryColor,
     icon: c.categoryIcon,
@@ -755,7 +758,7 @@ export default function ReportsTab() {
     {
       type: 'daily' as const,
       title: t('expenses.dailyReport'),
-      subtitle: new Date(reportDate + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+      subtitle: formatDateUI(new Date(reportDate + 'T00:00:00'), { day: 'numeric', month: 'short', year: 'numeric' }),
       icon: Calendar,
       tint: { bg: isDark ? 'rgba(59,130,246,0.1)' : '#EFF6FF', border: isDark ? 'rgba(59,130,246,0.2)' : '#BFDBFE', accent: '#3b82f6' },
       onPrev: () => { const d = new Date(reportDate + 'T00:00:00'); d.setDate(d.getDate() - 1); setReportDate(toLocalDateStr(d)); },
@@ -764,7 +767,7 @@ export default function ReportsTab() {
     {
       type: 'weekly' as const,
       title: t('expenses.weeklyReport'),
-      subtitle: selectedWeek.label,
+      subtitle: rangeLabelUI(selectedWeek),
       icon: BarChart3,
       tint: { bg: isDark ? 'rgba(16,185,129,0.1)' : '#ECFDF5', border: isDark ? 'rgba(16,185,129,0.2)' : '#A7F3D0', accent: '#10b981' },
       onPrev: () => setReportWeekOffset(o => o - 1),
@@ -773,7 +776,7 @@ export default function ReportsTab() {
     {
       type: 'monthly' as const,
       title: t('expenses.monthlyReport'),
-      subtitle: selectedMonth.label,
+      subtitle: rangeLabelUI(selectedMonth),
       icon: FileText,
       tint: { bg: isDark ? 'rgba(124,58,237,0.1)' : '#F5F3FF', border: isDark ? 'rgba(124,58,237,0.2)' : '#C4B5FD', accent: '#7c3aed' },
       onPrev: () => setReportMonthOffset(o => o - 1),
@@ -846,7 +849,7 @@ export default function ReportsTab() {
                 </h3>
                 <span className="text-[9px] px-2 py-0.5 rounded-full font-bold ml-auto"
                   style={{ backgroundColor: `${gradeColor}15`, color: gradeColor }}>
-                  {currentMonth.label}
+                  {rangeLabelUI(currentMonth)}
                 </span>
                 {/* Download Health Report button */}
                 <button
@@ -1322,7 +1325,7 @@ export default function ReportsTab() {
                         }}
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs font-bold" style={{ color: theme.textPrimary }}>{m.label}</span>
+                          <span className="text-xs font-bold" style={{ color: theme.textPrimary }}>{monthYearUI(Number(m.month.slice(5, 7)), Number(m.month.slice(0, 4)))}</span>
                           {m.hasData && (showNewBadge || change.isNew) ? (
                             <span className="text-[9px] font-bold px-2 py-0.5 rounded-full"
                               style={{ backgroundColor: isDark ? 'rgba(59,130,246,0.15)' : '#EFF6FF', color: '#3b82f6' }}>
@@ -1502,7 +1505,7 @@ export default function ReportsTab() {
                   style={{ backgroundColor: '#0891b215' }}>
                   <ChevronLeft size={14} style={{ color: '#0891b2' }} />
                 </button>
-                <span className="text-xs font-bold" style={{ color: theme.textPrimary }}>{catRange.label}</span>
+                <span className="text-xs font-bold" style={{ color: theme.textPrimary }}>{rangeLabelUI({ start: catRange.startDate, end: catRange.endDate, label: catRange.label })}</span>
                 <button onClick={catNavNext}
                   className="w-7 h-7 rounded-full flex items-center justify-center disabled:opacity-40"
                   disabled={catNavNextDisabled}
@@ -1531,18 +1534,18 @@ export default function ReportsTab() {
                 </optgroup>
                 <optgroup label={t('expenses.expensesLabel', 'Expenses')}>
                   {reportCategories.filter(c => c.type === 'expense').map(c => (
-                    <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                    <option key={c.id} value={c.id}>{c.icon} {catNameUI(c, t)}</option>
                   ))}
                 </optgroup>
                 <optgroup label={t('expenses.incomeLabel', 'Income')}>
                   {reportCategories.filter(c => c.type === 'income').map(c => (
-                    <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                    <option key={c.id} value={c.id}>{c.icon} {catNameUI(c, t)}</option>
                   ))}
                 </optgroup>
                 {reportCategories.some(c => c.type === 'investment') && (
                   <optgroup label={t('expenses.investmentsLabel', 'Investments')}>
                     {reportCategories.filter(c => c.type === 'investment').map(c => (
-                      <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                      <option key={c.id} value={c.id}>{c.icon} {catNameUI(c, t)}</option>
                     ))}
                   </optgroup>
                 )}
@@ -1687,7 +1690,7 @@ export default function ReportsTab() {
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-bold" style={{ color: theme.textSecondary }}>
-                    {formatRangeLabel(customStart, customEnd)}
+                    {rangeLabelUI({ start: customStart, end: customEnd, label: formatRangeLabel(customStart, customEnd) })}
                   </span>
                   <span
                     className="text-[9px] font-bold px-2 py-0.5 rounded-full"

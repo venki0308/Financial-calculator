@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { catNameUI, noteUI, pmLabelUI } from '../../utils/appUiLabels';
+import { fullDateUI, weekdayShortUI } from '../../utils/appUiDates';
 import { useExpenseTheme, TYPE_COLORS, getGreetingKey, calculateStreak } from '../../theme/expenseTheme';
 import type { Entry, EntryType, Category } from '../../types/expense';
 import {
@@ -61,7 +63,7 @@ function buildWeekStrip(center: string): { date: string; dayName: string; dayNum
     const dateStr = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
     days.push({
       date: dateStr,
-      dayName: DAY_SHORT[dt.getDay()],
+      dayName: weekdayShortUI(dt.getDay(), true),
       dayNum: dt.getDate(),
       isToday: dateStr === today,
     });
@@ -214,7 +216,7 @@ export default function DailyTab() {
           </motion.button>
           <div className="text-center">
             <span className="text-xs font-bold" style={{ color: et.textPrimary }}>
-              {formatFullDate(selectedDate)}
+              {fullDateUI(selectedDate)}
             </span>
             {isToday && (
               <span
@@ -477,7 +479,7 @@ export default function DailyTab() {
         >
           <span className="text-4xl block mb-3">📅</span>
           <p className="text-sm font-semibold mb-1" style={{ color: et.textPrimary }}>
-            {t('expenses.noEntriesFor', 'No entries for')} {formatFullDate(selectedDate)}
+            {t('expenses.noEntriesFor', 'No entries for')} {fullDateUI(selectedDate)}
           </p>
           <p className="text-xs mb-5" style={{ color: et.textMuted }}>
             {t('expenses.noEntriesSubtitle', 'Tap + to add your first entry')}
@@ -497,7 +499,7 @@ export default function DailyTab() {
                 }}
               >
                 <span>{cat.icon}</span>
-                {cat.name}
+                {catNameUI(cat, t)}
               </button>
             ))}
           </div>
@@ -563,7 +565,7 @@ export default function DailyTab() {
                       className="text-sm font-bold truncate"
                       style={{ color: et.textPrimary, fontSize: 14 }}
                     >
-                      {entry.description || cat?.name || t('expenses.entry', 'Entry')}
+                      {noteUI(entry.description, t) || catNameUI(cat, t) || t('expenses.entry', 'Entry')}
                     </p>
                     <p
                       className="truncate mt-0.5"
@@ -571,8 +573,8 @@ export default function DailyTab() {
                     >
                       {entry.type === 'transfer'
                         ? t('expenses.transfer', 'Transfer')
-                        : (cat?.name ?? entry.category)}
-                      {pmLabel ? ` \u00B7 ${pmLabel.icon} ${pmLabel.label}` : ''}
+                        : (catNameUI(cat, t) || entry.category)}
+                      {pmLabel ? ` \u00B7 ${pmLabel.icon} ${pmLabelUI(entry.paymentMethod, pmLabel.label, t)}` : ''}
                     </p>
                   </div>
 

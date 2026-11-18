@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Save, Check, ShieldAlert, FileText, 
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatINR } from '../utils/calculations';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
+import { monthYearUI } from '../utils/saveUiLabels';
 import { exportToPDF, exportToExcel, ExportConfig } from '../utils/exportReport';
 import { useCalculatorStore } from '../store/useCalculatorStore';
 import DateInput from '../components/DateInput';
@@ -291,7 +292,7 @@ export default function RDCalculator() {
                                 <input type="number" step="0.1" value={rate} onChange={e => setRate(Number(e.target.value)||0)} className={inputCls + " pr-7 bg-muted/30 focus:bg-card"} />
                                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">%</span>
                             </div>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">Typical range 6.5-7.0% (Jul 2026)</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{t('saveUi.typicalRange', 'Typical range {{range}} ({{date}})', { range: '6.5-7.0%', date: monthYearUI(2026, 6) })}</p>
                         </div>
                         <div>
                             <label className="text-muted-foreground text-[10px] uppercase font-bold mb-1.5 block">{t('rd.timePeriod')}</label>
@@ -470,7 +471,7 @@ export default function RDCalculator() {
                     <button onClick={() => setShowWhatIf(p => !p)} className="w-full flex items-center justify-between p-5">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-amber-500/10 rounded-lg text-amber-500"><RotateCw size={16} /></div>
-                            <span className="text-foreground font-bold text-sm">{t('rd.whatIfSimulator')}</span>
+                            <span className="text-foreground font-bold text-sm">{t('saveUi.whatIfTitle', 'What-If Simulator')}</span>
                         </div>
                         {showWhatIf ? <ChevronUp size={18} className="text-muted-foreground" /> : <ChevronDown size={18} className="text-muted-foreground" />}
                     </button>

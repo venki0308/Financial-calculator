@@ -7,6 +7,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { X, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { catNameUI, pmLabelUI, transferOptionUI } from '../utils/appUiLabels';
 import { useExpenseTheme } from '../theme/expenseTheme';
 import type { Category, Entry, EntryType, PaymentMethod } from '../types/expense';
 import { PAYMENT_METHOD_LABELS } from '../types/expense';
@@ -436,7 +437,7 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
                       style={{ backgroundColor: et.bgCard, border: `1.5px solid ${et.borderSubtle}`, color: et.textPrimary }}
                     >
                       {transferOptions.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
+                        <option key={opt} value={opt}>{transferOptionUI(opt, t)}</option>
                       ))}
                     </select>
                   </div>
@@ -451,7 +452,7 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
                       style={{ backgroundColor: et.bgCard, border: `1.5px solid ${et.borderSubtle}`, color: et.textPrimary }}
                     >
                       {transferOptions.map(opt => (
-                        <option key={opt} value={opt}>{opt}</option>
+                        <option key={opt} value={opt}>{transferOptionUI(opt, t)}</option>
                       ))}
                     </select>
                   </div>
@@ -491,7 +492,7 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
                     >
                       <span style={{ fontSize: 16 }}>{cat.icon}</span>
                       <span className="text-[11px] font-semibold truncate">
-                        {cat.name.length > 10 ? cat.name.split(' ')[0] : cat.name}
+                        {(n => n.length > 10 ? n.split(' ')[0] : n)(catNameUI(cat, t))}
                       </span>
                     </motion.button>
                   );
@@ -616,7 +617,7 @@ export default function AddEntrySheet({ defaultDate, editEntry, onSave, onClose 
                       }}
                     >
                       <span>{info.icon}</span>
-                      {info.label}
+                      {pmLabelUI(pm, info.label, t)}
                     </motion.button>
                   );
                 })}

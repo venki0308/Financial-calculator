@@ -277,7 +277,7 @@ export default function Settings() {
                     <div className="h-px bg-border mx-4" />
                     <MenuItem icon={Share2} label={t('settings.shareApp')} color="#EC4899" onClick={async () => {
                         const shareData = {
-                            title: 'FinCalix – Financial Calculator App',
+                            title: t('appUi.shareTitle', 'FinCalix – Financial Calculator App'),
                             text: t('settings.shareMessage'),
                             url: 'https://play.google.com/store/apps/details?id=com.fincalix.app&referrer=utm_source%3Dshare_card',
                         };

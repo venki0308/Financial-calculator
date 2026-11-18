@@ -399,7 +399,7 @@ export default function GoldLoanCalculator() {
         const lines = [
             `🥇 ${t('goldLoan.title')}`,
             ``,
-            `${t('goldLoan.weight')}: ${goldWeight}g (${purity})`,
+            `${t('goldLoan.weight')}: ${goldWeight} ${t('loanUi.gramShort', 'g')} (${purity})`,
             `${t('goldLoan.goldValue')}: ${formatINR(goldValue)}`,
             `${t('goldLoan.applicableLTV')}: ${tierResult.ltv}%`,
             `${t('goldLoan.loanAmount')}: ${formatINR(loanAmount)}`,
@@ -657,7 +657,7 @@ export default function GoldLoanCalculator() {
                     </h3>
 
                     {mode === 'byWeight' ? (
-                        <NumberInput label={t('goldLoan.weight')} value={goldWeight} onChange={setGoldWeight} min={MIN_GOLD_WEIGHT} max={MAX_GOLD_WEIGHT} suffix=" g" helperText={t('goldLoan.weightHelper')} />
+                        <NumberInput label={t('goldLoan.weight')} value={goldWeight} onChange={setGoldWeight} min={MIN_GOLD_WEIGHT} max={MAX_GOLD_WEIGHT} suffix={` ${t('loanUi.gramShort', 'g')}`} helperText={t('goldLoan.weightHelper')} />
                     ) : (
                         <NumberInput label={t('goldLoan.loanNeeded')} value={loanAmountNeeded} onChange={setLoanAmountNeeded} min={MIN_LOAN_AMOUNT} max={MAX_LOAN_AMOUNT} prefix="₹" helperText={t('goldLoan.loanNeededHelper')} />
                     )}
@@ -680,13 +680,13 @@ export default function GoldLoanCalculator() {
                     </div>
 
                     {/* Gold rate */}
-                    <NumberInput label={t('goldLoan.goldRate24K')} value={goldRate24K} onChange={setGoldRate24K} min={1000} max={20000} prefix="₹" suffix="/g" helperText={t('goldLoan.rateSourceHelper')} />
+                    <NumberInput label={t('goldLoan.goldRate24K')} value={goldRate24K} onChange={setGoldRate24K} min={1000} max={20000} prefix="₹" suffix={t('loanUi.perGram', '/g')} helperText={t('goldLoan.rateSourceHelper')} />
 
                     {/* Reverse-mode required gold display */}
                     {mode === 'byAmount' && (
                         <div className="p-3 rounded-xl text-center" style={{ backgroundColor: '#F59E0B15' }}>
                             <p className="text-[10px] uppercase font-bold tracking-wider text-amber-600 dark:text-amber-400">{t('goldLoan.requiredGold')}</p>
-                            <p className="text-2xl font-black text-amber-600 dark:text-amber-400">{requiredGoldGrams} g</p>
+                            <p className="text-2xl font-black text-amber-600 dark:text-amber-400">{requiredGoldGrams} {t('loanUi.gramShort', 'g')}</p>
                             <p className="text-[10px] mt-0.5" style={{ color: c.textSecondary }}>{t('goldLoan.requiredGoldNote', { purity })}</p>
                         </div>
                     )}
@@ -774,7 +774,7 @@ export default function GoldLoanCalculator() {
                                 {mode === 'byAmount' && requiredGoldGrams > 0 && (
                                     <div className="mt-2 p-2 rounded-xl text-center" style={{ backgroundColor: c.bg }}>
                                         <span className="text-[10px]" style={{ color: c.textSecondary }}>{t('goldLoan.youNeedToPledge')} </span>
-                                        <span className="text-xs font-black text-amber-500">{requiredGoldGrams} g {purity}</span>
+                                        <span className="text-xs font-black text-amber-500">{requiredGoldGrams} {t('loanUi.gramShort', 'g')} {purity}</span>
                                     </div>
                                 )}
                             </div>
@@ -911,7 +911,7 @@ export default function GoldLoanCalculator() {
                                                 return (
                                                     <div key={r.months} className={`flex items-center justify-between p-2 rounded-lg ${diff > 0 ? 'bg-emerald-500/5' : ''}`} style={{ border: `1px solid ${c.border}40` }}>
                                                         <div>
-                                                            <p className="text-xs font-bold" style={{ color: c.text }}>{r.months} {t('goldLoan.months', 'months')} ({r.type})</p>
+                                                            <p className="text-xs font-bold" style={{ color: c.text }}>{r.months} {t('goldLoan.months', 'months')} ({r.type === 'Bullet' ? t('goldLoan.modeBullet', 'Bullet') : 'EMI'})</p>
                                                             <p className="text-[9px]" style={{ color: c.textMuted }}>{t('goldLoan.monthly', 'Monthly')}: {formatINR(r.emi)}</p>
                                                         </div>
                                                         <div className="text-right">
@@ -1023,7 +1023,7 @@ export default function GoldLoanCalculator() {
                                                     <tr key={s.delta}
                                                         style={{ borderBottom: `1px solid ${c.border}40`, backgroundColor: s.isCurrent ? '#F59E0B15' : 'transparent' }}>
                                                         <td className="py-1.5 font-medium" style={{ color: c.text }}>
-                                                            {formatINR(s.rate)}/g {s.isCurrent && <span className="text-amber-500">✓</span>}
+                                                            {formatINR(s.rate)}{t('loanUi.perGram', '/g')} {s.isCurrent && <span className="text-amber-500">✓</span>}
                                                         </td>
                                                         <td className="py-1.5 text-right" style={{ color: c.text }}>{formatINRShort(s.value)}</td>
                                                         <td className="py-1.5 text-right" style={{ color: c.text }}>{s.ltv}%</td>
@@ -1046,7 +1046,7 @@ export default function GoldLoanCalculator() {
                                     <div className="space-y-3 mt-3">
                                         <NumberInput label={t('goldLoan.processingFeePct')} value={processingFeePct} onChange={setProcessingFeePct} min={0} max={5} step={0.1} suffix="%" />
                                         <NumberInput label={t('goldLoan.valuationCharges')} value={valuationCharges} onChange={setValuationCharges} min={0} max={1000} prefix="₹" />
-                                        <NumberInput label={t('goldLoan.storageMonthly')} value={storageMonthly} onChange={setStorageMonthly} min={0} max={500} prefix="₹" suffix="/mo" />
+                                        <NumberInput label={t('goldLoan.storageMonthly')} value={storageMonthly} onChange={setStorageMonthly} min={0} max={500} prefix="₹" suffix={t('expenses.perMonth', '/mo')} />
                                         <div className="border-t pt-3 space-y-1.5 text-xs" style={{ borderColor: c.border }}>
                                             <div className="flex justify-between"><span style={{ color: c.textSecondary }}>{t('goldLoan.processingFee')}</span><span className="font-medium" style={{ color: c.text }}>{formatINR(charges.procFee)}</span></div>
                                             <div className="flex justify-between"><span style={{ color: c.textSecondary }}>{t('goldLoan.valuationCharges')}</span><span className="font-medium" style={{ color: c.text }}>{formatINR(charges.valuation)}</span></div>

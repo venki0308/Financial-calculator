@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, TrendingUp, BarChart3, Calendar, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { monthShortUI } from '../../utils/appUiDates';
+import { catNameUI, labelUI } from '../../utils/appUiLabels';
 import { useExpenseTheme, getSavingsRating, TYPE_COLORS, formatChange } from '../../theme/expenseTheme';
 import type { Entry } from '../../types/expense';
 import { getEntriesForMonth, getEntriesForYear, getEntriesForDateRange, getCategoryById, deleteEntriesInRange } from '../../utils/expenseStorage';
@@ -573,7 +575,7 @@ function MonthByMonthSection({ monthlySummaries, yearSummary, currentMonth, them
                   color: isFuture ? theme.textMuted : (isActive ? theme.accentGold : theme.textPrimary),
                 }}
               >
-                {MONTH_NAMES[month - 1]}
+                {monthShortUI(month)}
               </span>
 
               {/* Bars + amounts */}
@@ -689,7 +691,7 @@ function TopSpendingCategories({ categories, totalExpenses, theme, t }: TopSpend
         {categories.map((cat, idx) => {
           // Resolve category name via getCategoryById for human-readable names
           const resolvedCat = getCategoryById(cat.categoryId);
-          const displayName = resolvedCat?.name ?? cat.categoryName;
+          const displayName = resolvedCat ? catNameUI(resolvedCat, t) : labelUI(cat.categoryName, t);
           const displayIcon = resolvedCat?.icon ?? cat.categoryIcon;
           const displayColor = resolvedCat?.color ?? cat.categoryColor;
 
@@ -856,7 +858,7 @@ function SavingsRateTrendSection({ months, theme, t }: SavingsRateTrendProps) {
                 className="text-[7px] font-semibold"
                 style={{ color: m.isFuture ? theme.textMuted : theme.textSecondary }}
               >
-                {MONTH_NAMES[m.month - 1]}
+                {monthShortUI(m.month)}
               </span>
             </div>
           );

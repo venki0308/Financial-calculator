@@ -164,3 +164,15 @@ export const CIBIL_MYTHS = [
 export const RBI_NOTES = [
     'cibil.rbi1', 'cibil.rbi2', 'cibil.rbi3', 'cibil.rbi4', 'cibil.rbi5', 'cibil.rbi6',
 ];
+
+// ─── Display-only translation keys (the English values above stay as stored/used by the website) ───
+export const CIBIL_TIER_LABEL_KEYS: Record<string, string> = {
+    nh: 'cibil.noHistory', very_poor: 'loanUi.tierVeryPoor', poor: 'loanUi.tierPoor', average: 'loanUi.tierAverage',
+    good: 'cibil.good', very_good: 'cibil.veryGood', excellent: 'cibil.excellent',
+};
+export const CIBIL_TIP_TEXT_KEYS: Record<string, string> = {
+    High: 'cibil.probHigh', Medium: 'cibil.probMedium',
+    '3-6 months': 'loanUi.time3to6m', '1-2 months': 'loanUi.time1to2m', Gradual: 'loanUi.timeGradual',
+    Immediate: 'loanUi.timeImmediate', '30-45 days': 'loanUi.time30to45d', '6-12 months': 'loanUi.time6to12m',
+    '-5 to -10 each': 'loanUi.pointsEach',
+};

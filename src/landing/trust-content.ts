@@ -38,9 +38,9 @@ export const UPDATES: readonly Update[] = [
     },
     {
         date: '2026-11-18',
-        title: 'Privacy policy: usage analytics named',
+        title: 'Privacy policy: usage statistics explained',
         items: [
-            'The Privacy Policy and Data & Privacy pages now say plainly that FinCalix collects anonymous usage statistics through Google Analytics, that financial amounts are never sent and that the data is processed by Google. Usage analytics run for every user of the app and the website.',
+            'The Privacy Policy and Data & Privacy pages now say plainly that FinCalix collects anonymous usage statistics, such as which features are used most, and that financial amounts are never sent. Usage analytics run for every user of the app and the website.',
         ],
     },
     {

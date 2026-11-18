@@ -11,7 +11,8 @@ import { useNotificationStore } from '../store/useNotificationStore';
 import type { NotificationCategory } from '../store/useNotificationStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useCalculatorStore } from '../store/useCalculatorStore';
-import { formatQuote, getDailyQuote } from '../data/quotes';
+import { formatQuote, getDailyQuote, quoteDay } from '../data/quotes';
+import type { NotifI18n } from '../utils/appUiNotif';
 import i18n, { ensureLocaleLoaded } from '../i18n';
 import { SMALL_SAVINGS } from '../data/rateEnvironment';
 import { RemoteConfigService } from './remoteConfig.service';
@@ -66,7 +67,9 @@ const SIP_REMINDER_MONTH_KEY = 'fincalix_sip_reminder_month'; // 'YYYY-MM'
 const SEEN_SCHEMES_KEY = 'fincalix_seen_scheme_ids';     // JSON string[] of scheme ids
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-type NotifInput = { type: string, title: string, body: string, icon: string, route?: string, itemId?: string, category?: NotificationCategory };
+// i18n: keys + params saved with the entry so the bell shows it in the user's current language
+// (src/utils/appUiNotif.ts); title/body stay as the English fallback.
+type NotifInput = { type: string, title: string, body: string, icon: string, route?: string, itemId?: string, category?: NotificationCategory, i18n?: NotifI18n };
 
 function addNotif(n: NotifInput) {
     useNotificationStore.getState().addNotification({
@@ -80,7 +83,7 @@ function addNotif(n: NotifInput) {
         actionLabel: n.route ? 'Open' : undefined,
         // calcId makes the store's same-day dedup per-item, so two cards/
         // subs/loans due on the same day don't overwrite each other.
-        metadata: n.itemId ? { calcId: n.itemId } : {}
+        metadata: { ...(n.itemId ? { calcId: n.itemId } : {}), ...(n.i18n ? { i18n: n.i18n } : {}) }
     });
 }
 
@@ -128,6 +131,10 @@ function checkEMIReminders() {
                 title: `💳 EMI Due: ${calc.inputValues.name || 'Loan'}`,
                 body: `Your EMI of ${amount} is due today. Make sure your account is funded.`,
                 icon: '💳',
+                i18n: {
+                    pre: '💳', title: 'appUi.notif.emiDueTitle', body: 'appUi.notif.emiDueBody',
+                    params: { name: calc.inputValues.name || { k: 'appUi.notif.loan', d: 'Loan' }, amount },
+                },
                 route: '/calculator/loan-emi', // Or to saved items
                 // Per-calculation id: without it the store's same-day dedup
                 // collapsed two loans due on the same date into one alert.
@@ -150,6 +157,7 @@ function checkEMIReminders() {
             title: '💳 EMI Reminder',
             body: 'Your EMI may be due this month. Check your loan schedule and ensure funds are ready.',
             icon: '💳',
+            i18n: { pre: '💳', title: 'appUi.notif.emiReminderTitle', body: 'appUi.notif.emiReminderBody' },
             route: '/calculator/loan-emi',
         });
     }
@@ -173,6 +181,7 @@ function checkSIPReminders() {
         title: '📈 SIP Investment Due',
         body: 'Your monthly SIP may be due. Ensure your bank account has sufficient balance for auto-debit.',
         icon: '📈',
+        i18n: { pre: '📈', title: 'appUi.notif.sipDueTitle', body: 'appUi.notif.sipDueBody' },
         route: '/calculator/sip',
     });
     safeSetItem(SIP_REMINDER_MONTH_KEY, monthKey);
@@ -194,8 +203,8 @@ function checkTaxAlerts() {
     const day = today.getDate();
     // Every alert is keyed, so it lands in the bell ONCE — the month-long
     // checks below used to add a new copy on every daily run.
-    const taxAlert = (key: string, title: string, body: string, icon: string) =>
-        fireOnce(`${year}-${key}`, { type: 'tax_alert', title, body, icon, route: '/calculator/income-tax' });
+    const taxAlert = (key: string, title: string, body: string, icon: string, i18n?: NotifI18n) =>
+        fireOnce(`${year}-${key}`, { type: 'tax_alert', title, body, icon, route: '/calculator/income-tax', i18n });
 
     const adv = ADVANCE_TAX[month];
     if (adv && day <= 15) {
@@ -204,29 +213,41 @@ function checkTaxAlerts() {
             const left = 15 - day;
             taxAlert(`adv-${adv.label}-last`,
                 `⏰ Advance Tax (${adv.label}) — due ${left === 0 ? 'today' : `in ${left} day${left > 1 ? 's' : ''}`}`,
-                adv.body, '⏰');
+                adv.body, '⏰', {
+                    pre: '⏰',
+                    title: left === 0 ? 'appUi.notif.advTaxDueToday' : left === 1 ? 'appUi.notif.advTaxDueTomorrow' : 'appUi.notif.advTaxDueInDays',
+                    body: `appUi.notif.advTaxBody${month}`,
+                    params: { month: { month }, days: left },
+                });
         } else {
-            taxAlert(`adv-${adv.label}-open`, `📋 Advance Tax (${adv.label})`, adv.body, '📋');
+            taxAlert(`adv-${adv.label}-open`, `📋 Advance Tax (${adv.label})`, adv.body, '📋',
+                { pre: '📋', title: 'appUi.notif.advTaxTitle', body: `appUi.notif.advTaxBody${month}`, params: { month: { month } } });
         }
     } else if (month === 3 && day === 31) {
         taxAlert('fy-end-today', '⚠️ Tax Year Ending Today',
-            'Financial year ends today, March 31. Last chance for tax-saving investments.', '⚠️');
+            'Financial year ends today, March 31. Last chance for tax-saving investments.', '⚠️',
+            { pre: '⚠️', title: 'appUi.notif.fyEndTodayTitle', body: 'appUi.notif.fyEndTodayBody' });
     } else if (month === 3 && day >= 25) {
         taxAlert('fy-end', '⚠️ Financial Year Ends March 31',
-            'Complete your tax-saving investments (PPF, ELSS, NPS) before the year closes on March 31.', '⚠️');
+            'Complete your tax-saving investments (PPF, ELSS, NPS) before the year closes on March 31.', '⚠️',
+            { pre: '⚠️', title: 'appUi.notif.fyEndTitle', body: 'appUi.notif.fyEndBody' });
     } else if (month === 4 && day <= 7) {
         taxAlert('new-fy', '🎯 New Financial Year Begins',
-            'A new financial year has begun! Zero tax up to ₹12L taxable income (New Regime), and employer NPS contributions up to 14% of salary are deductible. Update your tax plan now.', '🎯');
+            'A new financial year has begun! Zero tax up to ₹12L taxable income (New Regime), and employer NPS contributions up to 14% of salary are deductible. Update your tax plan now.', '🎯',
+            { pre: '🎯', title: 'appUi.notif.newFyTitle', body: 'appUi.notif.newFyBody' });
     } else if (month === 7) {
         // Since AY 2026-27: ITR-1/ITR-2 by July 31, non-audit ITR-3/ITR-4 by August 31.
         taxAlert(day >= 25 ? 'itr-jul-last' : 'itr-jul', '📁 ITR Filing Reminder',
-            'ITR due dates: July 31 for ITR-1 and ITR-2, August 31 for non-audit ITR-3 and ITR-4, October 31 for audit cases. File early to avoid late fees.', '📁');
+            'ITR due dates: July 31 for ITR-1 and ITR-2, August 31 for non-audit ITR-3 and ITR-4, October 31 for audit cases. File early to avoid late fees.', '📁',
+            { pre: '📁', title: 'appUi.notif.itrJulTitle', body: 'appUi.notif.itrJulBody' });
     } else if (month === 8) {
         taxAlert(day >= 25 ? 'itr-aug-last' : 'itr-aug', '📁 ITR: August 31 & Belated Returns',
-            'Non-audit ITR-3 and ITR-4 are due August 31. Missed July 31 for ITR-1 or ITR-2? You can still file a belated return until December 31 (late fee up to ₹5,000).', '📁');
+            'Non-audit ITR-3 and ITR-4 are due August 31. Missed July 31 for ITR-1 or ITR-2? You can still file a belated return until December 31 (late fee up to ₹5,000).', '📁',
+            { pre: '📁', title: 'appUi.notif.itrAugTitle', body: 'appUi.notif.itrAugBody' });
     } else if (month === 12 && day >= 16) {
         taxAlert(day >= 25 ? 'itr-belated-last' : 'itr-belated', '📁 Belated ITR — December 31 Deadline',
-            'December 31 is the last date to file a belated income-tax return for the last financial year (late fee up to ₹5,000). Revised returns can be filed until March 31.', '📁');
+            'December 31 is the last date to file a belated income-tax return for the last financial year (late fee up to ₹5,000). Revised returns can be filed until March 31.', '📁',
+            { pre: '📁', title: 'appUi.notif.itrBelatedTitle', body: 'appUi.notif.itrBelatedBody' });
     }
 }
 
@@ -238,36 +259,42 @@ function ppfMaturityLakh(): string {
 }
 
 // Rotating weekly tips. Built lazily so rate-dependent figures stay current.
-const SAVINGS_TIPS: Array<() => { title: string; body: string; route: string }> = [
+const SAVINGS_TIPS: Array<() => { title: string; body: string; route: string; i18n: NotifI18n }> = [
     () => ({
         title: '💡 Savings Tip',
         body: 'Did you know? Investing ₹5,000/month in a SIP at an assumed 12% for 10 years can grow to about ₹11.6 lakh.',
         route: '/calculator/sip',
+        i18n: { pre: '💡', title: 'appUi.notif.tipSavingsTitle', body: 'appUi.notif.tipSavingsBody' },
     }),
     () => ({
         title: '💡 PPF Tip',
         body: `₹1.5 lakh a year in PPF for 15 years at the current ${SMALL_SAVINGS.rates.ppf}% grows to about ₹${ppfMaturityLakh()} lakh — and the maturity is tax-free.`,
         route: '/calculator/ppf',
+        i18n: { pre: '💡', title: 'appUi.notif.tipPpfTitle', body: 'appUi.notif.tipPpfBody', params: { rate: SMALL_SAVINGS.rates.ppf, lakh: ppfMaturityLakh() } },
     }),
     () => ({
         title: '💡 Rule of 72',
         body: 'Divide 72 by the interest rate to see how many years your money takes to double — at 8% it is about 9 years.',
         route: '/calculator/compound-interest',
+        i18n: { pre: '💡', title: 'cagr.ruleOf72', body: 'appUi.notif.tipRule72Body' },
     }),
     () => ({
         title: '💡 Budget Tip',
         body: 'Try the 50-30-20 rule: 50% of income for needs, 30% for wants, 20% for savings. The Budget Tracker shows where you stand.',
         route: '/expenses',
+        i18n: { pre: '💡', title: 'appUi.notif.tipBudgetTitle', body: 'appUi.notif.tipBudgetBody' },
     }),
     () => ({
         title: '💡 Emergency Fund',
         body: 'Keep about 6 months of expenses in an easily accessible emergency fund before investing for long-term goals.',
         route: '/expenses',
+        i18n: { pre: '💡', title: 'expenses.emergencyFund', body: 'appUi.notif.tipEmergencyBody' },
     }),
     () => ({
         title: '💡 Home Loan Tip',
         body: 'Paying one extra EMI every year on a 20-year home loan at 8.5% can close it about 3 years early.',
         route: '/calculator/mortgage-calculator',
+        i18n: { pre: '💡', title: 'appUi.notif.tipHomeLoanTitle', body: 'appUi.notif.tipHomeLoanBody' },
     }),
 ];
 
@@ -288,7 +315,7 @@ function checkSavingsInsight() {
     const idx = Number.isInteger(lastIdx) && lastIdx >= -1 ? (lastIdx + 1) % SAVINGS_TIPS.length : 0;
     const tip = SAVINGS_TIPS[idx]();
 
-    addNotif({ type: 'savings_insight', title: tip.title, body: tip.body, icon: '💡', route: tip.route });
+    addNotif({ type: 'savings_insight', title: tip.title, body: tip.body, icon: '💡', route: tip.route, i18n: tip.i18n });
     safeSetItem(SAVINGS_TIP_AT_KEY, String(Date.now()));
     safeSetItem(SAVINGS_TIP_IDX_KEY, String(idx));
 }
@@ -320,6 +347,8 @@ async function checkNewSchemes() {
                 title: `🆕 New scheme added: ${s.name}`,
                 body: s.description,
                 icon: '🆕',
+                // Scheme texts come from the scheme translations (sd.<id>.*), English when absent.
+                i18n: { pre: '🆕', title: 'appUi.notif.newSchemeTitle', body: `sd.${s.id}.d`, params: { name: { k: `sd.${s.id}.n`, d: s.name } } },
                 route: `/scheme/${s.id}`,
                 itemId: s.id,
             });
@@ -411,6 +440,7 @@ async function checkDailyQuote() {
                 body: quoteText,
                 icon: '💡',
                 route: '/',
+                i18n: { pre: '💡', title: 'appUi.notif.dailyQuoteTitle', quoteDay: quoteDay(now) },
             });
 
             if ('Notification' in window && Notification.permission === 'granted') {
@@ -471,6 +501,7 @@ function checkCreditCardBills() {
             if (card.currentBalance <= 0) continue;
             const daysUntil = getDaysUntilDue(card.dueDate);
             const name = card.cardName || card.bankName || 'Credit Card';
+            const nameParam = card.cardName || card.bankName || { k: 'appUi.notif.creditCard', d: 'Credit Card' };
             const bal = card.currentBalance.toLocaleString('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
             if (daysUntil === 0) {
                 // getDaysUntilDue() returns 0 on the due day and rolls to next
@@ -480,6 +511,7 @@ function checkCreditCardBills() {
                     title: `🔴 ${name} — Payment Due TODAY`,
                     body: `Outstanding: ${bal}. Pay today to avoid late fees, interest and CIBIL impact.`,
                     icon: '🔴',
+                    i18n: { pre: '🔴', title: 'appUi.notif.ccDueTodayTitle', body: 'appUi.notif.ccDueTodayBody', params: { name: nameParam, amount: bal } },
                     route: '/expenses',
                     itemId: card.id,
                 });
@@ -489,6 +521,10 @@ function checkCreditCardBills() {
                     title: `⚠️ ${name} — Due in ${daysUntil} day${daysUntil > 1 ? 's' : ''}`,
                     body: `Outstanding: ${bal}. Pay full statement to avoid interest charges.`,
                     icon: '⚠️',
+                    i18n: {
+                        pre: '⚠️', title: daysUntil === 1 ? 'appUi.notif.ccDueTomorrowTitle' : 'appUi.notif.ccDueInDaysTitle',
+                        body: 'appUi.notif.ccUrgentBody', params: { name: nameParam, amount: bal, days: daysUntil },
+                    },
                     route: '/expenses',
                     itemId: card.id,
                 });
@@ -498,6 +534,7 @@ function checkCreditCardBills() {
                     title: `💳 ${name} — Due in ${daysUntil} days`,
                     body: `Outstanding: ${bal}. Plan your payment to maintain interest-free period.`,
                     icon: '💳',
+                    i18n: { pre: '💳', title: 'appUi.notif.ccDueInDaysTitle', body: 'appUi.notif.ccSoonBody', params: { name: nameParam, amount: bal, days: daysUntil } },
                     route: '/expenses',
                     itemId: card.id,
                 });
@@ -527,6 +564,12 @@ function checkSubscriptionRenewals() {
                     title: `🔁 ${sub.name} — Renews ${diffDays === 0 ? 'today' : `in ${diffDays} day${diffDays > 1 ? 's' : ''}`}`,
                     body: `${amt} (${sub.billingCycle}). Review or cancel before renewal.`,
                     icon: '🔁',
+                    i18n: {
+                        pre: '🔁',
+                        title: diffDays === 0 ? 'appUi.notif.subRenewsTodayTitle' : diffDays === 1 ? 'appUi.notif.subRenewsTomorrowTitle' : 'appUi.notif.subRenewsInDaysTitle',
+                        body: 'appUi.notif.subRenewBody',
+                        params: { name: sub.name, amount: amt, days: diffDays, cycle: { k: `appUi.cycle.${String(sub.billingCycle).toLowerCase()}`, d: String(sub.billingCycle) } },
+                    },
                     route: '/expenses',
                     itemId: sub.id,
                 });
@@ -564,6 +607,12 @@ function checkLoanPayments() {
                     title: `🏦 ${name} — EMI ${diff === 0 ? 'due today' : `in ${diff} day${diff > 1 ? 's' : ''}`}`,
                     body: `EMI: ${emi}. Ensure sufficient balance in your repayment account.`,
                     icon: '🏦',
+                    i18n: {
+                        pre: '🏦',
+                        title: diff === 0 ? 'appUi.notif.loanEmiTodayTitle' : diff === 1 ? 'appUi.notif.loanEmiTomorrowTitle' : 'appUi.notif.loanEmiInDaysTitle',
+                        body: 'appUi.notif.loanEmiBody',
+                        params: { name: loan.nickName || loan.loanType || { k: 'appUi.notif.loan', d: 'Loan' }, amount: emi, days: diff },
+                    },
                     route: '/my-loans',
                     itemId: loan.id,
                 });
@@ -575,6 +624,10 @@ function checkLoanPayments() {
                     title: `🔴 ${name} — EMI was due yesterday`,
                     body: `EMI: ${emi}. Pay immediately to avoid late charges and CIBIL impact.`,
                     icon: '🔴',
+                    i18n: {
+                        pre: '🔴', title: 'appUi.notif.loanOverdueTitle', body: 'appUi.notif.loanOverdueBody',
+                        params: { name: loan.nickName || loan.loanType || { k: 'appUi.notif.loan', d: 'Loan' }, amount: emi },
+                    },
                     route: '/my-loans',
                     itemId: loan.id,
                 });
@@ -595,6 +648,10 @@ async function checkAppUpdate() {
             title: `🆕 FinCalix v${config.latestVersion} Available`,
             body: config.updateMessage.message || 'A new version of FinCalix is available with new features and improvements. Tap to update now!',
             icon: '🆕',
+            i18n: {
+                pre: '🆕', title: 'appUi.notif.appUpdateTitle', params: { version: config.latestVersion },
+                ...(config.updateMessage.message ? {} : { body: 'appUi.notif.appUpdateBody' }),
+            },
             route: '/__update',
         });
         safeSetItem(LAST_KEY, config.latestVersion);
@@ -619,6 +676,7 @@ function seedInitialNotifications() {
         title: '🎉 Welcome to FinCalix!',
         body: 'Your personal finance super-app is ready. Explore 45+ calculators, budget tools, government schemes, and more!',
         icon: '🎉',
+        i18n: { pre: '🎉', title: 'appUi.notif.welcomeTitle', body: 'appUi.notif.welcomeBody' },
         route: '/',
     });
 
@@ -630,6 +688,8 @@ function seedInitialNotifications() {
         title: '💡 Daily Financial Quote',
         body,
         icon: '💡',
+        // The bell shows this day's quote in the user's current language.
+        i18n: { pre: '💡', title: 'appUi.notif.dailyQuoteTitle', quoteDay: quoteDay(new Date()) },
         route: '/',
     })).catch(() => { /* quote data unavailable — the daily check adds one later */ });
 
@@ -639,6 +699,7 @@ function seedInitialNotifications() {
         title: '💡 Smart Savings Tip',
         body: 'Start with the 50-30-20 rule: 50% needs, 30% wants, 20% savings. Try our Budget Tracker to get started!',
         icon: '💡',
+        i18n: { pre: '💡', title: 'appUi.notif.smartTipTitle', body: 'appUi.notif.smartTipBody' },
         route: '/expenses',
     });
     // Start the weekly tip clock now, so the first rotating tip arrives next

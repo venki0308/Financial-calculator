@@ -329,7 +329,7 @@ export default function CompoundInterestCalculator() {
                             className="w-full px-4 py-3 rounded-xl bg-background border border-border text-sm text-foreground text-left"
                         />
                         <p className="text-[10px] text-muted-foreground mt-1.5">
-                            {t('common.investmentDateHint', 'Used for tracking in My Loans')}
+                            {t('saveUi.investmentDateHint', 'Used for tracking in My Loans')}
                         </p>
                     </div>
                 )}
@@ -402,7 +402,7 @@ export default function CompoundInterestCalculator() {
                                         </div>
                                         <div className="p-4 rounded-2xl bg-background border border-border text-center">
                                             <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-wider mb-0.5">{t('ci.doublingTime')}</p>
-                                            <p className="text-brand-gold font-black text-xl mb-1">{advanced.rule72.toFixed(1)}y</p>
+                                            <p className="text-brand-gold font-black text-xl mb-1">{t('saveUi.yShort', '{{n}}y', { n: advanced.rule72.toFixed(1) })}</p>
                                             <p className="text-muted-foreground text-[9px] leading-tight px-1">{t('ci.rule72Description')}</p>
                                         </div>
                                     </div>
@@ -412,7 +412,7 @@ export default function CompoundInterestCalculator() {
                                         <p className="text-foreground text-xs font-bold mb-3 flex items-center gap-1"><TrendingUp size={12}/> {t('ci.monthlyConversion')}</p>
                                         <div className="flex justify-between items-center mb-2 pb-2 border-b border-border/50">
                                             <span className="text-muted-foreground text-xs font-medium">{t('ci.monthlyEquivalentRate')}</span>
-                                            <span className="text-foreground font-bold text-sm">{(advanced.ear / 12).toFixed(2)}% / mo</span>
+                                            <span className="text-foreground font-bold text-sm">{(advanced.ear / 12).toFixed(2)}% / {t('rd.mo', 'mo')}</span>
                                         </div>
                                         <div className="flex justify-between items-center">
                                             <span className="text-muted-foreground text-xs font-medium">{t('ci.interestPer1LPerMonth')}</span>
@@ -478,7 +478,7 @@ export default function CompoundInterestCalculator() {
                                     <div>
                                         <div className="flex justify-between items-center mb-3">
                                             <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">{t('ci.simulatedTenure')}</span>
-                                            <span className="text-sm font-black text-rose-500">{simYears} yrs</span>
+                                            <span className="text-sm font-black text-rose-500">{simYears} {t('si.yrs', 'yrs')}</span>
                                         </div>
                                         <input type="range" min={1} max={40} step={1} value={simYears} onChange={e => setSimYears(Number(e.target.value))} className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-rose-500" />
                                     </div>
