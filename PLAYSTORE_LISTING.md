@@ -88,7 +88,7 @@ Every salaried employee, business owner, and investor in India needs a reliable 
 • No login, no account
 • Your financial data stays on your device
 • Works offline
-• No ads. Usage analytics are on by default and can be turned off anytime in Settings → Privacy
+• No ads. FinCalix collects anonymous usage statistics through Google Analytics; financial amounts are never sent
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✨ WHY FINCALIX?

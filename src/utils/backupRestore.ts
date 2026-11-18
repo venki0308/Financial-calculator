@@ -60,8 +60,8 @@ export const BACKUP_KEYS: readonly string[] = [
     'fincalix_disclaimer_accepted_v2',
     'fincalix_disclaimer_accepted_v3',
     'fincalix_disclaimer_accepted_v4',
-    // 'fincalix_analytics_consent' is deliberately NOT backed up: the choice
-    // is asked again on a new device instead of being carried over silently.
+    // 'fincalix_analytics_consent' is deliberately NOT backed up (only test
+    // devices from an earlier test build can have it; see utils/analyticsConsent).
     'fincalix_privacy_accepted',
     'appDisclaimerAccepted',
     'expenseTrackerDisclaimerAccepted',

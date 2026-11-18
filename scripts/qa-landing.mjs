@@ -50,7 +50,11 @@ const rt = await load('src/landing/routeTargets.generated.ts');
 
 const PROD = 'fincalix.com';
 const PLACEMENTS = ['header', 'hero', 'mini_calc', 'final_cta'];
-const BANNED = /#1\b|\bbest\b|guarantee|zero data collection|no tracking|100% offline|google analytics|firebase|google llc|hyderabad|guntur|rates updated jul 2026|ai financial advisor|open app|open fincalix|use in browser/i;
+const BANNED = /#1\b|\bbest\b|guarantee|zero data collection|no tracking|100% offline|firebase|google llc|hyderabad|guntur|rates updated jul 2026|ai financial advisor|open app|open fincalix|use in browser/i;
+// Since 18 Nov 2026 there is no analytics switch: no text may offer one, in any language.
+const OFF_SWITCH = /settings\s*(?:→|->|&gt;|>)\s*privacy|turn(?:ed|ing|s)? (?:it |them |analytics |usage analytics )?off|switch(?:ed|ing|es)? (?:it |them |analytics |usage analytics )off|disabl(?:e|ed|ing) (?:usage )?analytics|stop usage analytics|opt(?:s|ed|ing)?[- ]out of (?:usage )?(?:analytics|statistics)|usage analytics (?:switch|toggle)/i;
+const OFF_SWITCH_I18N = /सेटिंग्स\s*→\s*गोपनीयता|సెట్టింగ్‌లు\s*→\s*గోప్యత|அமைப்புகள்\s*→\s*தனியுரிமை|ಸೆಟ್ಟಿಂಗ್‌ಗಳು\s*→\s*ಗೌಪ್ಯತೆ|ക്രമീകരണങ്ങൾ\s*→\s*സ്വകാര്യത|बंद कर सकते|ఆఫ్ చేయ|முடக்க|ಆಫ್ ಮಾಡ|ഓഫ് ചെയ്യ/;
+const ANALYTICS_WORD = /analytic|statistic|एनालिटिक्स|आँकड़े|విశ్లేషణ|గణాంక|பகுப்பாய்வு|புள்ளிவிவர|ಅನಾಲಿಟಿಕ್ಸ್|ಅಂಕಿಅಂಶ|അനലിറ്റിക്സ്|സ്ഥിതിവിവര/i;
 const ANALYTICS_HOSTS = /(^|\.)(google-analytics\.com|analytics\.google\.com|googletagmanager\.com|firebase\.googleapis\.com|firebaseinstallations\.googleapis\.com|app-measurement\.com)$/;
 const COLLECT_HOSTS = /(^|\.)(google-analytics\.com|analytics\.google\.com|app-measurement\.com)$/;
 
@@ -131,8 +135,8 @@ async function main() {
         check('SoftwareApplication: Android, FinanceApplication, price 0, real screenshots', app?.operatingSystem === 'Android' && app?.applicationCategory === 'FinanceApplication' && app?.offers?.price === '0'
             && Array.isArray(app?.screenshot) && app.screenshot.length >= 2 && app.screenshot.every((u) => /\/site\/en-[a-z-]+-light-560-[\w-]+\.webp$/.test(u)));
         check('FAQPage = the FAQ shown on the page', faq && faq.mainEntity.length === questions.length && faq.mainEntity.every((q, i) => q.name === questions[i]));
-        check('no banned claim or provider name anywhere in the page', !BANNED.test(body) && !BANNED.test(JSON.stringify(ld || {})), (body.match(BANNED) || [''])[0]);
-        check('analytics line present and links to the privacy policy', body.includes(content.ANALYTICS_LINE) && /href="\/privacy-policy"/.test(html));
+        check('no banned claim anywhere in the page (Firebase / Google LLC not named; analytics named as Google Analytics)', !BANNED.test(body) && !BANNED.test(JSON.stringify(ld || {})), (body.match(BANNED) || [''])[0]);
+        check('analytics line present (names Google Analytics, offers no off switch) and links to the privacy policy', body.includes(content.ANALYTICS_LINE) && /Google Analytics/.test(content.ANALYTICS_LINE) && !OFF_SWITCH.test(body) && /href="\/privacy-policy"/.test(html));
         const imgs = [...html.matchAll(/<img\b[^>]*>/g)].map((m) => m[0]);
         check('every image has alt text and explicit width and height', imgs.length > 0 && imgs.every((t) => attr(t, 'alt') !== undefined && attr(t, 'width') && attr(t, 'height')), `${imgs.length} images`);
 
@@ -254,6 +258,39 @@ async function main() {
         const lastmods = [...(await sitemapXml(prod.base)).matchAll(/<loc>https:\/\/fincalix\.com\/schemes\/([^<]+)<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/g)];
         check(`sitemap = landing + ${seo.STATIC_PAGES.length} static + ${seo.FEATURE_PAGES.length} feature + ${seo.LEGAL_PAGES.length} legal + ${indexedPaths.length} new indexable pages (no noindex page, apex only)`, JSON.stringify([...locs].sort()) === JSON.stringify(wantLocs), `${locs.length} URLs, want ${wantLocs.length}`);
         check('sitemap: each scheme page dated by its last-verified date', lastmods.length > 0 && lastmods.every(([, id, d]) => schemePages.find((s) => s.id === id) && ((schemePages.find((s) => s.id === id).content?.verified ?? schemePages.find((s) => s.id === id).scheme.lastVerified) === d)));
+        // Claims: no page offers an analytics off switch (there is none since 18 Nov 2026), and the
+        // privacy texts name Google Analytics and Google as the processor.
+        {
+            const extra = ['/data-safety', '/in-the-app', '/export-my-data', '/llms.txt'];
+            const paths = [...new Set([...locs.map((u) => u.replace('https://fincalix.com', '') || '/'), ...extra])];
+            const offPages = [];
+            const texts = {};
+            for (const p of paths) {
+                const r = await get(prod.base, p);
+                const t = r.body.replace(/<script\b[\s\S]*?<\/script>/g, ' ').replace(/<[^>]+>/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
+                texts[p] = t;
+                const m = t.match(OFF_SWITCH);
+                if (m) offPages.push(`${p}: "${m[0]}"`);
+            }
+            check(`claims: none of ${paths.length} website pages (sitemap + data-safety, in-the-app, export, llms.txt) offers an analytics off switch`, offPages.length === 0 && paths.length > 70, offPages.slice(0, 4).join(' | '));
+            check('claims: privacy policy names Google Analytics, says amounts are never sent and that Google processes the data; no "Right to stop usage analytics"',
+                /collects anonymous usage statistics through Google Analytics/.test(texts['/privacy-policy']) && /Financial amounts are never sent/i.test(texts['/privacy-policy']) && /processed by Google/.test(texts['/privacy-policy']) && !/Right to stop usage analytics/i.test(texts['/privacy-policy']));
+            check('claims: Data & Privacy pages and llms.txt name Google Analytics', ['/data-privacy', '/data-safety', '/llms.txt'].every((p) => /Google Analytics/.test(texts[p] || '')), ['/data-privacy', '/data-safety', '/llms.txt'].filter((p) => !/Google Analytics/.test(texts[p] || '')).join(', '));
+            // App texts in all six languages (disclaimer, Data & Privacy, Settings) and the shared legal source.
+            const flat = (o, out = []) => { for (const v of Object.values(o)) { if (v && typeof v === 'object') flat(v, out); else if (typeof v === 'string') out.push(v); } return out; };
+            const i18nBad = [];
+            for (const l of ['en', 'hi', 'te', 'ta', 'kn', 'ml']) {
+                const strings = flat(JSON.parse(fs.readFileSync(`src/locales/${l}.json`, 'utf8')));
+                for (const s of strings) if (OFF_SWITCH.test(s) || (ANALYTICS_WORD.test(s) && OFF_SWITCH_I18N.test(s))) i18nBad.push(`${l}: ${s.slice(0, 80)}`);
+                const j = JSON.parse(fs.readFileSync(`src/locales/${l}.json`, 'utf8'));
+                if (!/Google Analytics/.test(j.disclaimer?.dataPrivacyBody || '') || !/Google Analytics/.test(j.dataSafety?.sec3Body1 || '')) i18nBad.push(`${l}: disclaimer or Data & Privacy does not name Google Analytics`);
+                for (const k of ['privacy', 'usageAnalytics', 'usageAnalyticsDesc', 'analyticsOn', 'analyticsOff']) if (j.settings && k in j.settings) i18nBad.push(`${l}: settings.${k} still present`);
+            }
+            for (const f of ['src/pages/legal/PrivacyPolicy.tsx', 'src/pages/legal/DataPrivacy.tsx', 'src/pages/legal/TermsOfService.tsx', 'src/pages/legal/About.tsx', 'src/pages/DataSafety.tsx', 'src/pages/Settings.tsx']) {
+                for (const line of fs.readFileSync(f, 'utf8').split('\n')) if (!/^\s*(\/\/|\*|\/\*)/.test(line) && (OFF_SWITCH.test(line) || (ANALYTICS_WORD.test(line) && OFF_SWITCH_I18N.test(line)))) i18nBad.push(`${f}: ${line.trim().slice(0, 80)}`);
+            }
+            check('claims: app texts in all 6 languages and the shared legal source offer no analytics off switch; disclaimer and Data & Privacy name Google Analytics; Settings switch strings removed', i18nBad.length === 0, i18nBad.slice(0, 4).join(' | '));
+        }
         const w1 = await get(www.base, '/calculator/sip'), w2 = await get(www.base, '/config.json'), w3 = await get(www.base, '/export-my-data'), w4 = await get(www.base, '/');
         check('www: redirects to the apex (which then locks), config.json still served', w1.status === 308 && w1.loc === 'https://fincalix.com/calculator/sip' && w2.status === 200 && w4.status === 308 && w4.loc === 'https://fincalix.com/');
         check('www: /export-my-data is served there (not redirected), canonical on the apex', w3.status === 200 && w3.body.includes('data-export-button') && canonOk(w3.body, '/export-my-data'), `${w3.status} ${w3.loc || ''}`);
@@ -338,7 +375,8 @@ async function main() {
                 check('website: no console error, failed or broken request', errors.length === 0, errors.slice(0, 3).join(' | '));
                 await ctx.close();
             }
-            // 5b. Analytics switched off in the app's Settings: nothing at all
+            // 5b. A test device that switched analytics off in an earlier test build (stored "denied";
+            //     there is no switch any more): still nothing at all
             {
                 const { ctx, page, analyticsReqs } = await profile(prod.base, {}, { fincalix_analytics_consent: 'denied' });
                 await page.goto(prod.base + '/', { waitUntil: 'networkidle' });
@@ -346,7 +384,7 @@ async function main() {
                 await page.locator('.hero [data-play="hero"]').click();
                 await page.waitForTimeout(7000);
                 const queue = await page.evaluate(() => localStorage.getItem('fincalix_analytics_queue'));
-                check('switched off: no request to analytics hosts and nothing queued', analyticsReqs.length === 0 && !queue, analyticsReqs.join(','));
+                check('old stored "denied" (test devices only): no request to analytics hosts and nothing queued', analyticsReqs.length === 0 && !queue, analyticsReqs.join(','));
                 await ctx.close();
             }
             // 5c. Legal pages: static, no app bundle; the app's screen (dev mode, in-app routing: the same

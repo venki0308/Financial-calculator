@@ -1,9 +1,9 @@
 import { AnalyticsProvider, EventParams, PageContext } from './types';
 import { ANALYTICS_TEST_TRAFFIC_KEY } from '../../utils/analyticsConsent';
 
-// Firebase is loaded LAZILY, and not at all while the user has switched usage
-// analytics off: `initialize()` is the first point at which any provider code
-// is fetched, any request is made or any identifier is created.
+// Firebase (Google Analytics) is loaded LAZILY: `initialize()` is the first
+// point at which any provider code is fetched, any request is made or any
+// identifier is created.
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnalyticsModule = any;
@@ -15,26 +15,13 @@ type AnalyticsInstance = any;
 const MEASUREMENT_ID: string | undefined = import.meta.env.VITE_FIREBASE_MEASUREMENT_ID;
 
 // Analytics storage only. Advertising storage, ad user data and ad
-// personalisation are denied in both states.
+// personalisation are always denied.
 const CONSENT_ON = {
     analytics_storage: 'granted',
     ad_storage: 'denied',
     ad_user_data: 'denied',
     ad_personalization: 'denied',
 } as const;
-
-const CONSENT_OFF = {
-    analytics_storage: 'denied',
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-} as const;
-
-/** The documented per-property kill switch for gtag.js. */
-function setGaDisabled(disabled: boolean) {
-    if (!MEASUREMENT_ID || typeof window === 'undefined') return;
-    (window as unknown as Record<string, boolean>)[`ga-disable-${MEASUREMENT_ID}`] = disabled;
-}
 
 /**
  * Automated checks set ANALYTICS_TEST_TRAFFIC_KEY. Their events then carry
@@ -66,16 +53,6 @@ export class FirebaseProvider implements AnalyticsProvider {
     async initialize(): Promise<void> {
         if (this.active) return;
         if (!MEASUREMENT_ID) return; // build without analytics config
-
-        setGaDisabled(false);
-
-        // Re-enabled in the same session: the SDK is already loaded.
-        if (this.analytics && this.mod) {
-            this.mod.setConsent(CONSENT_ON);
-            this.mod.setAnalyticsCollectionEnabled(this.analytics, true);
-            this.active = true;
-            return;
-        }
 
         try {
             const [firebaseApp, firebaseAnalytics] = await Promise.all([
@@ -127,21 +104,5 @@ export class FirebaseProvider implements AnalyticsProvider {
         } catch (error) {
             console.error(`[FirebaseProvider] Failed to log event ${eventName}`, error);
         }
-    }
-
-    async disable(): Promise<void> {
-        this.active = false;
-        setGaDisabled(true);
-        if (!this.mod || !this.analytics) return; // never started — nothing to stop
-        try {
-            this.mod.setAnalyticsCollectionEnabled(this.analytics, false);
-            this.mod.setConsent(CONSENT_OFF);
-        } catch { /* already stopped */ }
-        // Ask Firebase to delete the ID of this install on its servers too.
-        // This is a single deletion request, sent only at the moment of opting out.
-        try {
-            const inst = await import('firebase/installations');
-            await inst.deleteInstallations(inst.getInstallations(this.app));
-        } catch { /* offline or already deleted — local IDs are cleared by the caller */ }
     }
 }

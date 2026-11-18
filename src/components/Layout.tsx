@@ -58,7 +58,7 @@ export default function Layout() {
                 <Outlet />
             </main>
 
-            <nav className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-[#1E293B] z-[9999] safe-area-bottom">
+            <nav data-bottom-nav className="fixed bottom-0 left-0 right-0 mx-auto w-full max-w-[428px] bg-white dark:bg-[#0F172A] border-t border-slate-200 dark:border-[#1E293B] z-[9999] safe-area-bottom">
                 <div className="flex items-center justify-around h-20 px-2 pb-1">
                     {tabs.map(({ to, icon: Icon, label }) => {
                         const homeSubPages = ['/', '/app', '/financial-advisor', '/goal-planner', '/compare', '/world-clock', '/notifications', '/insurance-compare', '/budget-tracker'];

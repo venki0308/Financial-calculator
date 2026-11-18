@@ -30,6 +30,13 @@ export interface Update { date: string; title: string; items: string[] }
 /** Dated change log (newest first). Only changes that affect what readers see. */
 export const UPDATES: readonly Update[] = [
     {
+        date: '2026-11-18',
+        title: 'Privacy policy: usage analytics named',
+        items: [
+            'The Privacy Policy and Data & Privacy pages now say plainly that FinCalix collects anonymous usage statistics through Google Analytics, that financial amounts are never sent and that the data is processed by Google. Usage analytics run for every user of the app and the website.',
+        ],
+    },
+    {
         date: '2026-11-17',
         title: 'A page for every calculator, and verified scheme pages',
         items: [

@@ -50,12 +50,10 @@ export interface PageContext {
 
 /** Core interface that every analytics provider implements. */
 export interface AnalyticsProvider {
-    /** Load and start the provider. Not called while analytics are switched off. */
+    /** Load and start the provider. */
     initialize(): Promise<void>;
     /** Send one event. */
     logEvent(eventName: string, params?: EventParams): void;
     /** Set the current screen for all following events (including automatic ones). */
     setPage(page: PageContext): void;
-    /** Stop collecting and delete the identifiers held by the provider. */
-    disable(): Promise<void>;
 }

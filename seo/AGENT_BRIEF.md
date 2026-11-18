@@ -65,7 +65,9 @@ contested rules before using them; if unresolved, leave the claim out)."
 7. **Hinglish FAQ**: one natural-Hinglish FAQ only where SEO_PLAN §5 lists a Hinglish query for that page.
 8. **Claims about the app**: only what the app really does — check the screen in `src/pages/` before
    saying "the app lets you …". Privacy wording allowed: "Your financial data stays on your device",
-   "No login", "No ads", "Works offline". Never: "no tracking", "zero data", "100% offline/private".
+   "No login", "No ads", "Works offline". Never: "no tracking", "zero data", "100% offline/private", or
+   that usage analytics can be turned off (there is no switch). If analytics are mentioned: "FinCalix
+   collects anonymous usage statistics through Google Analytics; financial amounts are never sent."
 9. **Links**: `related` hrefs only to pages in the list below. Never link a page to itself.
 10. **Disclaimer**: `disclaimer: 'tax' | 'invest' | 'loan' | 'deposit' | 'card' | 'gold' | 'ssy'` (texts in
     ui.tsx) or `{ text: '…' }` with an accurate page-specific disclaimer (e.g. retirement, insurance, planning).

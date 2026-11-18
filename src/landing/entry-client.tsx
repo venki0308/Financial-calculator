@@ -3,9 +3,8 @@
  * Google Play badges, removes any web-app service worker left from earlier
  * versions (production hosts only), and starts usage analytics once the
  * browser is idle. Analytics follow the app's rules exactly
- * (services/analyticsService): on by default, nothing sent while switched off
- * in the app's Settings → Privacy, only allow-listed events and parameters,
- * test-traffic flag honoured.
+ * (services/analyticsService): on for every visitor, only allow-listed events
+ * and parameters, test-traffic flag honoured.
  */
 import { hydrateRoot } from 'react-dom/client';
 import './landing.css';

@@ -1,22 +1,21 @@
 import { safeSetItem } from '../utils/safeStorage';
 import { AnalyticsEvent, AnalyticsProvider, EVENT_PARAMS, EventParams, PageContext } from './providers/types';
 import { FirebaseProvider } from './providers/firebaseProvider';
-import { ANALYTICS_QUEUE_KEY, clearAnalyticsIdentifiers, hasAnalyticsConsent, storeAnalyticsConsent } from '../utils/analyticsConsent';
+import { ANALYTICS_QUEUE_KEY, hasAnalyticsConsent } from '../utils/analyticsConsent';
 
 /**
- * Usage analytics — on by default, with an off switch in Settings → Privacy.
+ * Usage analytics (Google Analytics) — on for every user, started at app
+ * launch. There is no switch in the app.
  *
- *  - While the user has switched analytics off, nothing is loaded from the
- *    analytics provider, no request is made and nothing is queued.
  *  - Only the events in `AnalyticsEvent` are sent, each only with its own
  *    parameters from `EVENT_PARAMS`, and only when the value has the expected
  *    shape. No amount, input, result or user-typed text can leave the device.
  *  - Events raised while offline (or while the provider is still loading) are
  *    kept in a small local queue — at most 200 events, none older than 7
- *    days — and sent once the app is online. The queue exists only while
- *    analytics are on.
- *  - Switching analytics off stops collection at once, deletes the queue
- *    without sending it, and deletes the analytics identifiers.
+ *    days — and sent once the app is online.
+ *  - A test device that switched analytics off in an earlier test build
+ *    (stored "denied", see utils/analyticsConsent) loads nothing, sends
+ *    nothing and queues nothing.
  */
 
 const EVENT_NAMES = new Set<string>(Object.values(AnalyticsEvent));
@@ -42,31 +41,10 @@ class AnalyticsWrapper {
         if (typeof window !== 'undefined') window.addEventListener('online', () => this.flush());
     }
 
-    /** Called once at app start. Starts analytics unless the user switched them off. */
+    /** Called once at app start. */
     async initialize(): Promise<void> {
-        if (!hasAnalyticsConsent()) {
-            // Switched off: make sure no analytics identifier or queued event
-            // is left on the device. Local only.
-            clearAnalyticsIdentifiers();
-            return;
-        }
+        if (!hasAnalyticsConsent()) return; // test device switched off in an earlier test build
         await this.start();
-    }
-
-    /** Apply the Settings switch immediately. */
-    async setConsent(granted: boolean): Promise<void> {
-        storeAnalyticsConsent(granted ? 'granted' : 'denied');
-        if (granted) {
-            await this.start();
-            return;
-        }
-        this.ready = false;
-        this.starting = null;
-        try {
-            await this.provider.disable();
-        } finally {
-            clearAnalyticsIdentifiers(); // also deletes the queue, unsent
-        }
     }
 
     private start(): Promise<void> {
@@ -74,7 +52,6 @@ class AnalyticsWrapper {
         if (!this.starting) {
             this.starting = this.provider.initialize()
                 .then(() => {
-                    if (!hasAnalyticsConsent()) return; // switched off while loading
                     this.ready = true;
                     if (this.page) this.provider.setPage(this.page);
                     this.flush();
@@ -101,7 +78,7 @@ class AnalyticsWrapper {
 
     public trackEvent(eventName: string, params?: EventParams): void {
         try {
-            if (!hasAnalyticsConsent()) return;        // switched off → drop, never queue
+            if (!hasAnalyticsConsent()) return;        // switched-off test device → drop, never queue
             if (!EVENT_NAMES.has(eventName)) return;   // not on the published list
 
             const sanitized = sanitizeParams(eventName, params);

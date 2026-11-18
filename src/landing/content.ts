@@ -5,7 +5,8 @@
  * from the registry, schemes.ts and the tax engine (see data.ts).
  *
  * Never write: "#1", "best", "guaranteed", "zero data collection", "no
- * tracking", "100% offline", or the analytics provider's name.
+ * tracking", "100% offline", or that analytics can be switched off (there is
+ * no switch since 18 Nov 2026). Name the provider as "Google Analytics".
  */
 
 export { PLAY_URL, playUrl } from './play';
@@ -21,7 +22,7 @@ export const PRIVACY_CLAIMS = [
     { title: 'Works offline', body: 'The Android app’s calculators work without internet.' },
 ] as const;
 
-export const ANALYTICS_LINE = 'Usage analytics are on by default and can be turned off in Settings → Privacy.';
+export const ANALYTICS_LINE = 'FinCalix collects anonymous usage statistics through Google Analytics; financial amounts are never sent.';
 
 export interface Feature {
     id: string;
@@ -136,7 +137,7 @@ export const FAQ_TEMPLATES: Faq[] = [
     },
     {
         q: 'What usage data does FinCalix collect?',
-        a: 'Usage analytics are on by default: which screens are opened in the app, completed calculations, exported reports and, on this website, taps on the Google Play buttons. Amounts and inputs are never sent. You can turn analytics off anytime in Settings → Privacy.',
+        a: 'FinCalix collects anonymous usage statistics through Google Analytics: which screens are opened in the app, completed calculations, exported reports and, on this website, taps on the Google Play buttons. Financial amounts and inputs are never sent. The data is processed by Google.',
     },
     {
         q: 'Which languages does FinCalix support?',

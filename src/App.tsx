@@ -1,7 +1,7 @@
 import StorageGuard from './components/StorageGuard';
 import { safeSetItem } from './utils/safeStorage';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { App as CapApp } from '@capacitor/app';
 import { useSettingsStore } from './store/useSettingsStore';
@@ -155,14 +155,44 @@ const LazyFallback = (
     </div>
 );
 
-// Toast component for back-press notification
-function BackToast({ visible }: { visible: boolean }) {
+// ─── "Press back again to exit" (Home only) ───────────────────────────────
+// Second back press within BACK_EXIT_MS exits the app; the toast always
+// disappears BACK_EXIT_MS after it was shown.
+const BACK_EXIT_MS = 2000;
+// Used only when no bottom nav is found: the nav is 80px + 1px border + the
+// system navigation-bar inset (env() or Capacitor's --safe-area-inset-bottom).
+const BACK_TOAST_FALLBACK_BOTTOM = 'calc(93px + max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px)))';
+
+/**
+ * Sits 12px above the app's bottom nav. The nav already includes the system
+ * navigation-bar inset (3-button or gesture), so measuring its top edge keeps
+ * the toast fully visible in both modes. Wraps to two lines when the text is
+ * long (Telugu, Tamil, Malayalam) instead of running off the screen.
+ */
+function BackToast({ shownAt }: { shownAt: number | null }) {
     const { t } = useTranslation();
-    if (!visible) return null;
+    const [bottom, setBottom] = useState(BACK_TOAST_FALLBACK_BOTTOM);
+    useLayoutEffect(() => {
+        if (shownAt === null) return;
+        const navTop = document.querySelector<HTMLElement>('[data-bottom-nav]')?.getBoundingClientRect().top;
+        setBottom(navTop && navTop > 0 && navTop < window.innerHeight
+            ? `${Math.round(window.innerHeight - navTop + 12)}px`
+            : BACK_TOAST_FALLBACK_BOTTOM);
+    }, [shownAt]);
+    if (shownAt === null) return null;
     return (
-        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[9999] animate-fade-in">
-            <div className="px-5 py-2.5 rounded-full bg-card border-border border border-slate-700 shadow-xl">
-                <p className="text-foreground text-xs font-medium whitespace-nowrap">{t('app.backToExit', 'Press back again to exit FinCalix')}</p>
+        <div
+            key={shownAt}
+            role="status"
+            aria-live="polite"
+            data-back-toast
+            className="fixed left-1/2 -translate-x-1/2 z-[10000] animate-fade-in pointer-events-none"
+            style={{ bottom, width: 'max-content', maxWidth: 'min(calc(100vw - 32px), 396px)' }}
+        >
+            <div className="px-5 py-2.5 rounded-2xl bg-card border border-border shadow-xl">
+                <p className="text-foreground text-xs font-medium text-center leading-snug" style={{ whiteSpace: 'normal', overflowWrap: 'anywhere' }}>
+                    {t('app.backToExit', 'Press back again to exit FinCalix')}
+                </p>
             </div>
         </div>
     );
@@ -173,7 +203,15 @@ function AppContent() {
     const navigate = useNavigate();
     const location = useLocation();
     const lastBackPress = useRef<number>(0);
-    const [showBackToast, setShowBackToast] = useState(false);
+    const [backToastAt, setBackToastAt] = useState<number | null>(null);
+    const pathRef = useRef(location.pathname);
+    pathRef.current = location.pathname;
+    const navigateRef = useRef(navigate);
+    navigateRef.current = navigate;
+    const hideBackToast = useCallback(() => {
+        setBackToastAt(null);
+        lastBackPress.current = 0;
+    }, []);
 
     // Every screen opens at its top, the ones outside Layout too (legal pages, Data & Privacy).
     useScrollToTop();
@@ -183,7 +221,6 @@ function AppContent() {
     // it covers all 37 calculators automatically (including ones whose paths
     // don't start with /calculator/, like /two-wheeler-loan and /gold-loan).
     useTrackCalculator();
-    const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Navigate to the route carried by a tapped native notification.
     // NotificationScheduler's tap listener writes the route to localStorage
@@ -349,34 +386,59 @@ function AppContent() {
         };
     }, []);
 
+    // The back-to-exit toast hides itself BACK_EXIT_MS after it was shown. The
+    // timer belongs to the toast, so re-registering the back listener (or any
+    // other effect) can never cancel it and leave the toast on screen.
+    useEffect(() => {
+        if (backToastAt === null) return;
+        const id = setTimeout(() => setBackToastAt(null), Math.max(0, BACK_EXIT_MS - (Date.now() - backToastAt)));
+        return () => clearTimeout(id);
+    }, [backToastAt]);
+
+    // Another screen opened: no toast, and the next back press on Home starts over.
+    useEffect(() => { hideBackToast(); }, [location.pathname, hideBackToast]);
+
+    // App sent to the background or brought back: no toast left over.
+    useEffect(() => {
+        const onVisibility = () => hideBackToast();
+        document.addEventListener('visibilitychange', onVisibility);
+        const subs = Capacitor.isNativePlatform()
+            ? [CapApp.addListener('appStateChange', hideBackToast), CapApp.addListener('pause', hideBackToast), CapApp.addListener('resume', hideBackToast)]
+            : [];
+        return () => {
+            document.removeEventListener('visibilitychange', onVisibility);
+            subs.forEach((s) => s.then((h) => h.remove()));
+        };
+    }, [hideBackToast]);
+
+    // Android back: Home → toast, then exit on a second press within BACK_EXIT_MS;
+    // any other screen → previous screen, no toast. Registered once.
     useEffect(() => {
         if (!Capacitor.isNativePlatform()) return;
 
         const backHandler = CapApp.addListener('backButton', () => {
-            if (location.pathname === '/') {
+            if (pathRef.current === '/') {
                 const now = Date.now();
-                if (now - lastBackPress.current < 2000) {
+                if (lastBackPress.current && now - lastBackPress.current < BACK_EXIT_MS) {
+                    hideBackToast();
                     CapApp.exitApp();
                 } else {
                     lastBackPress.current = now;
-                    setShowBackToast(true);
-                    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-                    toastTimerRef.current = setTimeout(() => setShowBackToast(false), 2000);
+                    setBackToastAt(now);
                 }
             } else {
-                navigate(-1);
+                navigateRef.current(-1);
             }
         });
 
         return () => {
             backHandler.then((h: { remove: () => void }) => h.remove());
-            if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
         };
-    }, [location, navigate]);
+    }, [hideBackToast]);
 
     return (
         <>
-            <BackToast visible={showBackToast} />
+            <BackToast shownAt={backToastAt} />
             <UpdateChecker />
             <StorageGuard />
             <Suspense fallback={LazyFallback}>

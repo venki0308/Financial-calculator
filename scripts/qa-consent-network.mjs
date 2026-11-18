@@ -1,6 +1,6 @@
 // QA audit: usage analytics behaviour and event hygiene.
-// Analytics run for every user by default (as in the published app), with no
-// popup, and can be switched off in Settings → Privacy. Drives the PRODUCTION
+// Analytics (Google Analytics) run for every user from app launch, with no
+// popup and no switch in Settings (since 18 Nov 2026). Drives the PRODUCTION
 // build in a real browser, each scenario in a brand-new profile, decodes every
 // hit sent to the analytics service and checks:
 //   - no popup ever asks about usage statistics;
@@ -9,8 +9,10 @@
 //   - calculator_calculated fires once per calculation (not per keystroke) and
 //     report_exported fires for PDF and Excel, each with only allowed params;
 //   - every hit is flagged as test traffic (debug_mode + traffic_type=internal);
-//   - offline events are queued and sent later; switching off deletes the
-//     queue unsent and stops all requests;
+//   - offline events are queued and sent later;
+//   - Settings has no analytics switch and no Privacy section, and events
+//     keep flowing; a test device with the old stored "denied" (from an
+//     earlier test build) sends and queues nothing;
 //   - a user upgrading from build 21 keeps the same analytics ID.
 //
 //   npm run build:web
@@ -235,38 +237,41 @@ async function main() {
             await context.close();
         }
 
-        // ── 3. Switched off: the queue is deleted unsent, nothing is sent again
-        console.log('\n3. Switch off in Settings (with events queued)');
+        // ── 3. No switch in Settings; events keep flowing
+        console.log('\n3. Settings: no analytics switch, analytics keep running');
         {
-            const { context, page, events, requests } = await freshProfile(browser, { fincalix_dev_access: 'true', fincalix_disclaimer_accepted_v4: 'true' });
+            const { context, page, events } = await freshProfile(browser, { fincalix_dev_access: 'true', fincalix_disclaimer_accepted_v4: 'true' });
             await page.goto(base + '/', { waitUntil: 'load' }); // dev mode: the app's Home
-            // Load every screen used below once while online (their code is
-            // downloaded on first use and would not load while offline).
+            await wait(page, 3000); // let Home appear (a screen left before it appears is not counted)
             await go(page, '/settings', 3000);
-            await go(page, '/schemes', 2000);
-            await go(page, '/calculator/fixed-deposit', 4000);
+            const ui = await page.evaluate(() => ({
+                switches: document.querySelectorAll('[role="switch"]').length,
+                text: document.querySelector('#root')?.innerText || '',
+            }));
+            check('Settings has no switch at all and no "Usage analytics" or "Privacy" section', ui.switches === 0 && !/usage analytics/i.test(ui.text) && !/^privacy$/im.test(ui.text), `${ui.switches} switches`);
+            check('Settings still links the Privacy Policy and Data & Privacy', /privacy policy/i.test(ui.text) && /data & privacy|data privacy/i.test(ui.text));
+            await go(page, '/calculator/sip', 4000);
+            await settle(page, events);
+            const views = events.filter(e => e.en === 'page_view').map(e => e.dt);
+            check('events flow by default: page_view for Home, Settings, SIP (one each)', JSON.stringify(views) === JSON.stringify(['Home', 'Settings', 'SIP Calculator']), views.join(' → '));
+            hygiene(events, 'scenario 3');
+            await context.close();
+        }
+
+        // ── 3b. A test device that switched analytics off in an earlier test build
+        console.log('\n3b. Old stored "denied" from an earlier test build (no public user has it)');
+        {
+            const { context, page, events, requests } = await freshProfile(browser, { fincalix_dev_access: 'true', fincalix_disclaimer_accepted_v4: 'true', fincalix_analytics_consent: 'denied' });
+            await page.goto(base + '/', { waitUntil: 'load' });
+            await go(page, '/calculator/sip', 3000);
             await context.setOffline(true);
-            await go(page, '/schemes');
-            await go(page, '/calculator/fixed-deposit');
-            let s = await state(page);
-            check('events queued while offline', s.queue.length >= 2, `${s.queue.length} queued`);
-            await go(page, '/settings', 1500);
-            const toggle = page.locator('button[role="switch"]');
-            check('Settings switch shows analytics as on', (await toggle.getAttribute('aria-checked')) === 'true');
-            await toggle.click(); // off
-            await wait(page, 1500);
-            s = await state(page);
-            check('switching off deletes the queue without sending it', s.queue.length === 0 && s.consent === 'denied');
-            const atOff = Date.now();
+            await go(page, '/schemes', 1500);
             await context.setOffline(false);
             await page.evaluate(() => window.dispatchEvent(new Event('online')));
-            await go(page, '/calculator/sip');
-            await page.goto(base + '/calculator/hra', { waitUntil: 'load' });
+            await go(page, '/calculator/fixed-deposit');
             await settle(page, events, 6000);
-            s = await state(page);
-            const after = requests.filter(r => r.at > atOff);
-            check('after switching off: no request at all to analytics hosts, also after relaunch', after.length === 0, after.map(r => r.host + r.path).join(', '));
-            check('after switching off: analytics cookies and IDs are deleted, nothing queued', s.gaCookies.length === 0 && s.firebaseDbs.length === 0 && !s.gtagLoaded && s.queue.length === 0, JSON.stringify({ ...s, queue: s.queue.length }));
+            const s = await state(page);
+            check('stored "denied" is still honoured silently: no request to analytics hosts, nothing queued, choice kept', requests.length === 0 && s.queue.length === 0 && s.consent === 'denied' && !s.gtagLoaded, `${requests.length} requests, ${s.queue.length} queued`);
             await context.close();
         }
 

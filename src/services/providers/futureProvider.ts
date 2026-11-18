@@ -33,8 +33,4 @@ export class FutureProvider implements AnalyticsProvider {
     setPage(_page: PageContext): void {
         // e.g. mixpanel.register({ page: _page.page_title })
     }
-
-    async disable(): Promise<void> {
-        this.initialized = false;
-    }
 }

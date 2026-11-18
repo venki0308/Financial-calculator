@@ -7,8 +7,8 @@
  *                             results are not saved to calculation history
  *  - trackSchemeViewed / trackLanguageChanged
  *
- * All of them go through services/analyticsService, which sends nothing while
- * analytics are switched off and only the parameters allowed per event in
+ * All of them go through services/analyticsService, which sends only the
+ * parameters allowed per event in
  * services/providers/types.ts: calculator_id, export_format and language for
  * the usage events. No amount, input, result or typed text is ever passed.
  */

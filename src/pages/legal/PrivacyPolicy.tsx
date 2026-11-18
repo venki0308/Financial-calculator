@@ -7,8 +7,8 @@ const T = {
     en: {
         title: 'Privacy Policy',
         hero: 'Your Privacy Matters',
-        heroSub: 'Your calculations and financial data stay on your device. There is no account, no backend and no database. Usage analytics are on by default; you can turn them off anytime in Settings → Privacy.',
-        updated: 'Last Updated: 17 November 2026',
+        heroSub: 'Your calculations and financial data stay on your device. There is no account, no backend and no database. FinCalix collects anonymous usage statistics through Google Analytics; financial amounts are never sent.',
+        updated: 'Last Updated: 18 November 2026',
         s: {
             collect: 'Information We Collect',
             storage: 'Data Stored on Your Device',
@@ -30,8 +30,8 @@ const T = {
     hi: {
         title: 'गोपनीयता नीति',
         hero: 'आपकी गोपनीयता महत्वपूर्ण है',
-        heroSub: 'आपकी गणनाएँ और वित्तीय डेटा आपके डिवाइस पर ही रहते हैं। कोई खाता नहीं, कोई बैकएंड नहीं और कोई डेटाबेस नहीं है। उपयोग एनालिटिक्स डिफ़ॉल्ट रूप से चालू रहता है; आप इसे कभी भी सेटिंग्स → गोपनीयता में बंद कर सकते हैं।',
-        updated: 'अंतिम अद्यतन: 17 नवंबर 2026',
+        heroSub: 'आपकी गणनाएँ और वित्तीय डेटा आपके डिवाइस पर ही रहते हैं। कोई खाता नहीं, कोई बैकएंड नहीं और कोई डेटाबेस नहीं है। FinCalix Google Analytics के ज़रिए गुमनाम उपयोग आँकड़े एकत्र करता है; वित्तीय राशियाँ कभी नहीं भेजी जातीं।',
+        updated: 'अंतिम अद्यतन: 18 नवंबर 2026',
         s: {
             collect: 'हम क्या जानकारी एकत्रित करते हैं',
             storage: 'आपके डिवाइस पर संग्रहीत डेटा',
@@ -53,8 +53,8 @@ const T = {
     te: {
         title: 'గోప్యతా విధానం',
         hero: 'మీ గోప్యత ముఖ్యమైనది',
-        heroSub: 'మీ లెక్కలు మరియు ఆర్థిక డేటా మీ పరికరంలోనే ఉంటాయి. ఖాతా లేదు, బ్యాకెండ్ లేదు, డేటాబేస్ లేదు. వినియోగ విశ్లేషణలు డిఫాల్ట్‌గా ఆన్‌లో ఉంటాయి; మీరు వాటిని ఎప్పుడైనా సెట్టింగ్‌లు → గోప్యత లో ఆఫ్ చేయవచ్చు.',
-        updated: 'చివరిగా నవీకరించబడింది: 17 నవంబర్ 2026',
+        heroSub: 'మీ లెక్కలు మరియు ఆర్థిక డేటా మీ పరికరంలోనే ఉంటాయి. ఖాతా లేదు, బ్యాకెండ్ లేదు, డేటాబేస్ లేదు. FinCalix Google Analytics ద్వారా అనామక వినియోగ గణాంకాలను సేకరిస్తుంది; ఆర్థిక మొత్తాలు ఎప్పుడూ పంపబడవు.',
+        updated: 'చివరిగా నవీకరించబడింది: 18 నవంబర్ 2026',
         s: {
             collect: 'మేము సేకరించే సమాచారం',
             storage: 'మీ పరికరంలో నిల్వ చేసిన డేటా',
@@ -76,8 +76,8 @@ const T = {
     ta: {
         title: 'தனியுரிமைக் கொள்கை',
         hero: 'உங்கள் தனியுரிமை முக்கியம்',
-        heroSub: 'உங்கள் கணக்கீடுகளும் நிதித் தரவும் உங்கள் சாதனத்திலேயே இருக்கும். கணக்கு இல்லை, பின்நிலை (backend) இல்லை, தரவுத்தளம் இல்லை. பயன்பாட்டு பகுப்பாய்வு இயல்பாகவே இயக்கத்தில் இருக்கும்; அமைப்புகள் → தனியுரிமை பகுதியில் எப்போது வேண்டுமானாலும் அதை முடக்கலாம்.',
-        updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: 17 நவம்பர் 2026',
+        heroSub: 'உங்கள் கணக்கீடுகளும் நிதித் தரவும் உங்கள் சாதனத்திலேயே இருக்கும். கணக்கு இல்லை, பின்நிலை (backend) இல்லை, தரவுத்தளம் இல்லை. FinCalix, Google Analytics மூலம் அநாமதேயப் பயன்பாட்டுப் புள்ளிவிவரங்களைச் சேகரிக்கிறது; நிதித் தொகைகள் ஒருபோதும் அனுப்பப்படாது.',
+        updated: 'கடைசியாக புதுப்பிக்கப்பட்டது: 18 நவம்பர் 2026',
         s: {
             collect: 'நாங்கள் சேகரிக்கும் தகவல்',
             storage: 'உங்கள் சாதனத்தில் சேமிக்கப்பட்ட தரவு',
@@ -99,8 +99,8 @@ const T = {
     kn: {
         title: 'ಗೌಪ್ಯತಾ ನೀತಿ',
         hero: 'ನಿಮ್ಮ ಗೌಪ್ಯತೆ ಮುಖ್ಯ',
-        heroSub: 'ನಿಮ್ಮ ಲೆಕ್ಕಾಚಾರಗಳು ಮತ್ತು ಹಣಕಾಸು ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಉಳಿಯುತ್ತವೆ. ಖಾತೆ ಇಲ್ಲ, ಬ್ಯಾಕೆಂಡ್ ಇಲ್ಲ, ಡೇಟಾಬೇಸ್ ಇಲ್ಲ. ಬಳಕೆಯ ಅನಾಲಿಟಿಕ್ಸ್ ಡೀಫಾಲ್ಟ್ ಆಗಿ ಆನ್ ಆಗಿರುತ್ತದೆ; ನೀವು ಅದನ್ನು ಯಾವಾಗ ಬೇಕಾದರೂ ಸೆಟ್ಟಿಂಗ್‌ಗಳು → ಗೌಪ್ಯತೆ ನಲ್ಲಿ ಆಫ್ ಮಾಡಬಹುದು.',
-        updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: 17 ನವೆಂಬರ್ 2026',
+        heroSub: 'ನಿಮ್ಮ ಲೆಕ್ಕಾಚಾರಗಳು ಮತ್ತು ಹಣಕಾಸು ಡೇಟಾ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ಉಳಿಯುತ್ತವೆ. ಖಾತೆ ಇಲ್ಲ, ಬ್ಯಾಕೆಂಡ್ ಇಲ್ಲ, ಡೇಟಾಬೇಸ್ ಇಲ್ಲ. FinCalix Google Analytics ಮೂಲಕ ಅನಾಮಧೇಯ ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳನ್ನು ಸಂಗ್ರಹಿಸುತ್ತದೆ; ಹಣಕಾಸಿನ ಮೊತ್ತಗಳನ್ನು ಎಂದಿಗೂ ಕಳುಹಿಸುವುದಿಲ್ಲ.',
+        updated: 'ಕೊನೆಯದಾಗಿ ನವೀಕರಿಸಲಾಗಿದೆ: 18 ನವೆಂಬರ್ 2026',
         s: {
             collect: 'ನಾವು ಸಂಗ್ರಹಿಸುವ ಮಾಹಿತಿ',
             storage: 'ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ಸಂಗ್ರಹಿಸಿದ ಡೇಟಾ',
@@ -250,12 +250,12 @@ function Body({ lang }: { lang: Lang }) {
 
             {/* 3 */}
             <Section icon="📊" color="#EC4899" title={t.s.analytics}>
-                <p style={{ marginBottom: '14px' }}>The app sends the following to a third-party analytics service. Usage analytics are on by default; you can turn them off anytime in Settings → Privacy.</p>
+                <p style={{ marginBottom: '14px' }}>FinCalix collects anonymous usage statistics through Google Analytics. The app and this website send the following to Google Analytics; the data is processed by Google. Financial amounts are never sent.</p>
                 <Card>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <div>
                             <div style={{ color: '#10B981', fontSize: '12px', fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.8px' }}>What Is Collected</div>
-                            {['Events: page view, screen view (including app open), calculator used, scheme viewed, language changed, PDF/Excel export, calculation completed, report exported (PDF, Excel, CSV). The analytics service also records first open, session start and engagement time automatically. On the website: taps on the Google Play buttons.','Event details: screen name, page path, calculator type, scheme type (central or state), language, export type, platform', 'Identifiers: a random client ID and a random installation ID', 'Device data: screen resolution, language, OS and browser version', 'Approximate country, derived from your IP address by the analytics service'].map(item => (
+                            {['Events: page view, screen view (including app open), calculator used, scheme viewed, language changed, PDF/Excel export, calculation completed, report exported (PDF, Excel, CSV). Google Analytics also records first open, session start and engagement time automatically. On the website: taps on the Google Play buttons.','Event details: screen name, page path, calculator type, scheme type (central or state), language, export type, platform', 'Identifiers: a random client ID and a random installation ID', 'Device data: screen resolution, language, OS and browser version', 'Approximate country, derived from your IP address by Google Analytics'].map(item => (
                                 <div key={item} style={{ color: c.textSecondary, fontSize: '13px', padding: '4px 0', borderBottom: `1px solid ${c.border}` }}>• {item}</div>
                             ))}
                         </div>
@@ -267,15 +267,15 @@ function Body({ lang }: { lang: Lang }) {
                         </div>
                     </div>
                 </Card>
-                <p style={{ marginTop: '12px' }}>This data is pseudonymous: it is tied to a random ID, not to your name or contact details. Advertising features and ad personalisation are switched off. You can turn analytics off at any time in Settings → Privacy; this stops collection and deletes the analytics IDs from your device.</p>
+                <p style={{ marginTop: '12px' }}>This data is pseudonymous: it is tied to a random ID, not to your name or contact details. Advertising features and ad personalisation are disabled. Usage analytics run for every user of the app and this website.</p>
             </Section>
 
             {/* 4 */}
             <Section icon="🔗" color="#3B82F6" title={t.s.thirdParty}>
                 <p style={{ marginBottom: '14px' }}>FinCalix uses the following third-party service for analytics:</p>
                 <Card>
-                    <div style={{ color: c.text, fontWeight: 600, marginBottom: '6px' }}>Analytics service provider</div>
-                    <div style={{ color: c.textSecondary, fontSize: '13px' }}>A third-party analytics service provider processes the usage statistics listed above on our behalf. The data is sent to its servers, which may be outside India.</div>
+                    <div style={{ color: c.text, fontWeight: 600, marginBottom: '6px' }}>Google Analytics (Google)</div>
+                    <div style={{ color: c.textSecondary, fontSize: '13px' }}>Google processes the usage statistics listed above on our behalf through Google Analytics. The data is sent to Google's servers, which may be outside India.</div>
                 </Card>
                 <p style={{ marginTop: '12px' }}>The app also loads its font from a web font service and checks fincalix.com for update information; like any web request, these reveal your IP address to the server. No advertising networks, tracking pixels or data-selling services are used.</p>
             </Section>
@@ -313,7 +313,7 @@ function Body({ lang }: { lang: Lang }) {
 
             {/* 7 */}
             <Section icon="🛡️" color="#6366F1" title={t.s.security}>
-                <p style={{ marginBottom: '10px' }}>FinCalix has no servers of its own and never receives your financial data. Usage analytics are processed by a third-party analytics service provider, as described above.</p>
+                <p style={{ marginBottom: '10px' }}>FinCalix has no servers of its own and never receives your financial data. Usage analytics are processed by Google through Google Analytics, as described above.</p>
                 <Bullets items={[
                     'Your data security equals your device security',
                     'All web traffic uses HTTPS encryption',
@@ -327,7 +327,7 @@ function Body({ lang }: { lang: Lang }) {
                     {[
                         { title: t.s.access, text: 'All the data you enter is visible directly in the app (Saved Calculations, History, Preferences).' },
                         { title: t.s.delete, text: 'Clear app data from your device settings, or simply uninstall the app. All data on your device is removed instantly.' },
-                        { title: t.s.portability, text: 'Your financial data never reaches us, so there is nothing for us to delete. Turning off usage analytics deletes the analytics IDs from your device.' },
+                        { title: t.s.portability, text: 'Your financial data never reaches us, so there is nothing for us to delete. Usage analytics are tied only to a random ID; uninstalling the app or clearing its data removes that ID from your device.' },
                     ].map(card => (
                         <Card key={card.title}>
                             <div style={{ color: '#C9A84C', fontWeight: 600, fontSize: '14px', marginBottom: '8px' }}>{card.title}</div>
@@ -358,7 +358,7 @@ function Body({ lang }: { lang: Lang }) {
 
             {/* 11 */}
             <Section icon="📊" color="#EC4899" title={t.s.reporting}>
-                <p style={{ marginBottom: '14px' }}>A third-party analytics service provider processes the pseudonymous usage statistics described in section 3. Its servers may be outside India, which makes this a cross-border transfer. No financial data is included. FinCalix does not use crash reporting. Usage analytics are on by default; you can turn them off anytime in Settings → Privacy.</p>
+                <p style={{ marginBottom: '14px' }}>Google processes the usage statistics described in section 3 through Google Analytics. Google's servers may be outside India, which makes this a cross-border transfer. No financial data is included. FinCalix does not use crash reporting.</p>
                 <GreenBox>
                     <div style={{ color: '#10B981', fontWeight: 600, marginBottom: '10px' }}>✅ Data Safety</div>
                     <Bullets items={[
@@ -389,7 +389,7 @@ function Body({ lang }: { lang: Lang }) {
             {/* 12 — DPDP Act 2023 & Grievance */}
             <Section icon="⚖️" color="#8B5CF6" title="DPDP Act 2023 & Grievance">
                 <p style={{ marginBottom: '14px' }}>
-                    FinCalix complies with the Digital Personal Data Protection Act, 2023. Your financial inputs are stored only on your device. Usage analytics are on by default; you can turn them off anytime in Settings → Privacy. For any privacy concerns, grievances, or questions about how this app handles your data,
+                    FinCalix complies with the Digital Personal Data Protection Act, 2023. Your financial inputs are stored only on your device. FinCalix collects anonymous usage statistics through Google Analytics; financial amounts are never sent. For any privacy concerns, grievances, or questions about how this app handles your data,
                 </p>
 
                 <div style={{
@@ -403,7 +403,6 @@ function Body({ lang }: { lang: Lang }) {
                         'Right to correction — edit any saved entry inside the app',
                         'Right to erasure — clear app data from device settings or uninstall the app',
                         'Right to grievance redressal — email support@fincalix.com',
-                        'Right to stop usage analytics — turn it off anytime in Settings → Privacy',
                     ]} />
                 </div>
 
