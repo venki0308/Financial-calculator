@@ -49,7 +49,7 @@ for (const q of catalog) {
 }
 check('text present in en, hi, te, ta, kn, ml for every id', missing.length === 0, list(missing));
 check('attribution line on every attributed quote and proverb, none on original lines', attrib.length === 0, list(attrib));
-check('“quote” — attribution ≤ 180 characters in every language', long.length === 0, list(long));
+check('“quote” (attribution) ≤ 180 characters in every language', long.length === 0, list(long));
 const extra = LANGS.flatMap((l) => Object.keys(texts[l]).filter((id) => !catalog.some((q) => q.id === id)).map((id) => `${l} ${id}`));
 check('no language file has ids that are not in the catalog', extra.length === 0, list(extra));
 
@@ -71,12 +71,16 @@ for (const l of LANGS) {
 }
 check('en: Latin text, no Indic letters', catalog.every((q) => /[A-Za-z]/.test(q.en.text) && !(q.en.text.match(INDIC) || []).length));
 // Owner (18 Nov 2026): no dash as punctuation inside a quote (reads as machine-written). Hyphens inside
-// words (धीरे-धीरे, well-being) are spelling and stay. The " — author" separator is added by the app.
+// words (धीरे-धीरे, well-being) are spelling and stay. The app adds the author without a dash: on its own line on the Home card, “quote” (author) in notifications.
 {
     const DASH = /[—–―]|\s-\s|\s-|-\s/;
     const dashed = catalog.filter((q) => DASH.test(q.en.text)).map((q) => `${q.id} en`)
         .concat(LANGS.flatMap((l) => catalog.filter((q) => texts[l][q.id] && DASH.test(texts[l][q.id].text)).map((q) => `${q.id} ${l}`)));
     check('no dash used as punctuation inside any quote, in any language', dashed.length === 0, list(dashed));
+    const line = formatQuote({ text: 'Save first.', by: 'Author' });
+    check('notification line has no dash before the author: “quote” (author)', line === '“Save first.” (Author)', line);
+    const card = fs.readFileSync(new URL('../src/components/FinancialQuote.tsx', import.meta.url), 'utf8');
+    check('Home card shows the author without a dash', /\{quote\.text\.by\}/.test(card) && !/[—–-]\s*\{quote\.text\.by\}/.test(card));
 }
 
 console.log('\n4. No duplicates');

@@ -35,7 +35,7 @@ export default function FinancialQuote({ className = 'mx-4 my-4' }: { className?
                         <div lang={quote.lang} data-quote-id={quote.quote.id}>
                             <p className={`text-foreground/80 dark:text-foreground/70 ${quote.lang === 'en' ? 'text-xs leading-relaxed italic' : 'text-[13px] leading-[1.75]'}`}>“{quote.text.text}”</p>
                             {quote.text.by && (
-                                <p className={`mt-1 text-foreground/60 dark:text-foreground/55 ${quote.lang === 'en' ? 'text-[11px]' : 'text-xs leading-relaxed'}`}>— {quote.text.by}</p>
+                                <p className={`mt-1 text-foreground/60 dark:text-foreground/55 ${quote.lang === 'en' ? 'text-[11px]' : 'text-xs leading-relaxed'}`}>{quote.text.by}</p>
                             )}
                         </div>
                     )}

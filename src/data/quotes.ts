@@ -112,7 +112,12 @@ export function peekDailyQuote(lang?: string | null, date: Date = new Date()): R
     return resolve(quoteFor(catalog, quoteDay(date)), code, code === 'en' ? null : texts[code]);
 }
 
-/** One line for a notification: “quote” — attribution. */
+/** One line for a notification: “quote” (attribution). Owner, 18 Nov 2026: no dash before the author. */
 export function formatQuote(t: QuoteText): string {
+    return t.by ? `“${t.text}” (${t.by})` : `“${t.text}”`;
+}
+
+/** How formatQuote wrote the line before 18 Nov 2026; bell entries saved then still carry it. */
+export function formatQuoteLegacy(t: QuoteText): string {
     return t.by ? `“${t.text}” — ${t.by}` : `“${t.text}”`;
 }

@@ -6,7 +6,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNotificationStore, AppNotification } from '../store/useNotificationStore';
 import { localizeNotif } from '../utils/appUiNotif';
-import { formatQuote, getDailyQuote, loadQuoteCatalog } from '../data/quotes';
+import { formatQuote, formatQuoteLegacy, getDailyQuote, loadQuoteCatalog } from '../data/quotes';
 
 /**
  * Daily-quote entries: the quote of that entry's day in the current language. Entries saved
@@ -21,7 +21,7 @@ function useQuoteBody(n: AppNotification, quoteDay: number | undefined, lang: st
             let day = quoteDay;
             if (day === undefined) {
                 const catalog = await loadQuoteCatalog();
-                day = catalog.find((q) => formatQuote(q.en) === n.body)?.day;
+                day = catalog.find((q) => formatQuote(q.en) === n.body || formatQuoteLegacy(q.en) === n.body)?.day;
             }
             if (day === undefined) return;
             // Any date with that day number on a leap-year calendar (2024 is a leap year).
