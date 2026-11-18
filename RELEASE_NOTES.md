@@ -5,9 +5,9 @@
 - fincalix.com becomes a marketing site whose only call to action is the Google Play badge. The web app is no longer public: app routes 308 to their static page or to "/". The owner opens it with `?dev=true` (cookie `fincalix_dev`; `?dev=false` clears it).
 - **To revisit: middleware runtime.** `middleware.ts` runs on Vercel's edge runtime. Vercel's build log calls edge "deprecated"; the Node.js runtime was tried on 17 Nov 2026 and returned HTTP 500 on every route (module load error), so edge stays. If Vercel announces removal of the edge runtime, move the gate to the Node.js runtime and re-run `node scripts/qa-landing.mjs` and `node scripts/landing/dev-mode-proof.mjs <preview URL>` before deploying.
 
-## 1.2.9 (build 22) — prepared 16 Nov 2026
+## 1.3.0 (build 22) — prepared 16 Nov 2026
 
-Build 21 carried the same version name; build 22 adds the fixes below.
+Build 21 was 1.2.9. Build 22 was prepared as 1.2.9 too and renamed 1.3.0 on 18 Nov 2026 (owner's decision, before upload); it adds the fixes below. `public/config.json` `latestVersion` stays 1.2.9 until 1.3.0 is live on Play, then raise it to 1.3.0 so build 21 users see the update prompt.
 
 ### Fixed
 - **Update prompts never appeared.** The app fetched `https://fincalix.com/config.json`, which redirects to `www` without a CORS header, so the request was blocked on every device and the app ran on built-in defaults (no update banner, no update notification, no force-update, no remote flags). The app now asks `https://www.fincalix.com/config.json` first and falls back to the apex.

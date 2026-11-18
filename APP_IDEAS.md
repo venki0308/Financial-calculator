@@ -106,7 +106,7 @@ changed in the app; each needs its own app release. Sources: `seo/research/verif
   per month is kept). Typical loans are unchanged to the rupee (₹30 lakh at 8.5% for 20 years: ₹32,48,210).
   qa-calculators 2Y. Live calculators on the website could show the wrong figure, so it was fixed now.
 
-## App issues — fixed for 1.2.9 (build 22), 17 Nov 2026
+## App issues — fixed for 1.3.0 (build 22), 17 Nov 2026
 
 - **Post Office TD overstated multi-year deposits** (compounded across years). Now the scheme
   rule — compounded quarterly, paid yearly, no interest on interest — in one function,

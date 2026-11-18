@@ -1,6 +1,6 @@
 # Play Console Data safety answers
 
-For FinCalix 1.2.9, build 22. Rewritten 18 November 2026 (no analytics switch in the app any more)
+For FinCalix 1.3.0, build 22. Rewritten 18 November 2026 (no analytics switch in the app any more)
 against Google's form definitions at <https://support.google.com/googleplay/android-developer/answer/10787469>.
 
 ## What build 22 actually does
