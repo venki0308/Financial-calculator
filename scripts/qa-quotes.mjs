@@ -70,6 +70,14 @@ for (const l of LANGS) {
     check(`${l}: text in its own script, no Latin letters, attribution in ${l} script`, bad.length === 0, list(bad));
 }
 check('en: Latin text, no Indic letters', catalog.every((q) => /[A-Za-z]/.test(q.en.text) && !(q.en.text.match(INDIC) || []).length));
+// Owner (18 Nov 2026): no dash as punctuation inside a quote (reads as machine-written). Hyphens inside
+// words (धीरे-धीरे, well-being) are spelling and stay. The " — author" separator is added by the app.
+{
+    const DASH = /[—–―]|\s-\s|\s-|-\s/;
+    const dashed = catalog.filter((q) => DASH.test(q.en.text)).map((q) => `${q.id} en`)
+        .concat(LANGS.flatMap((l) => catalog.filter((q) => texts[l][q.id] && DASH.test(texts[l][q.id].text)).map((q) => `${q.id} ${l}`)));
+    check('no dash used as punctuation inside any quote, in any language', dashed.length === 0, list(dashed));
+}
 
 console.log('\n4. No duplicates');
 const norm = (s) => s.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
