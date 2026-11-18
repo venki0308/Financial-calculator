@@ -144,13 +144,7 @@ export default function LegalLayout({
     const l = legalText(lang).layout;
 
     useEffect(() => {
-        if (!document.querySelector('link[data-fc-poppins]')) {
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap';
-            link.setAttribute('data-fc-poppins', 'true');
-            document.head.appendChild(link);
-        }
+        // Poppins is self-hosted (src/landing/fonts/poppins.css, imported by legal-client.tsx).
         document.title = `${title} — FinCalix`;
         // Per-route canonical + meta description. Without this, every legal
         // page shipped the homepage's <head> including canonical

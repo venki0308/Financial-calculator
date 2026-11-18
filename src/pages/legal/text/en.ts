@@ -160,7 +160,7 @@ export const en: LegalStrings = {
                 'Event details: screen name, page path, calculator type, scheme type (central or state), language, export type, platform',
                 'Identifiers: a random client ID and a random installation ID',
                 'Device data: screen resolution, language, OS and browser version',
-                'Approximate country, derived from your IP address by the analytics service',
+                'Approximate country (never your exact location)',
             ],
             neverTitle: 'Never Collected',
             never: [
@@ -173,10 +173,10 @@ export const en: LegalStrings = {
             outro: 'This data is pseudonymous: it is tied to a random ID, not to your name or contact details. Advertising features and ad personalisation are disabled. Usage analytics run for every user of the app and this website.',
         },
         thirdParty: {
-            intro: 'FinCalix uses the following third-party service for analytics:',
+            intro: 'To see which features are used most, FinCalix uses one analytics service:',
             cardTitle: 'Analytics service',
-            cardText: 'An analytics service processes the usage statistics listed above on our behalf. The data is sent to its servers, which may be outside India.',
-            outro: 'The app also loads its font from a web font service and checks fincalix.com for update information; like any web request, these reveal your IP address to the server. No advertising networks, tracking pixels or data-selling services are used.',
+            cardText: 'It receives only the anonymous usage statistics listed above and processes them for FinCalix. It never receives your name, contact details or any financial amount. The app also gets its feature settings from this service.',
+            outro: 'FinCalix does not use advertising networks, tracking pixels or any service that sells data.',
         },
         financial: {
             boxTitle: 'Your financial data stays on your device',
@@ -225,7 +225,7 @@ export const en: LegalStrings = {
             siteLabel: 'www.fincalix.com',
         },
         reporting: {
-            intro: 'An analytics service processes the usage statistics described in section 3 on our behalf. Its servers may be outside India, which makes this a cross-border transfer. No financial data is included. FinCalix does not use crash reporting.',
+            intro: 'Only the anonymous usage statistics described in section 3 are sent to our analytics service, which processes them for FinCalix. No financial data is included. FinCalix does not use crash reporting.',
             safetyTitle: 'Data Safety',
             safetyBullets: [
                 'All calculations are performed locally on your device.',

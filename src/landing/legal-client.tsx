@@ -3,6 +3,7 @@
  * terms, about). Re-renders the page component over the static HTML so the language
  * selector and the visitor's saved theme work; no app shell, no app bundle.
  */
+import './fonts/poppins.css'; // self-hosted: the legal pages contact no font service
 import { flushSync } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { initExportBanner } from './exportBanner';

@@ -58,6 +58,21 @@ const ANALYTICS_WORD = /analytic|statistic|एनालिटिक्स|आँ
 const ANALYTICS_HOSTS = /(^|\.)(google-analytics\.com|analytics\.google\.com|googletagmanager\.com|firebase\.googleapis\.com|firebaseinstallations\.googleapis\.com|app-measurement\.com)$/;
 const COLLECT_HOSTS = /(^|\.)(google-analytics\.com|analytics\.google\.com|app-measurement\.com)$/;
 
+// Owner, 18 Nov 2026: privacy texts never talk about servers outside India, cross-border transfers or
+// IP addresses, and nothing loads a font from a font service (the app bundles its font; the website
+// self-hosts its fonts).
+{
+    const legal = ['en', 'hi', 'te', 'ta', 'kn', 'ml'].map((l) => fs.readFileSync(`src/pages/legal/text/${l}.ts`, 'utf8')).join('\n');
+    const ALARM = /outside india|cross-border|\bIP\b|ip address|font service/i;
+    const en = fs.readFileSync('src/locales/en.json', 'utf8');
+    check('privacy texts (6 languages) and app strings: no "outside India", "cross-border", "IP address" or font-service sentence', !ALARM.test(legal) && !/outside india|cross-border|ip address|font service/i.test(en), (legal.match(ALARM) || en.match(/outside india|cross-border|ip address|font service/i) || [''])[0]);
+    const htmlFiles = (fs.readdirSync('dist', { recursive: true }) || []).filter((f) => String(f).endsWith('.html')).map((f) => `dist/${f}`);
+    const FONT_HOST = /fonts\.(googleapis|gstatic)\.com/;
+    const withFontHost = ['index.html', ...htmlFiles].filter((f) => FONT_HOST.test(fs.readFileSync(f, 'utf8')));
+    const appCss = fs.readFileSync('src/index.css', 'utf8');
+    check(`no page loads a font from a font service (app index.html + ${htmlFiles.length} built pages); the app's font is bundled`, withFontHost.length === 0 && /plus-jakarta-sans-latin\.woff2/.test(appCss) && !FONT_HOST.test(fs.readFileSync('src/pages/legal/LegalLayout.tsx', 'utf8')), withFontHost.slice(0, 5).join(', '));
+}
+
 const text = (html) => html.replace(/<script[\s\S]*?<\/script>/g, ' ').replace(/<style[\s\S]*?<\/style>/g, ' ').replace(/<[^>]+>/g, ' ')
     .replace(/&amp;/g, '&').replace(/&#x27;|&#39;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
 const attr = (tag, name) => (tag.match(new RegExp(`\\s${name}="([^"]*)"`)) || [])[1];

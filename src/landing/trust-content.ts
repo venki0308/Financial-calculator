@@ -41,6 +41,7 @@ export const UPDATES: readonly Update[] = [
         title: 'Privacy policy: usage statistics explained',
         items: [
             'The Privacy Policy and Data & Privacy pages now say plainly that FinCalix collects anonymous usage statistics, such as which features are used most, and that financial amounts are never sent. Usage analytics run for every user of the app and the website.',
+            'Fonts are now built into the app and served from fincalix.com, so no font service is contacted.',
         ],
     },
     {

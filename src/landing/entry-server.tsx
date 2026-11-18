@@ -60,7 +60,6 @@ function legalHead(name: string, h1: string, font: string): string {
         `<meta property="og:url" content="${ORIGIN}/${name}">`,
         `<meta property="og:title" content="${esc(title)}">`,
         `<meta property="og:image" content="${ORIGIN}/og/fincalix-og.png">`,
-        `<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>`,
         font,
     ].join('\n    ');
 }
@@ -69,13 +68,14 @@ export async function renderLegal() {
     if (!i18n.isInitialized) await new Promise<void>((ok) => i18n.on('initialized', () => ok()));
     setWebsiteTheme(false); // the website is light unless the visitor picks dark (legal-client.tsx)
     const pages: Array<{ name: string; template: 'legal' | 'datasafety'; html: string; head: string; h1: string }> = [];
-    const poppins = '<link rel="stylesheet" data-fc-poppins="true" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">';
+    // Fonts are self-hosted (legal: fonts/poppins.css via legal-client; data safety: index.css).
+    const poppins = '';
     for (const [name, Page] of Object.entries(WEB_LEGAL_PAGES)) {
         const html = renderToString(<Page />);
         const h1 = unesc((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '');
         pages.push({ name, template: 'legal', html, h1, head: legalHead(name, h1, poppins) });
     }
-    const jakarta = '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">';
+    const jakarta = '';
     const ds = renderToString(<MemoryRouter initialEntries={['/data-safety']}><DataSafety /></MemoryRouter>);
     const dsH1 = unesc((ds.match(/<h1[^>]*>([\s\S]*?)<\/h1>/) || [])[1] || '');
     pages.push({ name: 'data-safety', template: 'datasafety', html: ds, h1: dsH1, head: legalHead('data-safety', dsH1, jakarta) });
