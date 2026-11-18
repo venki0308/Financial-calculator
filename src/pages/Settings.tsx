@@ -71,6 +71,10 @@ export default function Settings() {
         setLanguage(code);
         AnalyticsService.trackLanguageChanged(code);
         setShowLangPicker(false);
+        // Morning quote and evening reminder follow the selected language: reschedule now.
+        void import('../services/NotificationScheduler')
+            .then(m => m.NotificationScheduler.refreshReminders())
+            .catch(() => { /* next launch covers it */ });
     };
 
     const handleExportBackup = async (mode: 'download' | 'share') => {

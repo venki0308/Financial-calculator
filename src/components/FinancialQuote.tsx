@@ -28,12 +28,14 @@ export default function FinancialQuote({ className = 'mx-4 my-4' }: { className?
                     <Sparkles size={14} className="text-amber-500" />
                 </div>
                 <div className="flex-1 min-w-0 min-h-[2.5rem]">
-                    <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1">💡 {t('quote.dailyTitle')}</p>
+                    {/* Letter-spacing and italics are for Latin text only: Indic scripts have no italic
+                        (the browser would slant the letters) and spacing breaks their joined letters. */}
+                    <p className={`text-[10px] font-bold text-amber-600 dark:text-amber-400 mb-1 ${lang === 'en' ? 'uppercase tracking-wider' : 'text-[11px]'}`}>💡 {t('quote.dailyTitle')}</p>
                     {quote && (
                         <div lang={quote.lang} data-quote-id={quote.quote.id}>
-                            <p className="text-xs text-foreground/80 dark:text-foreground/70 leading-relaxed italic">“{quote.text.text}”</p>
+                            <p className={`text-foreground/80 dark:text-foreground/70 ${quote.lang === 'en' ? 'text-xs leading-relaxed italic' : 'text-[13px] leading-[1.75]'}`}>“{quote.text.text}”</p>
                             {quote.text.by && (
-                                <p className="mt-1 text-[11px] text-foreground/60 dark:text-foreground/55">— {quote.text.by}</p>
+                                <p className={`mt-1 text-foreground/60 dark:text-foreground/55 ${quote.lang === 'en' ? 'text-[11px]' : 'text-xs leading-relaxed'}`}>— {quote.text.by}</p>
                             )}
                         </div>
                     )}

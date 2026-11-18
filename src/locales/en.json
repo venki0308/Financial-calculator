@@ -7924,5 +7924,9 @@
       "myscheme": "Government scheme eligibility, benefits and how to apply",
       "indiagov": "National Portal of India: government services and schemes"
     }
+  },
+  "notifText": {
+    "logTitle": "Log today's expenses",
+    "logBody": "A 10-second habit that keeps your budget honest."
   }
 }

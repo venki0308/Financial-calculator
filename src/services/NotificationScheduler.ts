@@ -23,9 +23,23 @@ import { getAllLoans } from '../utils/loanStorage';
 import { parseLocalDate } from '../utils/dateUtils';
 import { getEntriesForDate } from '../utils/expenseStorage';
 import { getEffectiveNextDue } from '../utils/expenseCalculations';
+import { istSlot, LOG_REMINDER_HOUR_IST, QUOTE_HOUR_IST } from '../utils/istTime';
 
 const LAST_RUN_KEY = 'fincalix_scheduler_last_run';
 const MIN_INTERVAL_MS = 23 * 60 * 60 * 1000; // 23 hours
+
+// Morning quote 07:00 IST, evening log reminder 20:00 IST (src/utils/istTime.ts).
+
+const LANG_KEYS: Record<string, 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml'> = {
+    'en': 'en', 'hi': 'hi', 'te': 'te', 'ta': 'ta', 'kn': 'kn', 'ml': 'ml',
+    'English': 'en', 'Hindi': 'hi', 'Telugu': 'te', 'Tamil': 'ta', 'Kannada': 'kn', 'Malayalam': 'ml',
+};
+/** The user's selected app language, with its strings loaded (for notification text). */
+async function notificationLang(): Promise<'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml'> {
+    const lang = LANG_KEYS[useSettingsStore.getState().language] || 'en';
+    await ensureLocaleLoaded(lang);
+    return lang;
+}
 
 // ── Native (background) reminder scheduling ────────────────────────────
 // Android 8+ requires a channel; importance 4 (HIGH) gives heads-up banners.
@@ -358,15 +372,12 @@ async function checkDailyQuote() {
                 await ensureLocaleLoaded(langKey);
                 const notifications = [];
                 const now = new Date();
-                // Schedule next 14 days
+                // Title in the user's language (the Home card's heading).
+                const title = `💡 ${i18n.getFixedT(langKey)('quote.dailyTitle', 'FinCalix Daily Quote')}`;
+                // Schedule next 14 days, 07:00 IST each day
                 for (let i = 0; i < 14; i++) {
-                    const targetDate = new Date(now);
-                    targetDate.setDate(now.getDate() + i);
-                    targetDate.setHours(8, 0, 0, 0);
-
-                    if (i === 0 && now.getTime() > targetDate.getTime()) {
-                        continue;
-                    }
+                    const { day, at } = istSlot(i, QUOTE_HOUR_IST);
+                    if (at.getTime() <= now.getTime()) continue; // today's 07:00 IST already passed
 
                     notifications.push({
                         // id by batch offset (1000..1013), NOT quote index —
@@ -374,9 +385,9 @@ async function checkDailyQuote() {
                         // late-December batch produced duplicate ids and
                         // silently overwrote some days' quotes.
                         id: 1000 + i,
-                        title: '💡 FinCalix Daily Quote',
-                        body: await quoteTextFor(langKey, targetDate),
-                        schedule: { at: targetDate }
+                        title,
+                        body: await quoteTextFor(langKey, day),
+                        schedule: { at }
                     });
                 }
                 await LocalNotifications.schedule({ notifications });
@@ -817,7 +828,7 @@ async function scheduleUpcomingNativeReminders(): Promise<void> {
 }
 
 /**
- * Evening "log today's expenses" reminder — a daily 20:30 nudge that builds
+ * Evening "log today's expenses" reminder — a daily 20:00 IST nudge, in the user's language, that builds
  * the logging habit an expense tracker lives or dies by. Ids 3000–3006 (one
  * per day of a rolling 7-day window; id = 3000 + day offset from today).
  * Refreshed on every launch: cancel the whole range, then reschedule if the
@@ -847,16 +858,19 @@ async function scheduleDailyLogReminders(): Promise<void> {
         let loggedToday = false;
         try { loggedToday = getEntriesForDate(todayStr).length > 0; } catch { /* storage unavailable */ }
 
+        // In the user's selected language.
+        const t = i18n.getFixedT(await notificationLang());
+        const title = t('notifText.logTitle', "Log today's expenses");
+        const body = t('notifText.logBody', 'A 10-second habit that keeps your budget honest.');
+
         const notifications: LocalNotificationSchema[] = [];
         for (let i = 0; i < LOG_REMINDER_DAYS; i++) {
-            const at = new Date(now);
-            at.setDate(now.getDate() + i);
-            at.setHours(20, 30, 0, 0); // 20:30 local — end of the spending day
+            const { at } = istSlot(i, LOG_REMINDER_HOUR_IST); // 20:00 IST — end of the spending day
             if (i === 0 && (at.getTime() <= now.getTime() || loggedToday)) continue;
             notifications.push({
                 id: LOG_REMINDER_ID_BASE + i,
-                title: "Log today's expenses",
-                body: 'A 10-second habit that keeps your budget honest.',
+                title,
+                body,
                 schedule: { at, allowWhileIdle: true },
                 channelId: REMINDER_CHANNEL_ID,
                 extra: { route: '/expenses' },
